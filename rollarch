@@ -186,16 +186,12 @@ mkfs -t ext4 -F $ROOT
 yes y | tune2fs -U $(cat /proc/sys/kernel/random/uuid) $ROOT
 
 #prepare chroot
-if [ -d rollarch.env ]; then
-  rm -rf rollarch.env
-fi
-mkdir rollarch.env
-mount $ROOT rollarch.env
+mount $ROOT /mnt
 if [ "$BOOT" != "" ]; then
-  mkdir -p rollarch.env/boot
-  mount $BOOT rollarch.env/boot
+  mkdir -p /mnt/boot
+  mount $BOOT /mnt/boot
 fi
-pacstrap rollarch.env arch-install-scripts base gptfdisk $GRUB
+pacstrap /mnt arch-install-scripts base gptfdisk $GRUB
 
 #create chroot script that uses "inchroot"
 
@@ -205,20 +201,20 @@ else
   VERBOSE=""
 fi
 
-cat > rollarch.env/rollarch << EOF
+cat > /mnt/rollarch << EOF
 #!/usr/bin/env bash
-DISK=$DISK
-USR=$USR
-PW='$PW'
-PC=$PC
-LA_NG=$LA_NG
-ZONE=$ZONE
-IP2=$IP2
-VERBOSE='$VERBOSE'
-BOOT=$BOOT
-SWAP=$SWAP
-ROOT=$ROOT
-UEFI=$UEFI
+export DISK=$DISK
+export USR=$USR
+export PW='$PW'
+export PC=$PC
+export LA_NG=$LA_NG
+export ZONE=$ZONE
+export IP2=$IP2
+export VERBOSE='$VERBOSE'
+export BOOT=$BOOT
+export SWAP=$SWAP
+export ROOT=$ROOT
+export UEFI=$UEFI
 
 partid() {
   blkid -g
@@ -245,6 +241,7 @@ export -f cleanEfibootmgr
 
 setup_time(){
   for z in $(find /usr/share/zoneinfo/ -iname "*${ZONE}"); do
+    rm -rf /etc/localtime
     ln -s "$z" /etc/localtime
     break
   done
@@ -253,7 +250,8 @@ setup_time(){
 export -f setup_time
 
 setup_locale(){
-  if [ "$LA_NG" != "" ] 
+  if [ "$LA_NG" != "" ]
+  then
     cat /etc/locale.gen | grep -E "#${LA_NG}.* UTF-8" | sed -r "s/^#(.*)/\1/" > /etc/locale.tmp
   fi
   echo 'en_US.UTF-8 UTF-8' >> /etc/locale.tmp
@@ -307,7 +305,7 @@ After=sys-subsystem-net-devices-$NIC.device
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=/usr/bin/ip link set dev $NIC up
-ExecStart=/usr/bin/ip addr add 192.168.$IP2/24 dev $NIC #CIDR notation
+ExecStart=/usr/bin/ip addr add 192.168.$IP2/24 dev $NIC
 ExecStart=/usr/bin/ip route add default via 192.168.${IPB}1
 ExecStop=/usr/bin/ip addr flush dev $NIC
 ExecStop=/usr/bin/ip link set dev $NIC down
@@ -352,14 +350,14 @@ ${APPEND}" > /boot/loader/entries/arch.conf
 export -f setup_boot
 
 setup_fstab(){
-  if [ "$SWAP" != "0" ]; then
+  if [ "$SWAP" != "off" ]; then
     swapon $SWAP
   fi
   genfstab -U -p / > /etc/fstab
   if [ "$BOOT" != "" ]; then
     sed -ie "s#$BOOT#UUID=$(partid $BOOT)#" /etc/fstab
   fi
-  if [ "$SWAP" != "0" ]; then
+  if [ "$SWAP" != "off" ]; then
     sed -ie "s#$SWAP#UUID=$(partid $SWAP)#" /etc/fstab
   fi
   sed -ie "s#$ROOT#UUID=$(partid $ROOT)#" /etc/fstab
@@ -386,26 +384,25 @@ then
   setup_boot
   setup_fstab
   setup_user
+  exit
 fi
-
-exit
 
 EOF
 
-chmod a+x rollarch.env/rollarch
+chmod a+x /mnt/rollarch
 
 # arch-chroot
 
-next "arch-chroot into rollarch.env folder"
-arch-chroot rollarch.env /rollarch
-rm -rf rollarch.env/rollarch
+next "arch-chroot into /mnt folder"
+arch-chroot /mnt /rollarch
+rm -rf /mnt/rollarch
 umount ${DISK}* 2> /dev/null
 next "
   Arch Linux is ready.
 
   Please
 
-  - type 'shutdown -h now' and
+  - type 'poweroff' and
   - remove the media afterwards.
   - boot
   - install remaing packages directly or
