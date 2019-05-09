@@ -1,0 +1,463 @@
+#!/usr/bin/env bash
+
+# call as root
+#
+# Required: 
+#   DISK [e.g. dev/sdX]
+#   USR [not "root"]
+#   PW [e.g. 's$92 37d sdxG?']
+#   PCNAME network name of PC
+#   ZONE [e.g. Vienna]
+#   IP2 [e.g. 1.106] for 192.168.1.106
+#
+# Optional:
+#   VERBOSE [on|off] (off)
+#   LA_NG in addition to en_US [e.g. de_DE] (none)
+#   SWAP [on|off] (off) set to on for non-SSD
+
+# helpers
+
+raise()
+{
+  echo "${1}" >&2
+}
+
+next(){
+  if [ "$VERBOSE" = "on" ]
+  then
+    echo "$1"
+  fi
+}
+
+# check internet
+
+#ping -c 1 -W 1 8.8.8.8 > /dev/null 2>&1
+ping -c 1 -W 1 sd.s.ds.s > /dev/null 2>&1
+if [ $? != 0 ]
+then
+  raise 'Fatal: Internet not available. Fix first.'
+  exit 1
+fi
+
+# update time else HTTPS won't work
+if [ "$(which ntpdate 2> /dev/null)" != "" ]
+then
+  ntpdate pool.ntp.org > /dev/null 2>&1
+  timedatectl set-local-rtc 1 > /dev/null 2>&1
+fi
+
+# check parameters
+
+for req in DISK USR PW PCNAME ZONE IP2
+do
+  if [ "${!req}" = "" ]
+  then
+    raise "Fatal: ${req} missing!"
+    exit 1
+  fi
+done
+
+if [ ! -e $DISK ]
+then
+  raise 'Fatal: DISK wrong'
+  exit 1
+fi
+
+if [ "$USR" = "root" ] || [ "$(echo $USR | sed -e 's/[a-z]//g')" != "" ]
+then
+  raise 'Fatal: USR wrong'
+  exit 1
+fi
+
+if [ $(find /usr/share/zoneinfo -iname "*$ZONE" | wc -l) = 0 ]
+then
+  raise 'Fatal: ZONE wrong'
+  exit 1
+fi
+
+if [[ ! "$IP2" =~ ^([0-9]+[.][0-9]+)$ ]]
+then
+  raise 'Fatal: IP2 wrong'
+  exit 1
+fi
+
+if [ "$LA_NG" != "" ]
+then
+  if [ "$LA_NG" = "en_US" ] || [[ ! "$LA_NG" =~ ^([a-z][a-z]_[A-Z][A-Z])$ ]]
+  then
+    raise 'additional LA_NG wrong'
+    exit 1
+  fi
+fi
+
+if [ "$VERBOSE" != "on" ]
+then
+  VERBOSE="off"
+fi
+
+if [ "$SWAP" != "on" ]
+then
+  SWAP="off"
+fi
+
+if [ -e /sys/firmware/efi ]; then
+  UEFI="on"
+  next 'UEFI install'
+else
+  UEFI="off"
+  next 'BIOS install'
+fi
+
+pacman -Sy
+pacman-db-upgrade
+pacman-key --init
+pacman-key --populate archlinux
+
+# create partitions
+
+#umount ${DISK}* 2> /dev/null
+umount ${DISK}*
+diskstart=2048s
+diskpart=
+next "Preparing $DISK"
+dd if=/dev/zero of=$DISK bs=1 count=2048 > /dev/null 2>&1
+#dd if=/dev/zero of=$DISK bs=1 count=2048
+if [ "$UEFI" = "off" ]; then
+  parted --script $DISK mklabel msdos > /dev/null 2>&1
+else
+  parted --script $DISK mklabel gpt > /dev/null 2>&1
+fi
+parted --script --align optimal $DISK mkpart primary fat16 $diskstart 192MiB > /dev/null 2>&1
+parted $DISK set 1 boot on > /dev/null 2>&1
+diskstart=192MiB
+if [ "$UEFI" = "off" ]; then
+  GRUB="grub"
+fi
+if [ "$SWAP" = "off" ]; then
+  parted --script --align optimal $DISK mkpart primary ext4 $diskstart 100% > /dev/null 2>&1
+  swapsize=0
+else
+  swapsize=$(cat /proc/meminfo | grep MemTotal | sed "s/[^:]*: *\(.*\) kB/\1000/g")
+  ((swapsize=swapsize+2**30))
+  swapsize=$(numfmt --to=si $swapsize)
+  parted --script --align optimal $DISK mkpart primary linux-swap $diskstart $swapsize > /dev/null 2>&1
+  parted --script --align optimal $DISK mkpart primary ext4 $swapsize 100% > /dev/null 2>&1
+fi
+next "The $DISK was partitioned"
+BOOT=
+ROOT=
+for diskpart in $(ls ${DISK}*); do
+  if [[ "$diskpart" =~ ^([a-z/]+([0-9]n)?[0-9]p|[a-z/]+)[0-9]$ ]]; then
+    if [ "$diskpart" != "$DISK" ]; then
+      if [ "$BOOT" = "" ]; then
+        BOOT=$diskpart
+        echo "  boot: $BOOT"
+      elif [ "$SWAP" = "off" ]; then
+        ROOT=$diskpart
+        echo "  root: $ROOT"
+      elif [ "$SWAP" != "off" ]; then
+        if  [ "$SWAP" = "on" ]; then
+          SWAP=$diskpart
+          echo "  swap: $SWAP"
+        else
+          ROOT=$diskpart
+          echo "  root: $ROOT"
+        fi
+      fi
+    fi
+  fi
+done
+if [ "$ROOT" = "" ]; then
+  raise 'unable to find the partition'
+  exit 1
+fi
+if [ "$BOOT" != "" ]; then
+  next "formatting BOOT partition"
+  if [ "$UEFI" = "off" ]; then
+    mkfs -t ext2 -F $BOOT
+  else
+    mkfs -t vfat $BOOT
+  fi
+fi
+if [ "$SWAP" != "off" ]; then
+  next "creating SWAP partition"
+  yes y | mkswap $SWAP
+fi
+next "formatting ROOT partition"
+mkfs -t ext4 -F $ROOT
+yes y | tune2fs -U $(cat /proc/sys/kernel/random/uuid) $ROOT
+
+#prepare chroot
+if [ -d rollarch.env ]; then
+  rm -rf rollarch.env
+fi
+mkdir rollarch.env
+mount $ROOT rollarch.env
+if [ "$BOOT" != "" ]; then
+  mkdir -p rollarch.env/boot
+  mount $BOOT rollarch.env/boot
+fi
+pacstrap rollarch.env arch-install-scripts base gptfdisk $GRUB
+
+#create chroot script that uses "inchroot"
+
+if [ "$VERBOSE" = "off" ]; then
+  VERBOSE=" quiet splash loglevel=0 console=tty2"
+else
+  VERBOSE=""
+fi
+
+cat > rollarch.env/rollarch << EOF
+#!/usr/bin/env bash
+DISK=$DISK
+USR=$USR
+PW='$PW'
+PCNAME=$PCNAME
+LA_NG=$LA_NG
+ZONE=$ZONE
+IP2=$IP2
+VERBOSE='$VERBOSE'
+BOOT=$BOOT
+SWAP=$SWAP
+ROOT=$ROOT
+UEFI=$UEFI
+
+partid() {
+  if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+    echo ''
+    echo -e "$(tput bold)example$(tput sgr0)"
+    echo ''
+    echo -e "  partid /dev/sda              \x1B[90m# lists partitions$(tput sgr0)"
+    echo -e "  partid /dev/mmcblk0 swap     \x1B[90m# get swap UUID$(tput sgr0)"
+    echo -e "  partid /dev/mmcblk0p3        \x1B[90m# get UUID$(tput sgr0)"
+    echo ''
+    return
+  fi
+  local type="$2"
+  local disk="$1"
+  local length=${#disk}
+  local list="$(ls ${disk}* 2> /dev/null)"
+  local found=
+  local info=
+  blkid -g
+  if [ "$type" = "" ]; then
+    if [ "$list" = "$disk" ]; then
+      if [ "$(blkid -o value "$disk")" = "" ]; then
+        for info in $(lsblk --output UUID "$disk"); do
+          if [ "$found" = "true" ]; then
+            echo $info
+            return
+          else
+            found=true
+          fi
+        done
+      else
+        for info in $(blkid -o value "$disk"); do
+          if [ "$info" != "msdos" ]; then
+            echo $info
+            return
+          fi
+        done
+      fi
+    else
+      if [ "$(blkid -o value "$disk")" = "" ]; then
+        lsblk --output NAME,UUID,FSTYPE "$disk"
+      else
+        for info in $(blkid); do
+          if [ "${info:0:$length}" = "$disk" ] && [ "${info:0:-1}" != "$disk" ]; then
+            blkid "${info:0:-1}"
+          fi
+        done
+      fi
+    fi
+  else
+    if [ "$(blkid -o value "$disk")" = "" ]; then
+      for info in $(lsblk --output FSTYPE,UUID "$disk"); do
+        if [ "$info" = "$type" ]; then
+          found=true
+        elif [ "$found" = "true" ]; then
+          echo $info
+          return
+        fi
+      done
+    else
+      for info in $(blkid); do
+        if [ "${info:0:$length}" = "$disk" ] && [ "${info:0:-1}" != "$disk" ]; then
+          for info in $(blkid -o value "${info:0:-1}"); do
+            if [ "$info" = "$type" ]; then
+              echo "$found"
+              return
+            fi
+            found="$info"
+          done
+        fi
+      done
+    fi
+  fi
+}
+
+cleanEfibootmgr() {
+  local which="$1"
+  local prev=
+  for entry in $(efibootmgr); do
+    if [ "$entry" = "$which" ]; then
+      efibootmgr -b "${prev:4:-1}" -B
+    fi
+    prev="$entry"
+  done
+}
+
+# timezone
+for z in $(find /usr/share/zoneinfo/ -iname "*${ZONE}"); do
+  ln -s "$z" /etc/localtime
+  break
+done
+
+#hwclock to UTC
+hwclock --systohc
+
+# Locale
+if [ "$LA_NG" != "" ] 
+  cat /etc/locale.gen | sed -r "s/^#(${LA_NG}.* UTF-8)/\1/" > /etc/locale.tmp
+fi
+echo 'en_US.UTF-8 UTF-8' >> /etc/locale.tmp
+mv /etc/locale.tmp /etc/locale.gen
+locale-gen
+locale > /etc/locale.conf
+
+# change: keycode  58 = Escape
+KBD=$(find /usr/share/kbd/keymaps/ -iname "us.map.gz")
+olddir="$(pwd)"
+cd "$(dirname $KBD)"
+KBD=$(basename $KBD)
+cp $KBD archibold$KBD.map.gz
+gunzip archibold$KBD.map.gz
+sed -ie "s/keycode *58 *= *Caps_Lock/keycode 58 = Escape/g" archibold$KBD.map 
+gzip archibold$KBD.map
+cd "$olddir"
+loadkeys archibold$KBD
+cat > /etc/vconsole.conf << END
+KEYMAP=archibold$KBD
+FONT=lat9w-16
+FONT_MAP=8859-1_to_uni
+END
+
+# Network
+echo $PCNAME >> /etc/hostname
+cat > /etc/hosts << END
+127.0.0.1     localhost
+::1           localhost
+127.0.0.1     $PCNAME.localdomain  $PCNAME
+END
+if [[ "$IP2" != "" ]]; then
+#IP2="1.100"
+IPE=${IP2##*.} #100
+IPB=${IP2%$IPE} #1.
+NIC=$(ip link show|grep " UP "|sed "s/^[^:]: \([^:]\+\).*/\1/g")
+cat > /etc/systemd/system/network.service << END
+[Unit]
+Description=Network Connectivity
+Wants=network.target
+Before=network.target
+BindTo=sys-subsystem-net-devices-$NIC.device
+After=sys-subsystem-net-devices-$NIC.device
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/ip link set dev $NIC up
+ExecStart=/usr/bin/ip addr add 192.168.$IP2/24 dev $NIC #CIDR notation
+ExecStart=/usr/bin/ip route add default via 192.168.${IPB}1
+ExecStop=/usr/bin/ip addr flush dev $NIC
+ExecStop=/usr/bin/ip link set dev $NIC down
+
+[Install]
+WantedBy=multi-user.target
+END
+systemctl enable network
+fi
+
+# Hardware basic needs
+echo -e "
+  installing $(tput bold)wifi tools$(tput sgr0)
+"
+pacman -S --needed --noconfirm dialog wpa_supplicant iw > /dev/null 2>&1
+
+UCODE=''
+UCODE_STRING=''
+if [ "$(cat /proc/cpuinfo | grep GenuineIntel)" != "" ]; then
+  UCODE='intel-ucode'
+elif [ "$(cat /proc/cpuinfo | grep AuthenticAMD)" != "" ]; then
+  UCODE='amd-ucode'
+fi
+if [ "$UCODE" != "" ]; then
+  UCODE_STRING="initrd  /${UCODE}.img
+"
+  echo -e "
+  installing $(tput bold)${UCODE}$(tput sgr0)
+"
+  pacman -S --needed --noconfirm $UCODE > /dev/null 2>&1
+fi
+
+if [ "$UEFI" = "on" ]; then
+  pacman -S --needed --noconfirm efibootmgr efitools > /dev/null 2>&1
+  cleanEfibootmgr "$PCNAME"
+  bootctl --path=/boot install
+  PARTUUID="$(blkid -s PARTUUID -o value ${ROOT})"
+  APPEND="options root=PARTUUID=${PARTUUID} rw$VERBOSE"
+  echo "title   ${PCNAME}
+  linux   /vmlinuz-linux
+  ${UCODE_STRING}initrd  /initramfs-linux.img
+  ${APPEND}" > /boot/loader/entries/arch.conf
+else
+  grub-install --target=i386-pc --recheck --debug $DISK
+  grub-mkconfig -o "/boot/grub/grub.cfg"
+fi
+
+# Create clean fstab
+if [ "$SWAP" != "0" ]; then
+  swapon $SWAP
+fi
+genfstab -U -p / > /etc/fstab
+if [ "$BOOT" != "" ]; then
+  sed -ie "s#$BOOT#UUID=$(partid $BOOT)#" /etc/fstab
+fi
+if [ "$SWAP" != "0" ]; then
+  sed -ie "s#$SWAP#UUID=$(partid $SWAP)#" /etc/fstab
+fi
+sed -ie "s#$ROOT#UUID=$(partid $ROOT)#" /etc/fstab
+cat /etc/fstab | sed -r 's/^(# )?(\/etc|efivarfs).*//' > /etc/fstab.tmp
+mv /etc/fstab.tmp /etc/fstab
+
+# Users
+echo -e "$PW
+$PW" | passwd
+
+useradd -m -g users -G wheel,storage,power,video,lp -s /bin/bash $USR
+echo -e "$PW
+$PW" | passwd $USR
+
+exit
+
+EOF
+
+chmod a+x rollarch.env/rollarch
+
+# arch-chroot
+
+next "arch-chroot into rollarch.env folder"
+arch-chroot rollarch.env /rollarch
+rm -rf rollarch.env/rollarch
+umount ${DISK}* 2> /dev/null
+next "
+  Arch Linux is ready.
+
+  Please
+
+  - type 'shutdown -h now' and
+  - remove the media afterwards.
+  - boot
+  - install remaing packages directly or
+  - via the meta packages in this repo
+"
+
