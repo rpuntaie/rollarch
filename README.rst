@@ -27,10 +27,14 @@ Example:
 
 .. code:: sh
 
-    DISK=/dev/sda USER=A PASSWORD=B PCNAME=C IP2="1.106" ZONE=Berlin LANGUAGE=de_DE\
+    DISK=/dev/sda USR=A PW=B PC=C IP2="1.106" ZONE=Berlin\
     bash <(curl -Ls https://raw.githubusercontent.com/rpuntaie/rollarch/master/rollarch)
 
 Based on
 `archibold <https://github.com/WebReflection/archibold.io/tree/gh-pages>`__.
 
 Status: Testing. Not working yet. 
+
+todo:
+
+- git.io short url

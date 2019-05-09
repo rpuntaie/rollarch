@@ -6,7 +6,7 @@
 #   DISK [e.g. dev/sdX]
 #   USR [not "root"]
 #   PW [e.g. 's$92 37d sdxG?']
-#   PCNAME network name of PC
+#   PC network name
 #   ZONE [e.g. Vienna]
 #   IP2 [e.g. 1.106] for 192.168.1.106
 #
@@ -31,8 +31,7 @@ next(){
 
 # check internet
 
-#ping -c 1 -W 1 8.8.8.8 > /dev/null 2>&1
-ping -c 1 -W 1 sd.s.ds.s > /dev/null 2>&1
+ping -c 1 -W 1 8.8.8.8 > /dev/null 2>&1
 if [ $? != 0 ]
 then
   raise 'Fatal: Internet not available. Fix first.'
@@ -48,7 +47,7 @@ fi
 
 # check parameters
 
-for req in DISK USR PW PCNAME ZONE IP2
+for req in DISK USR PW PC ZONE IP2
 do
   if [ "${!req}" = "" ]
   then
@@ -108,15 +107,14 @@ else
   next 'BIOS install'
 fi
 
-pacman -Sy
-pacman-db-upgrade
-pacman-key --init
-pacman-key --populate archlinux
+#pacman -Sy
+#pacman-db-upgrade
+#pacman-key --init
+#pacman-key --populate archlinux
 
 # create partitions
 
-#umount ${DISK}* 2> /dev/null
-umount ${DISK}*
+umount ${DISK}* 2> /dev/null
 diskstart=2048s
 diskpart=
 next "Preparing $DISK"
@@ -212,7 +210,7 @@ cat > rollarch.env/rollarch << EOF
 DISK=$DISK
 USR=$USR
 PW='$PW'
-PCNAME=$PCNAME
+PC=$PC
 LA_NG=$LA_NG
 ZONE=$ZONE
 IP2=$IP2
@@ -223,78 +221,15 @@ ROOT=$ROOT
 UEFI=$UEFI
 
 partid() {
-  if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
-    echo ''
-    echo -e "$(tput bold)example$(tput sgr0)"
-    echo ''
-    echo -e "  partid /dev/sda              \x1B[90m# lists partitions$(tput sgr0)"
-    echo -e "  partid /dev/mmcblk0 swap     \x1B[90m# get swap UUID$(tput sgr0)"
-    echo -e "  partid /dev/mmcblk0p3        \x1B[90m# get UUID$(tput sgr0)"
-    echo ''
-    return
-  fi
-  local type="$2"
-  local disk="$1"
-  local length=${#disk}
-  local list="$(ls ${disk}* 2> /dev/null)"
-  local found=
-  local info=
   blkid -g
-  if [ "$type" = "" ]; then
-    if [ "$list" = "$disk" ]; then
-      if [ "$(blkid -o value "$disk")" = "" ]; then
-        for info in $(lsblk --output UUID "$disk"); do
-          if [ "$found" = "true" ]; then
-            echo $info
-            return
-          else
-            found=true
-          fi
-        done
-      else
-        for info in $(blkid -o value "$disk"); do
-          if [ "$info" != "msdos" ]; then
-            echo $info
-            return
-          fi
-        done
-      fi
-    else
-      if [ "$(blkid -o value "$disk")" = "" ]; then
-        lsblk --output NAME,UUID,FSTYPE "$disk"
-      else
-        for info in $(blkid); do
-          if [ "${info:0:$length}" = "$disk" ] && [ "${info:0:-1}" != "$disk" ]; then
-            blkid "${info:0:-1}"
-          fi
-        done
-      fi
+  for info in $(blkid -o value "$1"); do
+    if [ "$info" != "msdos" ]; then
+      echo $info
+      return
     fi
-  else
-    if [ "$(blkid -o value "$disk")" = "" ]; then
-      for info in $(lsblk --output FSTYPE,UUID "$disk"); do
-        if [ "$info" = "$type" ]; then
-          found=true
-        elif [ "$found" = "true" ]; then
-          echo $info
-          return
-        fi
-      done
-    else
-      for info in $(blkid); do
-        if [ "${info:0:$length}" = "$disk" ] && [ "${info:0:-1}" != "$disk" ]; then
-          for info in $(blkid -o value "${info:0:-1}"); do
-            if [ "$info" = "$type" ]; then
-              echo "$found"
-              return
-            fi
-            found="$info"
-          done
-        fi
-      done
-    fi
-  fi
+  done
 }
+export -f partid
 
 cleanEfibootmgr() {
   local which="$1"
@@ -306,55 +241,61 @@ cleanEfibootmgr() {
     prev="$entry"
   done
 }
+export -f cleanEfibootmgr
 
-# timezone
-for z in $(find /usr/share/zoneinfo/ -iname "*${ZONE}"); do
-  ln -s "$z" /etc/localtime
-  break
-done
+setup_time(){
+  for z in $(find /usr/share/zoneinfo/ -iname "*${ZONE}"); do
+    ln -s "$z" /etc/localtime
+    break
+  done
+  hwclock --systohc
+}
+export -f setup_time
 
-#hwclock to UTC
-hwclock --systohc
+setup_locale(){
+  if [ "$LA_NG" != "" ] 
+    cat /etc/locale.gen | grep -E "#${LA_NG}.* UTF-8" | sed -r "s/^#(.*)/\1/" > /etc/locale.tmp
+  fi
+  echo 'en_US.UTF-8 UTF-8' >> /etc/locale.tmp
+  mv /etc/locale.tmp /etc/locale.gen
+  locale-gen
+  locale > /etc/locale.conf
+}
+export -f setup_locale
 
-# Locale
-if [ "$LA_NG" != "" ] 
-  cat /etc/locale.gen | sed -r "s/^#(${LA_NG}.* UTF-8)/\1/" > /etc/locale.tmp
-fi
-echo 'en_US.UTF-8 UTF-8' >> /etc/locale.tmp
-mv /etc/locale.tmp /etc/locale.gen
-locale-gen
-locale > /etc/locale.conf
-
-# change: keycode  58 = Escape
-KBD=$(find /usr/share/kbd/keymaps/ -iname "us.map.gz")
-olddir="$(pwd)"
-cd "$(dirname $KBD)"
-KBD=$(basename $KBD)
-cp $KBD archibold$KBD.map.gz
-gunzip archibold$KBD.map.gz
-sed -ie "s/keycode *58 *= *Caps_Lock/keycode 58 = Escape/g" archibold$KBD.map 
-gzip archibold$KBD.map
-cd "$olddir"
-loadkeys archibold$KBD
-cat > /etc/vconsole.conf << END
-KEYMAP=archibold$KBD
+setup_escape(){
+  # change: keycode  58 = Escape
+  local KBD=$(find /usr/share/kbd/keymaps/ -iname "us.map.gz")
+  local olddir="$(pwd)"
+  cd "$(dirname $KBD)"
+  KBD=$(basename $KBD)
+  cp $KBD rollarch$KBD.map.gz
+  gunzip rollarch$KBD.map.gz
+  sed -ie "s/keycode *58 *= *Caps_Lock/keycode 58 = Escape/g" rollarch$KBD.map 
+  gzip rollarch$KBD.map
+  cd "$olddir"
+  loadkeys rollarch$KBD
+  cat > /etc/vconsole.conf << END
+KEYMAP=rollarch$KBD
 FONT=lat9w-16
 FONT_MAP=8859-1_to_uni
 END
+}
+export -f setup_escape
 
-# Network
-echo $PCNAME >> /etc/hostname
-cat > /etc/hosts << END
+setup_network(){
+  echo $PC >> /etc/hostname
+  cat > /etc/hosts << END
 127.0.0.1     localhost
 ::1           localhost
-127.0.0.1     $PCNAME.localdomain  $PCNAME
+127.0.0.1     $PC.localdomain  $PC
 END
-if [[ "$IP2" != "" ]]; then
-#IP2="1.100"
-IPE=${IP2##*.} #100
-IPB=${IP2%$IPE} #1.
-NIC=$(ip link show|grep " UP "|sed "s/^[^:]: \([^:]\+\).*/\1/g")
-cat > /etc/systemd/system/network.service << END
+  if [[ "$IP2" != "" ]]; then
+    #IP2="1.100"
+    IPE=${IP2##*.} #100
+    IPB=${IP2%$IPE} #1.
+    NIC=$(ip link show|grep " UP "|sed "s/^[^:]: \([^:]\+\).*/\1/g")
+    cat > /etc/systemd/system/network.service << END
 [Unit]
 Description=Network Connectivity
 Wants=network.target
@@ -374,68 +315,78 @@ ExecStop=/usr/bin/ip link set dev $NIC down
 [Install]
 WantedBy=multi-user.target
 END
-systemctl enable network
-fi
+    systemctl enable network
+  fi
+}
+export -f setup_network
 
-# Hardware basic needs
-echo -e "
-  installing $(tput bold)wifi tools$(tput sgr0)
+setup_boot(){
+  pacman -S --needed --noconfirm dialog wpa_supplicant iw > /dev/null 2>&1
+  UCODE=''
+  UCODE_STRING=''
+  if [ "$(cat /proc/cpuinfo | grep GenuineIntel)" != "" ]; then
+    UCODE='intel-ucode'
+  elif [ "$(cat /proc/cpuinfo | grep AuthenticAMD)" != "" ]; then
+    UCODE='amd-ucode'
+  fi
+  if [ "$UCODE" != "" ]; then
+    UCODE_STRING="initrd  /${UCODE}.img
 "
-pacman -S --needed --noconfirm dialog wpa_supplicant iw > /dev/null 2>&1
+    pacman -S --needed --noconfirm $UCODE > /dev/null 2>&1
+  fi
+  if [ "$UEFI" = "on" ]; then
+    pacman -S --needed --noconfirm efibootmgr efitools > /dev/null 2>&1
+    cleanEfibootmgr "$PC"
+    bootctl --path=/boot install
+    PARTUUID="$(blkid -s PARTUUID -o value ${ROOT})"
+    APPEND="options root=PARTUUID=${PARTUUID} rw$VERBOSE"
+    echo "title   ${PC}
+linux   /vmlinuz-linux
+${UCODE_STRING}initrd  /initramfs-linux.img
+${APPEND}" > /boot/loader/entries/arch.conf
+  else
+    grub-install --target=i386-pc --recheck --debug $DISK
+    grub-mkconfig -o "/boot/grub/grub.cfg"
+  fi
+}
+export -f setup_boot
 
-UCODE=''
-UCODE_STRING=''
-if [ "$(cat /proc/cpuinfo | grep GenuineIntel)" != "" ]; then
-  UCODE='intel-ucode'
-elif [ "$(cat /proc/cpuinfo | grep AuthenticAMD)" != "" ]; then
-  UCODE='amd-ucode'
-fi
-if [ "$UCODE" != "" ]; then
-  UCODE_STRING="initrd  /${UCODE}.img
-"
-  echo -e "
-  installing $(tput bold)${UCODE}$(tput sgr0)
-"
-  pacman -S --needed --noconfirm $UCODE > /dev/null 2>&1
-fi
+setup_fstab(){
+  if [ "$SWAP" != "0" ]; then
+    swapon $SWAP
+  fi
+  genfstab -U -p / > /etc/fstab
+  if [ "$BOOT" != "" ]; then
+    sed -ie "s#$BOOT#UUID=$(partid $BOOT)#" /etc/fstab
+  fi
+  if [ "$SWAP" != "0" ]; then
+    sed -ie "s#$SWAP#UUID=$(partid $SWAP)#" /etc/fstab
+  fi
+  sed -ie "s#$ROOT#UUID=$(partid $ROOT)#" /etc/fstab
+  cat /etc/fstab | sed -r 's/^(# )?(\/etc|efivarfs).*//' > /etc/fstab.tmp
+  mv /etc/fstab.tmp /etc/fstab
+}
+export -f setup_fstab
 
-if [ "$UEFI" = "on" ]; then
-  pacman -S --needed --noconfirm efibootmgr efitools > /dev/null 2>&1
-  cleanEfibootmgr "$PCNAME"
-  bootctl --path=/boot install
-  PARTUUID="$(blkid -s PARTUUID -o value ${ROOT})"
-  APPEND="options root=PARTUUID=${PARTUUID} rw$VERBOSE"
-  echo "title   ${PCNAME}
-  linux   /vmlinuz-linux
-  ${UCODE_STRING}initrd  /initramfs-linux.img
-  ${APPEND}" > /boot/loader/entries/arch.conf
-else
-  grub-install --target=i386-pc --recheck --debug $DISK
-  grub-mkconfig -o "/boot/grub/grub.cfg"
-fi
-
-# Create clean fstab
-if [ "$SWAP" != "0" ]; then
-  swapon $SWAP
-fi
-genfstab -U -p / > /etc/fstab
-if [ "$BOOT" != "" ]; then
-  sed -ie "s#$BOOT#UUID=$(partid $BOOT)#" /etc/fstab
-fi
-if [ "$SWAP" != "0" ]; then
-  sed -ie "s#$SWAP#UUID=$(partid $SWAP)#" /etc/fstab
-fi
-sed -ie "s#$ROOT#UUID=$(partid $ROOT)#" /etc/fstab
-cat /etc/fstab | sed -r 's/^(# )?(\/etc|efivarfs).*//' > /etc/fstab.tmp
-mv /etc/fstab.tmp /etc/fstab
-
-# Users
-echo -e "$PW
+setup_user(){
+  echo -e "$PW
 $PW" | passwd
-
-useradd -m -g users -G wheel,storage,power,video,lp -s /bin/bash $USR
-echo -e "$PW
+  useradd -m -g users -G wheel,storage,power,video,lp -s /bin/bash $USR
+  echo -e "$PW
 $PW" | passwd $USR
+}
+export -f setup_user
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
+then
+  setup_time
+  setup_locale
+  setup_escape
+  setup_network
+  setup_boot
+  setup_fstab
+  setup_user
+fi
 
 exit
 

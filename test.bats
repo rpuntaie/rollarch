@@ -58,19 +58,19 @@ load test_helper
     [ $(echo "$output" | sed "s/\(Fatal\): PW.*/\1/g") = "Fatal" ]
 }
 
-@test "no PCNAME" {
+@test "no PC" {
     skip
     mock
     DISK=x USR=y PW=z run ./rollarch
     [ "$status" -eq 1 ]
-    [ $(echo "$output" | sed "s/\(Fatal\): PCNAME.*/\1/g") = "Fatal" ]
+    [ $(echo "$output" | sed "s/\(Fatal\): PC.*/\1/g") = "Fatal" ]
 }
 
 
 @test "no ZONE" {
     skip
     mock
-    DISK=x USR=y PW=z PCNAME=u run ./rollarch
+    DISK=x USR=y PW=z PC=u run ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): ZONE.*/\1/g") = "Fatal" ]
 }
@@ -78,7 +78,7 @@ load test_helper
 @test "no IP2" {
     skip
     mock
-    DISK=x USR=y PW=z PCNAME=u ZONE=v run ./rollarch
+    DISK=x USR=y PW=z PC=u ZONE=v run ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): IP2.*/\1/g") = "Fatal" ]
 }
@@ -87,7 +87,7 @@ load test_helper
 @test "DISK wrong" {
     skip
     mock
-    DISK=x USR=y PW=z PCNAME=u ZONE=v IP2=w run ./rollarch
+    DISK=x USR=y PW=z PC=u ZONE=v IP2=w run ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): DISK wrong/\1/g") = "Fatal" ]
 }
@@ -96,7 +96,7 @@ load test_helper
 @test "USR wrong" {
     skip
     mock
-    DISK=/dev/null USR='x y' PW=z PCNAME=u ZONE=v IP2=w run ./rollarch
+    DISK=/dev/null USR='x y' PW=z PC=u ZONE=v IP2=w run ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): USR wrong/\1/g") = "Fatal" ]
 }
@@ -104,7 +104,7 @@ load test_helper
 @test "ZONE wrong" {
     skip
     mock
-    DISK=/dev/null USR=y PW=z PCNAME=u ZONE=sdfhsv IP2=w run ./rollarch
+    DISK=/dev/null USR=y PW=z PC=u ZONE=sdfhsv IP2=w run ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): ZONE wrong/\1/g") = "Fatal" ]
 }
@@ -113,7 +113,7 @@ load test_helper
 @test "IP2 wrong" {
     skip
     mock
-    DISK=/dev/null USR=y PW=z PCNAME=u ZONE=Berlin IP2=w run ./rollarch
+    DISK=/dev/null USR=y PW=z PC=u ZONE=Berlin IP2=w run ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): IP2 wrong/\1/g") = "Fatal" ]
 }
@@ -122,7 +122,7 @@ load test_helper
 @test "LA_NG wrong" {
     skip
     mock
-    DISK=/dev/null USR=y PW=z PCNAME=u ZONE=Berlin IP2=1.106 LA_NG=ru run ./rollarch
+    DISK=/dev/null USR=y PW=z PC=u ZONE=Berlin IP2=1.106 LA_NG=ru run ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/.*LA_NG \(wrong\)/\1/g") = "wrong" ]
 }
@@ -131,7 +131,7 @@ load test_helper
 @test "Pacman update" {
     skip
     mock
-    DISK=/dev/null USR=y PW=z PCNAME=u ZONE=Berlin IP2=1.106 LA_NG=ru_RU run ./rollarch
+    DISK=/dev/null USR=y PW=z PC=u ZONE=Berlin IP2=1.106 LA_NG=ru_RU run ./rollarch
     [ "$status" -eq 0 ]
     [ "${lines[0]}" = "-Sy" ]
     [ "${lines[1]}" = "--init" ]
@@ -141,7 +141,7 @@ load test_helper
 @test "VERBOSE on" {
     skip
     mock
-    DISK=/dev/null USR=y PW=z PCNAME=u ZONE=Berlin IP2=1.106 LA_NG=ru_RU VERBOSE=on run ./rollarch
+    DISK=/dev/null USR=y PW=z PC=u ZONE=Berlin IP2=1.106 LA_NG=ru_RU VERBOSE=on run ./rollarch
     [ "$status" -eq 0 ]
     [ $(echo "${lines[0]}" | sed "s/.*\(install\).*/\1/g") = "install" ]
     [ "${lines[1]}" = "-Sy" ]
@@ -156,8 +156,7 @@ load test_helper
 @test "SWAP on" {
     skip
     mock
-    DISK=/dev/null USR=y PW=z PCNAME=u ZONE=Berlin IP2=1.106 VERBOSE=on SWAP=on run ./rollarch
-    [ "$status" -eq 0 ]
+    DISK=/dev/null USR=y PW=z PC=u ZONE=Berlin IP2=1.106 VERBOSE=on SWAP=on run ./rollarch
     [ $(echo "${lines[0]}" | sed "s/.*\(install\).*/\1/g") = "install" ]
     [ "${lines[1]}" = "-Sy" ]
     [ "${lines[2]}" = "--init" ]
@@ -171,7 +170,7 @@ load test_helper
 
 @test "CHROOT preparation" {
     mock
-    DISK=/dev/null USR=y PW=z PCNAME=u ZONE=Berlin IP2=1.106 VERBOSE=on SWAP=on run ./rollarch
+    DISK=/dev/null USR=y PW=z PC=u ZONE=Berlin IP2=1.106 VERBOSE=on SWAP=on run ./rollarch
     [ "$status" -eq 0 ]
     run tree rollarch.env
     [ "${lines[0]}" = "rollarch.env" ]
