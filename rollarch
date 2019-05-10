@@ -424,6 +424,7 @@ echo "
   - type 'poweroff' and
   - remove the media afterwards.
   - boot
+  - remove '/rollarchroot'
   - install further packages
 "
 
