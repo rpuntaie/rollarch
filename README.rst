@@ -27,8 +27,8 @@ Example:
 
 .. code:: sh
 
-    DISK=/dev/sda USR=A PW=B PC=C IP2="1.106" ZONE=Berlin\
-    bash <(curl -Ls https://git.io/installarch)
+    curl -OLs https://git.io/installarch
+    DISK=/dev/sda USR=A PW=B PC=C IP2=1.106 ZONE=Berlin bash installarch
     
 
 The url is short for ``https://raw.githubusercontent.com/rpuntaie/rollarch/master/rollarch``.
