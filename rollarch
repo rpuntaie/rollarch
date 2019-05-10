@@ -304,8 +304,8 @@ setup_network(){
 END
   NIC=$(ip link show|grep " UP "|sed "s/^[^:]: \([^:]\+\).*/\1/g")
   if [[ "$IP2" = "dhcp" ]]; then
-    systemctl enable dhcpcd@$NIC
-    #systemctl start dhcpcd@$NIC
+    systemctl start dhcpcd.service
+    systemctl enable dhcpcd.service
   else
     #IP2="1.100"
     IPE=\${IP2##*.} #100
@@ -416,7 +416,7 @@ next "arch-chroot into /mnt folder"
 arch-chroot /mnt /rollarchroot
 #rm -rf /mnt/rollarchroot
 umount ${DISK}* 2> /dev/null
-next "
+echo "
   Arch Linux is ready.
 
   Please
@@ -424,7 +424,6 @@ next "
   - type 'poweroff' and
   - remove the media afterwards.
   - boot
-  - install remaing packages directly or
-  - via the meta packages in this repo
+  - install further packages
 "
 
