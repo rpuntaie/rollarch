@@ -28,13 +28,13 @@ Example:
 .. code:: sh
 
     DISK=/dev/sda USR=A PW=B PC=C IP2="1.106" ZONE=Berlin\
-    bash <(curl -Ls https://raw.githubusercontent.com/rpuntaie/rollarch/master/rollarch)
+    bash <(curl -Ls https://git.io/installarch)
+    
+
+The url is short for ``https://raw.githubusercontent.com/rpuntaie/rollarch/master/rollarch``.
 
 Based on
 `archibold <https://github.com/WebReflection/archibold.io/tree/gh-pages>`__.
 
 Status: Testing. Not working yet. 
 
-todo:
-
-- git.io short url
