@@ -230,11 +230,10 @@ export ROOT=$ROOT
 export UEFI=$UEFI
 
 partid() {
-  local whichdisk="$1"
   blkid -g
-  for info in $(blkid -o value "$whichdisk"); do
-    if [ "$info" != "msdos" ]; then
-      echo $info
+  for info in \$(blkid -o value "\$1"); do
+    if [ "\$info" != "msdos" ]; then
+      echo \$info
       return
     fi
   done
@@ -242,22 +241,24 @@ partid() {
 export -f partid
 
 cleanEfibootmgr() {
-  local which="$1"
   local prev=
-  for entry in $(efibootmgr); do
-    if [ "$entry" = "$which" ]; then
-      efibootmgr -b "${prev:4:-1}" -B
+  for entry in \$(efibootmgr); do
+    if [ "\$entry" = "\$1" ]; then
+      efibootmgr -b "\${prev:4:-1}" -B
     fi
-    prev="$entry"
+    prev="\$entry"
   done
 }
 export -f cleanEfibootmgr
 
 setup_time(){
-  for z in $(find /usr/share/zoneinfo/ -iname "*\$ZONE"); do
-    rm -rf /etc/localtime
-    ln -s "$z" /etc/localtime
-    break
+  for z in \$(find /usr/share/zoneinfo/ -iname "*\$ZONE"); do
+    if [[ ! \$z =~ ^.*/right/.*$ ]] && [[ ! \$z =~ ^.*/posix/.*$ ]]
+    then
+      rm -rf /etc/localtime
+      ln -s "\$z" /etc/localtime
+      break
+    fi
   done
   hwclock --systohc
 }
@@ -278,17 +279,17 @@ export -f setup_locale
 setup_escape(){
   # change: keycode  58 = Escape
   local KBD=$(find /usr/share/kbd/keymaps/ -iname "us.map.gz")
-  local olddir="$(pwd)"
-  cd "$(dirname $KBD)"
-  KBD=$(basename $KBD)
-  cp $KBD rollarch$KBD.map.gz
-  gunzip rollarch$KBD.map.gz
-  sed -ie "s/keycode *58 *= *Caps_Lock/keycode 58 = Escape/g" rollarch$KBD.map 
-  gzip rollarch$KBD.map
-  cd "$olddir"
-  loadkeys rollarch$KBD
+  local olddir="\$(pwd)"
+  cd "\$(dirname \$KBD)"
+  KBD=\$(basename \$KBD)
+  cp \$KBD rollarch\$KBD.map.gz
+  gunzip rollarch\$KBD.map.gz
+  sed -ie "s/keycode *58 *= *Caps_Lock/keycode 58 = Escape/g" rollarch\$KBD.map 
+  gzip rollarch\$KBD.map
+  cd "\$olddir"
+  loadkeys rollarch\$KBD
   cat > /etc/vconsole.conf << END
-KEYMAP=rollarch$KBD
+KEYMAP=rollarch\$KBD
 FONT=lat9w-16
 FONT_MAP=8859-1_to_uni
 END
@@ -302,34 +303,35 @@ setup_network(){
 ::1           localhost
 127.0.0.1     \$PC.localdomain  \$PC
 END
-  NIC=$(ip link show|grep " UP "|sed "s/^[^:]: \([^:]\+\).*/\1/g")
-  if [[ "$IP2" = "dhcp" ]]; then
-    systemctl start dhcpcd.service
-    systemctl enable dhcpcd.service
+  if [[ "\$IP2" = "dhcp" ]]; then
+    systemctl start dhcpcd
+    systemctl enable dhcpcd
   else
     #IP2="1.100"
+    NIC=\$(ip link show|grep " UP "|sed "s/^[^:]: \([^:]\+\).*/\1/g")
     IPE=\${IP2##*.} #100
-    IPB=\${IP2%$IPE} #1.
+    IPB=\${IP2%\$IPE} #1.
     cat > /etc/systemd/system/network.service << END
 [Unit]
 Description=Network Connectivity
 Wants=network.target
 Before=network.target
-BindTo=sys-subsystem-net-devices-$NIC.device
-After=sys-subsystem-net-devices-$NIC.device
+BindTo=sys-subsystem-net-devices-\$NIC.device
+After=sys-subsystem-net-devices-\$NIC.device
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/bin/ip link set dev $NIC up
-ExecStart=/usr/bin/ip addr add 192.168.\$IP2/24 dev $NIC
-ExecStart=/usr/bin/ip route add default via 192.168.${IPB}1
-ExecStop=/usr/bin/ip addr flush dev $NIC
-ExecStop=/usr/bin/ip link set dev $NIC down
+ExecStart=/usr/bin/ip link set dev \$NIC up
+ExecStart=/usr/bin/ip addr add 192.168.\$IP2/24 dev \$NIC
+ExecStart=/usr/bin/ip route add default via 192.168.\${IPB}1
+ExecStop=/usr/bin/ip addr flush dev \$NIC
+ExecStop=/usr/bin/ip link set dev \$NIC down
 
 [Install]
 WantedBy=multi-user.target
 END
+    systemctl start network
     systemctl enable network
   fi
 }
@@ -339,26 +341,26 @@ setup_boot(){
   pacman -S --needed --noconfirm dialog wpa_supplicant iw > /dev/null 2>&1
   UCODE=''
   UCODE_STRING=''
-  if [ "$(cat /proc/cpuinfo | grep GenuineIntel)" != "" ]; then
+  if [ "\$(cat /proc/cpuinfo | grep GenuineIntel)" != "" ]; then
     UCODE='intel-ucode'
-  elif [ "$(cat /proc/cpuinfo | grep AuthenticAMD)" != "" ]; then
+  elif [ "\$(cat /proc/cpuinfo | grep AuthenticAMD)" != "" ]; then
     UCODE='amd-ucode'
   fi
-  if [ "$UCODE" != "" ]; then
-    UCODE_STRING="initrd  /${UCODE}.img
+  if [ "\$UCODE" != "" ]; then
+    UCODE_STRING="initrd  /\${UCODE}.img
 "
-    pacman -S --needed --noconfirm $UCODE > /dev/null 2>&1
+    pacman -S --needed --noconfirm \$UCODE > /dev/null 2>&1
   fi
   if [ "\$UEFI" = "on" ]; then
     pacman -S --needed --noconfirm efibootmgr efitools > /dev/null 2>&1
     cleanEfibootmgr "\$PC"
     bootctl --path=/boot install
-    PARTUUID="$(blkid -s PARTUUID -o value \$ROOT)"
-    APPEND="options root=PARTUUID=${PARTUUID} rw\$VERBOSE"
+    PARTUUID="\$(blkid -s PARTUUID -o value \$ROOT)"
+    APPEND="options root=PARTUUID=\${PARTUUID} rw\$VERBOSE"
     echo "title   \${PC}
 linux   /vmlinuz-linux
-${UCODE_STRING}initrd  /initramfs-linux.img
-${APPEND}" > /boot/loader/entries/arch.conf
+\${UCODE_STRING}initrd  /initramfs-linux.img
+\${APPEND}" > /boot/loader/entries/arch.conf
   else
     mkinitcpio -p linux
     grub-install --target=i386-pc --recheck \$DISK > /dev/null 2>&1
@@ -373,10 +375,10 @@ setup_fstab(){
   fi
   genfstab -U -p / > /etc/fstab
   if [ "\$BOOT" != "" ]; then
-    sed -ie "s#$BOOT#UUID=$(partid \$BOOT)#" /etc/fstab
+    sed -ie "s#\$BOOT#UUID=\$(partid \$BOOT)#" /etc/fstab
   fi
   if [ "\$SWAP" != "off" ]; then
-    sed -ie "s#\$SWAP#UUID=$(partid \$SWAP)#" /etc/fstab
+    sed -ie "s#\$SWAP#UUID=\$(partid \$SWAP)#" /etc/fstab
   fi
   sed -ie "s#\$ROOT#UUID=$(partid \$ROOT)#" /etc/fstab
   cat /etc/fstab | sed -r 's/^(# )?(\/etc|efivarfs).*//' > /etc/fstab.tmp
@@ -394,7 +396,7 @@ setup_user(){
 }
 export -f setup_user
 
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
+if [[ "\${BASH_SOURCE[0]}" == "\${0}" ]]
 then
   setup_time
   setup_locale
