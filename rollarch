@@ -17,10 +17,9 @@
 #   PW [e.g. 's$92 37d sdxG?']
 #   PC network name
 #   ZONE [e.g. Vienna]
-#   IP2 [e.g. 1.106] for 192.168.1.106, else "dhcp"
 #
 # Optional:
-#   VERBOSE [on|off] (off)
+#   IP2 [e.g. 1.106] for 192.168.1.106, else "dhcp"
 #   LA_NG in addition to en_US [e.g. de_DE] (none)
 #   SWAP [on|off] (off) set to on for non-SSD
 
@@ -30,15 +29,6 @@ raise()
 {
   echo "${1}" >&2
 }
-
-next(){
-  if [ "$VERBOSE" = "on" ]
-  then
-    echo "$1"
-  fi
-}
-
-# check internet
 
 ping -c 1 -W 1 8.8.8.8 > /dev/null 2>&1
 if [ $? != 0 ]
@@ -56,7 +46,7 @@ fi
 
 # check parameters
 
-for req in DISK USR PW PC ZONE IP2
+for req in DISK USR PW PC ZONE
 do
   if [ "${!req}" = "" ]
   then
@@ -95,11 +85,6 @@ then
     raise 'additional LA_NG wrong'
     exit 1
   fi
-fi
-
-if [ "$VERBOSE" != "on" ]
-then
-  VERBOSE="off"
 fi
 
 if [ "$SWAP" != "on" ]
@@ -203,12 +188,6 @@ pacstrap /mnt arch-install-scripts base gptfdisk sudo $GRUB
 
 #create chroot script that uses "inchroot"
 
-if [ "$VERBOSE" = "off" ]; then
-  VERBOSE=" quiet splash loglevel=0 console=tty2"
-else
-  VERBOSE=""
-fi
-
 cat > /mnt/rollarchroot << EOF
 #!/usr/bin/env bash
 
@@ -223,7 +202,6 @@ export PC=$PC
 export LA_NG=$LA_NG
 export ZONE=$ZONE
 export IP2=$IP2
-export VERBOSE='$VERBOSE'
 export BOOT=$BOOT
 export SWAP=$SWAP
 export ROOT=$ROOT
@@ -286,21 +264,33 @@ END
 export -f setup_escape
 
 setup_network(){
-  echo \$PC >> /etc/hostname
+  echo \$PC > /etc/hostname
   cat > /etc/hosts << END
 127.0.0.1     localhost
 ::1           localhost
 127.0.0.1     \$PC.localdomain  \$PC
 END
-  if [[ "\$IP2" = "dhcp" ]]; then
-    systemctl start dhcpcd
-    systemctl enable dhcpcd
-  else
+  if [ "\$IP2" != "dhcp" ]; then
     #IP2="1.100"
-    NIC=\$(ip link show|grep " UP "|sed "s/^[^:]: \([^:]\+\).*/\1/g")
-    IPE=\${IP2##*.} #100
-    IPB=\${IP2%\$IPE} #1.
-    cat > /etc/systemd/system/network.service << END
+    local IPE=\${IP2##*.} #100
+    local IPB=\${IP2%\$IPE} #1.
+    local NS=192.168.\${IPB}1
+    local CIDR="192.168.\$IP2/24"
+    echo "nameserver \$NS" > /etc/resolv.conf
+  fi
+  for NIC in \$(ip link show|grep " UP \| DOWN "|sed "s/^[^:]: \([^:]\+\).*/\1/g"); do
+    if [ \${NIC:0:1} = "e" ]; then
+      if [ "\$IP2" != "dhcp" ]; then
+        cat > /etc/netctl/se << END
+Description='static ethernet'
+Interface=\$NIC
+Connection=ethernet
+IP=static
+Address='\$CIDR'
+Gateway='\$NS'
+DNS='\$NS'
+END
+        cat > /etc/systemd/system/network.service << END
 [Unit]
 Description=Network Connectivity
 Wants=network.target
@@ -312,16 +302,57 @@ After=sys-subsystem-net-devices-\$NIC.device
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=/usr/bin/ip link set dev \$NIC up
-ExecStart=/usr/bin/ip addr add 192.168.\$IP2/24 dev \$NIC
-ExecStart=/usr/bin/ip route add default via 192.168.\${IPB}1
+ExecStart=/usr/bin/ip addr add \$CIDR dev \$NIC
+ExecStart=/usr/bin/ip route add default via \$NS
 ExecStop=/usr/bin/ip addr flush dev \$NIC
 ExecStop=/usr/bin/ip link set dev \$NIC down
 
 [Install]
 WantedBy=multi-user.target
 END
-    systemctl start network
-    systemctl enable network
+      fi
+      cat > /etc/netctl/de << END
+Description='dhcp ethernet'
+Interface=\$NIC
+Connection=ethernet
+IP=dhcp
+END
+    else
+      if [ "\$IP2" != "dhcp" ]; then
+        cat > /etc/netctl/sw << END
+Description='static wireless'
+Interface=\$NIC
+Connection=wireless
+Security=wpa
+ESSID='TODO'
+Key='TODO'
+IP=static
+Address='\$CIDR'
+Gateway='\$NS'
+DNS='\$NS'
+END
+      fi
+      cat > /etc/netctl/dw << END
+Description='dhcp wireless'
+Interface=\$NIC
+Connection=wireless
+Security=wpa
+IP=dhcp
+ESSID='TODO'
+Key='TODO'
+END
+    fi
+  done
+  if [[ "\$IP2" = "dhcp" ]]; then
+    netctl start d\${NIC:0:1}
+    netctl enable d\${NIC:0:1}
+    #systemctl start dhcpcd
+    #systemctl enable dhcpcd
+  else
+    netctl start s\${NIC:0:1}
+    netctl enable s\${NIC:0:1}
+    #systemctl start network
+    #systemctl enable network
   fi
 }
 export -f setup_network
@@ -344,7 +375,7 @@ setup_boot(){
     pacman -S --needed --noconfirm efibootmgr efitools > /dev/null 2>&1
     bootctl --path=/boot install
     PARTUUID="\$(blkid -s PARTUUID -o value \$ROOT)"
-    APPEND="options root=PARTUUID=\${PARTUUID} rw\$VERBOSE"
+    APPEND="options root=PARTUUID=\${PARTUUID} rw quiet splash loglevel=0 console=tty2"
     echo "title   \${PC}
 linux   /vmlinuz-linux
 \${UCODE_STRING}initrd  /initramfs-linux.img
@@ -415,6 +446,7 @@ echo "
   - remove the media afterwards
   - boot
   - delete '/rollarchroot' (contains password)
+  - '/etc/netctl/{sw,dw}' need ESSID and Key
   - install further packages
 "
 
