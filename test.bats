@@ -75,14 +75,6 @@ load test_helper
     [ $(echo "$output" | sed "s/\(Fatal\): ZONE.*/\1/g") = "Fatal" ]
 }
 
-@test "no IP2" {
-    #skip
-    mock
-    DISK=x USR=y PW=z PC=u ZONE=v run ./rollarch
-    [ "$status" -eq 1 ]
-    [ $(echo "$output" | sed "s/\(Fatal\): IP2.*/\1/g") = "Fatal" ]
-}
-
 @test "DISK wrong" {
     #skip
     mock
@@ -108,16 +100,6 @@ load test_helper
 }
 
 
-#non-numbers for IP2 will be understood as dhcp
-#@test "IP2 wrong" {
-#    #skip
-#    mock
-#    DISK=/dev/null USR=y PW=z PC=u ZONE=Berlin IP2=w run ./rollarch
-#    [ "$status" -eq 1 ]
-#    [ $(echo "$output" | sed "s/\(Fatal\): IP2 wrong/\1/g") = "Fatal" ]
-#}
-
-
 @test "LA_NG wrong" {
     #skip
     mock
@@ -127,54 +109,23 @@ load test_helper
 }
 
 
-#not doing pacman update any more
-#@test "Pacman update" {
-#    #skip
-#    mock
-#    DISK=/dev/null USR=y PW=z PC=u ZONE=Berlin IP2=1.106 LA_NG=ru_RU run ./rollarch
-#    [ "$status" -eq 0 ]
-#    [ "${lines[0]}" = "-Sy" ]
-#    [ "${lines[1]}" = "--init" ]
-#    [ "${lines[2]}" = "--populate archlinux" ]
-#}
-
-@test "VERBOSE on" {
-    #skip
-    mock
-    DISK=/dev/null USR=y PW=z PC=u ZONE=Berlin IP2=1.106 LA_NG=ru_RU VERBOSE=on run ./rollarch
-    [ "$status" -eq 0 ]
-    [ $(echo "${lines[0]}" | sed "s/.*\(install\).*/\1/g") = "install" ]
-    [ "${lines[1]}" = "/dev/null" ]
-    [ "${lines[4]}" = "  boot: /dev/null1" ]
-    [ "${lines[5]}" = "  root: /dev/null2" ]
-}
-
-
 @test "SWAP on" {
     #skip
     mock
-    DISK=/dev/null USR=y PW=z PC=u ZONE=Berlin IP2=1.106 VERBOSE=on SWAP=on run ./rollarch
-    [ $(echo "${lines[0]}" | sed "s/.*\(install\).*/\1/g") = "install" ]
-    [ "${lines[1]}" = "/dev/null" ]
-    [ "${lines[4]}" = "  boot: /dev/null1" ]
-    [ "${lines[5]}" = "  swap: /dev/null2" ]
-    [ "${lines[6]}" = "  root: /dev/null3" ]
+    DISK=/dev/null USR=y PW=z PC=u ZONE=Berlin IP2=1.106 SWAP=on run ./rollarch
+    #echo "#${lines[1]}" >&3
+    [ "${lines[1]}" = "  boot: /dev/null1" ]
+    [ "${lines[2]}" = "  swap: /dev/null2" ]
+    [ "${lines[3]}" = "  root: /dev/null3" ]
 }
 
 
 @test "CHROOT preparation" {
     mock
-    DISK=/dev/null USR=y PW=z PC=u ZONE=Berlin IP2=1.106 VERBOSE=on SWAP=on run ./rollarch
+    DISK=/dev/null USR=y PW=z PC=u ZONE=Berlin IP2=1.106 SWAP=on run ./rollarch
     [ "$status" -eq 0 ]
     run tree rollarch.env
     [ "${lines[0]}" = "rollarch.env" ]
     [ "${lines[1]:1:7}" = "── boot" ]
 }
 
-
-#@test "test CHROOT script" {
-#    mock
-#    run rollarch.env/rollarch.sh
-#    [ "$status" -eq 0 ]
-#    #rm -rf rollarch.env
-#}

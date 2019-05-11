@@ -22,6 +22,9 @@
 #   IP2 [e.g. 1.106] for 192.168.1.106, else "dhcp"
 #   LA_NG in addition to en_US [e.g. de_DE] (none)
 #   SWAP [on|off] (off) set to on for non-SSD
+#
+# Description:
+# - 
 
 # helpers
 
@@ -94,10 +97,8 @@ fi
 
 if [ -e /sys/firmware/efi ]; then
   UEFI="on"
-  next 'UEFI install'
 else
   UEFI="off"
-  next 'BIOS install'
 fi
 
 #pacman -Sy
@@ -110,7 +111,6 @@ fi
 umount ${DISK}* 2> /dev/null
 diskstart=2048s
 diskpart=
-next "Preparing $DISK"
 dd if=/dev/zero of=$DISK bs=1 count=2048 > /dev/null 2>&1
 #dd if=/dev/zero of=$DISK bs=1 count=2048
 if [ "$UEFI" = "off" ]; then
@@ -134,7 +134,6 @@ else
   parted --script --align optimal $DISK mkpart primary linux-swap $diskstart $swapsize > /dev/null 2>&1
   parted --script --align optimal $DISK mkpart primary ext4 $swapsize 100% > /dev/null 2>&1
 fi
-next "The $DISK was partitioned"
 BOOT=
 ROOT=
 for diskpart in $(ls ${DISK}*); do
@@ -163,7 +162,6 @@ if [ "$ROOT" = "" ]; then
   exit 1
 fi
 if [ "$BOOT" != "" ]; then
-  next "formatting BOOT partition"
   if [ "$UEFI" = "off" ]; then
     mkfs -t ext2 -F $BOOT
   else
@@ -171,10 +169,8 @@ if [ "$BOOT" != "" ]; then
   fi
 fi
 if [ "$SWAP" != "off" ]; then
-  next "creating SWAP partition"
   yes y | mkswap $SWAP
 fi
-next "formatting ROOT partition"
 mkfs -t ext4 -F $ROOT
 yes y | tune2fs -U $(cat /proc/sys/kernel/random/uuid) $ROOT
 
@@ -263,6 +259,7 @@ END
 }
 export -f setup_escape
 
+#for VirtualBox use bridged to make static netctl work
 setup_network(){
   echo \$PC > /etc/hostname
   cat > /etc/hosts << END
@@ -286,9 +283,9 @@ Description='static ethernet'
 Interface=\$NIC
 Connection=ethernet
 IP=static
-Address='\$CIDR'
-Gateway='\$NS'
-DNS='\$NS'
+Address=('\$CIDR')
+Gateway=('\$NS')
+DNS=('\$NS')
 END
         cat > /etc/systemd/system/network.service << END
 [Unit]
@@ -327,9 +324,9 @@ Security=wpa
 ESSID='TODO'
 Key='TODO'
 IP=static
-Address='\$CIDR'
-Gateway='\$NS'
-DNS='\$NS'
+Address=('\$CIDR')
+Gateway=('\$NS')
+DNS=('\$NS')
 END
       fi
       cat > /etc/netctl/dw << END
@@ -345,14 +342,14 @@ END
   done
   if [[ "\$IP2" = "dhcp" ]]; then
     netctl start d\${NIC:0:1}
-    netctl enable d\${NIC:0:1}
+    netctl enable d\${NIC:0:1} > /dev/null 2>&1
     #systemctl start dhcpcd
-    #systemctl enable dhcpcd
+    #systemctl enable dhcpcd > /dev/null 2>&1
   else
     netctl start s\${NIC:0:1}
-    netctl enable s\${NIC:0:1}
+    netctl enable s\${NIC:0:1} > /dev/null 2>&1
     #systemctl start network
-    #systemctl enable network
+    #systemctl enable network > /dev/null 2>&1
   fi
 }
 export -f setup_network
@@ -431,9 +428,7 @@ EOF
 
 chmod a+x /mnt/rollarchroot
 
-# arch-chroot
-
-next "arch-chroot into /mnt folder"
+echo "arch-chroot into /mnt folder"
 arch-chroot /mnt /rollarchroot
 #rm -rf /mnt/rollarchroot
 umount ${DISK}* 2> /dev/null
@@ -446,7 +441,6 @@ echo "
   - remove the media afterwards
   - boot
   - delete '/rollarchroot' (contains password)
-  - '/etc/netctl/{sw,dw}' need ESSID and Key
   - install further packages
 "
 
