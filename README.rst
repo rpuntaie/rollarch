@@ -1,27 +1,25 @@
-Installing Arch Linux is not hard,
-but if you want the same packages over and over again,
-it is a candidate for automation.
+Automates Arch Linux installation to
 
-The Arch installation can easily be automated,
-because it uses the command line and not a GUI.
+- not repeat the steps manually to often xor
+- remember the steps
 
 All parameters are provided at call time,
 as an automation should not bombard you with questions.
 
+
 Required::
 
   DISK [e.g. dev/sdX]
-  USER [not "root"]
-  PASSWORD [e.g. 's$92 37d sdxG?']
-  PCNAME network name of PC
+  USR [not "root"]
+  PW [e.g. 's$92 37d sdxG?']
+  PC network name
   ZONE [e.g. Vienna]
-  IP2 [e.g. 1.106] for 192.168.1.106
 
 Optional::
 
-  VERBOSE [on|off] (off)
+  IP2 [e.g. 1.106] for 192.168.1.106, else "dhcp"
   LA_NG in addition to en_US [e.g. de_DE] (none)
-  SWAP [on|off] (off) set to *on* for non-SSD
+  SWAP [on|off] (off) set to on for non-SSD
 
 Example:
 
@@ -36,5 +34,5 @@ The url is short for ``https://raw.githubusercontent.com/rpuntaie/rollarch/maste
 Based on
 `archibold <https://github.com/WebReflection/archibold.io/tree/gh-pages>`__.
 
-Status: Testing. Not working yet. 
+Status: Tested and works for Virtualbox (EFI and BIOS) and BIOS PC.
 
