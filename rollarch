@@ -276,7 +276,8 @@ END
     echo "nameserver \$NS" > /etc/resolv.conf
   fi
   for NIC in \$(ip link show|grep " UP \| DOWN "|sed "s/^[^:]: \([^:]\+\).*/\1/g"); do
-    if [ \${NIC:0:1} = "e" ]; then
+    if [ \${NIC:0:1} = "e" ] && [ "\$had_e" = "" ]; then
+      local had_e="yes"
       if [ "\$IP2" != "dhcp" ]; then
         cat > /etc/netctl/se << END
 Description='static ethernet'
@@ -314,7 +315,8 @@ Interface=\$NIC
 Connection=ethernet
 IP=dhcp
 END
-    else
+    elif [ \${NIC:0:1} = "w" ] && [ "\$had_w" = "" ];
+      local had_w="yes"
       if [ "\$IP2" != "dhcp" ]; then
         cat > /etc/netctl/sw << END
 Description='static wireless'
