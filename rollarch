@@ -240,17 +240,6 @@ partid() {
 }
 export -f partid
 
-cleanEfibootmgr() {
-  local prev=
-  for entry in \$(efibootmgr); do
-    if [ "\$entry" = "\$1" ]; then
-      efibootmgr -b "\${prev:4:-1}" -B
-    fi
-    prev="\$entry"
-  done
-}
-export -f cleanEfibootmgr
-
 setup_time(){
   for z in \$(find /usr/share/zoneinfo/ -iname "*\$ZONE"); do
     if [[ ! \$z =~ ^.*/right/.*$ ]] && [[ ! \$z =~ ^.*/posix/.*$ ]]
@@ -353,7 +342,6 @@ setup_boot(){
   fi
   if [ "\$UEFI" = "on" ]; then
     pacman -S --needed --noconfirm efibootmgr efitools > /dev/null 2>&1
-    cleanEfibootmgr "\$PC"
     bootctl --path=/boot install
     PARTUUID="\$(blkid -s PARTUUID -o value \$ROOT)"
     APPEND="options root=PARTUUID=\${PARTUUID} rw\$VERBOSE"
@@ -421,12 +409,12 @@ umount ${DISK}* 2> /dev/null
 echo "
   Arch Linux is ready.
 
-  Please
+  Next
 
-  - type 'poweroff' and
-  - remove the media afterwards.
+  - type 'poweroff'
+  - remove the media afterwards
   - boot
-  - remove '/rollarchroot'
+  - delete '/rollarchroot' (contains password)
   - install further packages
 "
 
