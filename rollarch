@@ -23,8 +23,12 @@
 #   LA_NG in addition to en_US [e.g. de_DE] (none)
 #   SWAP [on|off] (off) set to on for non-SSD
 #
-
-# helpers
+# Desription:
+#   - check parameters
+#   - create partitions
+#   - arch-chroot
+#  
+# See ``Script after arch-chroot`` further down.
 
 raise()
 {
@@ -38,7 +42,6 @@ then
   exit 1
 fi
 
-# update time else HTTPS won't work
 if [ "$(which ntpdate 2> /dev/null)" != "" ]
 then
   ntpdate pool.ntp.org > /dev/null 2>&1
@@ -185,9 +188,19 @@ pacstrap /mnt arch-install-scripts base gptfdisk sudo $GRUB
 cat > /mnt/rollarchroot << EOF
 #!/usr/bin/env bash
 
-# This script was executed after arch-chroot
-# at Arch Linux install with 
-# https://github.com/rpuntaie/rollarch
+# Script after arch-chroot
+#
+# - setup_time: using \$ZONE
+# - setup_locale: using \$LA_NG
+# - setup_escape: Caps_Lock becomes Escape
+# - setup_network: with \$IP2 and \$PC, use netctl, but also create systemd file
+# - setup_boot: EFI boot if /sys/firmware/efi, else BIOS using grub
+# - setup_fstab: wiht \$DISK partitions
+# - setup_user: using \$USR and \$PW, the latter also for root
+#
+# After installation, *delete* this file or at least the line with \$PW
+
+## see https://github.com/rpuntaie/rollarch
 
 export DISK=$DISK
 export USR=$USR
@@ -428,7 +441,7 @@ EOF
 
 chmod a+x /mnt/rollarchroot
 
-echo "arch-chroot into /mnt folder"
+# arch-chroot
 arch-chroot /mnt /rollarchroot
 #rm -rf /mnt/rollarchroot
 umount ${DISK}* 2> /dev/null
@@ -440,7 +453,7 @@ echo "
   - type 'poweroff'
   - remove the media afterwards
   - boot
-  - delete '/rollarchroot' (contains password)
+  - delete '/rollarchroot' or at least the line containing the password
   - install further packages
 "
 
