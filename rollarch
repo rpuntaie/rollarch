@@ -181,7 +181,7 @@ if [ "$BOOT" != "" ]; then
   mkdir -p /mnt/boot
   mount $BOOT /mnt/boot
 fi
-pacstrap /mnt arch-install-scripts base gptfdisk sudo $GRUB
+pacstrap /mnt arch-install-scripts base gptfdisk ntp nfs-utils cifs-utils samba sudo $GRUB
 
 #create chroot script that uses "inchroot"
 
@@ -235,6 +235,15 @@ setup_time(){
     fi
   done
   hwclock --systohc
+  cat > /etc/systemd/timesyncd.conf << END
+[Time]
+NTP=0.arch.pool.ntp.org 1.arch.pool.ntp.org 2.arch.pool.ntp.org 3.arch.pool.ntp.org
+FallbackNTP=0.pool.ntp.org 1.pool.ntp.org
+RootDistanceMaxSec=5
+PollIntervalMinSec=32
+PollIntervalMaxSec=2048
+END
+  timedatectl set-ntp true
 }
 export -f setup_time
 
@@ -364,6 +373,9 @@ END
     #systemctl start network
     #systemctl enable network > /dev/null 2>&1
   fi
+  #edit /etc/exports to nfs export folders
+  systemctl enable nfs-server.service
+  curl -Ls https://raw.githubusercontent.com/samba-team/samba/master/examples/smb.conf.default|sed -e "s,log file = .*$,logging = systemd,g" -e "s,MYGROUP,WORKGROUP,g" > /etc/samba/smb.conf
 }
 export -f setup_network
 
@@ -395,6 +407,7 @@ linux   /vmlinuz-linux
     grub-install --target=i386-pc --recheck \$DISK > /dev/null 2>&1
     grub-mkconfig -o "/boot/grub/grub.cfg" > /dev/null 2>&1
   fi
+  echo "cifs" > /etc/modules-load.d/cifs.conf
 }
 export -f setup_boot
 
@@ -422,6 +435,8 @@ setup_user(){
   useradd -m -g users -G wheel,storage,power,video,audio,lp,games,scanner -s /bin/bash \$USR
   echo -e "\$PW
 \$PW" | passwd \$USR
+  echo -e "\$PW
+\$PW" | smbpasswd -a \$USR
 }
 export -f setup_user
 
