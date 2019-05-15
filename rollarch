@@ -11,7 +11,7 @@
 #   curl -OLs https://git.io/installarch
 #   DSK=/dev/sda USR=A PW=B HST=C IP2=1.106 ZONE=Berlin bash installarch
 #
-# Required: 
+# Required:
 #   DSK [e.g. dev/sdX]
 #   USR [not "root"]
 #   PW [e.g. 's$92 37d sdxG?']
@@ -27,12 +27,12 @@
 # Desription:
 #   - check parameters
 #   - create partitions
-#   - check 'custom' at 192.168.$AIP2 
+#   - check 'custom' at 192.168.$AIP2
 #   - rankmirrors
 #   - pacstrap
 #   - create chroot script
 #   - arch-chroot
-#  
+#
 # See ``Script after arch-chroot`` further down.
 
 raise()
@@ -170,16 +170,16 @@ if [ "$ROOT" = "" ]; then
 fi
 if [ "$BOOT" != "" ]; then
   if [ "$UEFI" = "off" ]; then
-    mkfs -t ext2 -F $BOOT
+    mkfs -t ext2 -F $BOOT > /dev/null 2>&1
   else
-    mkfs -t vfat $BOOT
+    mkfs -t vfat $BOOT > /dev/null 2>&1
   fi
 fi
 if [ "$SWAP" != "off" ]; then
   yes y | mkswap $SWAP
 fi
-mkfs -t ext4 -F $ROOT
-yes y | tune2fs -U $(cat /proc/sys/kernel/random/uuid) $ROOT
+mkfs -t ext4 -F $ROOT > /dev/null 2>&1
+yes y | tune2fs -U $(cat /proc/sys/kernel/random/uuid) $ROOT > /dev/null 2>&1
 mount $ROOT /mnt
 if [ "$BOOT" != "" ]; then
   mkdir -p /mnt/boot
@@ -187,7 +187,7 @@ if [ "$BOOT" != "" ]; then
 fi
 
 # check 'custom'
-pacman -Sy --noconfirm pacman-contrib > /dev/null 2>&1 
+pacman -Sy --noconfirm pacman-contrib > /dev/null 2>&1
 if [[ "$AIP2" != "" ]] && [[ "$AIP2" != "yes" ]]; then
   aip2server="http://192.168.$AIP2:8080"
   echo "Server = $aip2server" > /etc/pacman.d/mirrorlist
@@ -207,7 +207,7 @@ echo "Ranking mirrors ... "
 MIRRORLIST_URL="https://www.archlinux.org/mirrorlist/?country=all&protocol=http&protocol=https&ip_version=4"
 curl -s "$MIRRORLIST_URL" | \
     sed -e 's/^#Server/Server/' -e '/^#/d' | \
-    rankmirrors -n 8 - >> /etc/pacman.d/mirrorlist
+    rankmirrors -n 8 -m 0.5 - >> /etc/pacman.d/mirrorlist
 pacman -Sy
 
 pacstrap /mnt arch-install-scripts base gptfdisk ntp nfs-utils cifs-utils samba sudo git python vim $GRUB
@@ -313,7 +313,7 @@ setup_escape(){
   KBD=\$(basename \$KBD)
   cp \$KBD rollarch\$KBD.map.gz
   gunzip rollarch\$KBD.map.gz
-  sed -ie "s/keycode *58 *= *Caps_Lock/keycode 58 = Escape/g" rollarch\$KBD.map 
+  sed -ie "s/keycode *58 *= *Caps_Lock/keycode 58 = Escape/g" rollarch\$KBD.map
   gzip rollarch\$KBD.map
   cd "\$olddir"
   loadkeys rollarch\$KBD
@@ -393,6 +393,12 @@ MulticastDNS=yes
 Metric=10
 END
       else
+        cat > /etc/netctl/de << END
+Description='dhcp ethernet'
+Interface=\$NIC
+Connection=ethernet
+IP=dhcp
+END
         cat > /etc/systemd/network/20-wired.network << END
 [Match]
 Name=\$NIC
@@ -406,13 +412,7 @@ MulticastDNS=yes
 RouteMetric=10
 END
       fi
-      cat > /etc/netctl/de << END
-Description='dhcp ethernet'
-Interface=\$NIC
-Connection=ethernet
-IP=dhcp
-END
-    elif [ \${NIC:0:1} = "w" ] && [ "\$had_w" = "" ];
+    elif [ \${NIC:0:1} = "w" ] && [ "\$had_w" = "" ]; then
       local had_w="yes"
       if [ "\$IP2" != "dhcp" ]; then
         cat > /etc/netctl/sw << END
@@ -575,6 +575,6 @@ echo "
   delete '/rollarchroot' or at least the line containing the password
   mount -t cifs //196.168.x.yyy/share share -o username=$USR,vers=2.0
   mount -t nfs 192.168.y.zzz:/path/to/share share
-  pacman -S rollarch-xmonad
+  further (meta) packages (e.g. pacman -S rollarch-xmonad)
 "
 
