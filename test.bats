@@ -34,18 +34,18 @@ load test_helper
     #[ "${capture[0]}" = 'ping-stub -c 1 -W 1 8.8.8.8' ]
 }
 
-@test "no DISK" {
+@test "no DSK" {
     #skip
     mock
     run ./rollarch
     [ "$status" -eq 1 ]
-    [ $(echo "$output" | sed "s/\(Fatal\): DISK.*/\1/g") = "Fatal" ]
+    [ $(echo "$output" | sed "s/\(Fatal\): DSK.*/\1/g") = "Fatal" ]
 }
 
 @test "no USR" {
     #skip
     mock
-    DISK=x run ./rollarch
+    DSK=x run ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): USR.*/\1/g") = "Fatal" ]
 }
@@ -53,40 +53,40 @@ load test_helper
 @test "no PW" {
     #skip
     mock
-    DISK=x USR=y run ./rollarch
+    DSK=x USR=y run ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): PW.*/\1/g") = "Fatal" ]
 }
 
-@test "no PC" {
+@test "no HST" {
     #skip
     mock
-    DISK=x USR=y PW=z run ./rollarch
+    DSK=x USR=y PW=z run ./rollarch
     [ "$status" -eq 1 ]
-    [ $(echo "$output" | sed "s/\(Fatal\): PC.*/\1/g") = "Fatal" ]
+    [ $(echo "$output" | sed "s/\(Fatal\): HST.*/\1/g") = "Fatal" ]
 }
 
 
 @test "no ZONE" {
     #skip
     mock
-    DISK=x USR=y PW=z PC=u run ./rollarch
+    DSK=x USR=y PW=z HST=u run ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): ZONE.*/\1/g") = "Fatal" ]
 }
 
-@test "DISK wrong" {
+@test "DSK wrong" {
     #skip
     mock
-    DISK=x USR=y PW=z PC=u ZONE=v IP2=w run ./rollarch
+    DSK=x USR=y PW=z HST=u ZONE=v IP2=w run ./rollarch
     [ "$status" -eq 1 ]
-    [ $(echo "$output" | sed "s/\(Fatal\): DISK wrong/\1/g") = "Fatal" ]
+    [ $(echo "$output" | sed "s/\(Fatal\): DSK wrong/\1/g") = "Fatal" ]
 }
 
 @test "USR wrong" {
     #skip
     mock
-    DISK=/dev/null USR='x y' PW=z PC=u ZONE=v IP2=w run ./rollarch
+    DSK=/dev/null USR='x y' PW=z HST=u ZONE=v IP2=w run ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): USR wrong/\1/g") = "Fatal" ]
 }
@@ -94,7 +94,7 @@ load test_helper
 @test "ZONE wrong" {
     #skip
     mock
-    DISK=/dev/null USR=y PW=z PC=u ZONE=sdfhsv IP2=w run ./rollarch
+    DSK=/dev/null USR=y PW=z HST=u ZONE=sdfhsv IP2=w run ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): ZONE wrong/\1/g") = "Fatal" ]
 }
@@ -103,7 +103,7 @@ load test_helper
 @test "LA_NG wrong" {
     #skip
     mock
-    DISK=/dev/null USR=y PW=z PC=u ZONE=Berlin IP2=1.106 LA_NG=ru run ./rollarch
+    DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 LA_NG=ru run ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/.*LA_NG \(wrong\)/\1/g") = "wrong" ]
 }
@@ -112,7 +112,7 @@ load test_helper
 @test "SWAP on" {
     #skip
     mock
-    DISK=/dev/null USR=y PW=z PC=u ZONE=Berlin IP2=1.106 SWAP=on run ./rollarch
+    DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on run ./rollarch
     #echo "#${lines[1]}" >&3
     [ "${lines[1]}" = "  boot: /dev/null1" ]
     [ "${lines[2]}" = "  swap: /dev/null2" ]
@@ -122,7 +122,7 @@ load test_helper
 
 @test "CHROOT preparation" {
     mock
-    DISK=/dev/null USR=y PW=z PC=u ZONE=Berlin IP2=1.106 SWAP=on run ./rollarch
+    DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on run ./rollarch
     [ "$status" -eq 0 ]
     run tree rollarch.env
     [ "${lines[0]}" = "rollarch.env" ]

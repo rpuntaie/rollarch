@@ -9,23 +9,28 @@
 #
 # Call as root to install Arch Linux::
 #   curl -OLs https://git.io/installarch
-#   DISK=/dev/sda USR=A PW=B PC=C IP2=1.106 ZONE=Berlin bash installarch
+#   DSK=/dev/sda USR=A PW=B HST=C IP2=1.106 ZONE=Berlin bash installarch
 #
 # Required: 
-#   DISK [e.g. dev/sdX]
+#   DSK [e.g. dev/sdX]
 #   USR [not "root"]
 #   PW [e.g. 's$92 37d sdxG?']
-#   PC network name
+#   HST host network name
 #   ZONE [e.g. Vienna]
 #
 # Optional:
 #   IP2 [e.g. 1.106] for 192.168.1.106, else "dhcp"
 #   LA_NG in addition to en_US [e.g. de_DE] (none)
-#   SWAP [on|off] (off) set to on for non-SSD
+#   SWAP [on|off] (off), set to on for non-SSD
+#   AIP2 [e.g. 1.199 | yes, to create Arch Proxy] (none)
 #
 # Desription:
 #   - check parameters
 #   - create partitions
+#   - check 'custom' at 192.168.$AIP2 
+#   - rankmirrors
+#   - pacstrap
+#   - create chroot script
 #   - arch-chroot
 #  
 # See ``Script after arch-chroot`` further down.
@@ -50,7 +55,7 @@ fi
 
 # check parameters
 
-for req in DISK USR PW PC ZONE
+for req in DSK USR PW HST ZONE
 do
   if [ "${!req}" = "" ]
   then
@@ -59,9 +64,9 @@ do
   fi
 done
 
-if [ ! -e $DISK ]
+if [ ! -e $DSK ]
 then
-  raise 'Fatal: DISK wrong'
+  raise 'Fatal: DSK wrong'
   exit 1
 fi
 
@@ -80,6 +85,12 @@ fi
 if [[ ! "$IP2" =~ ^([0-9]+[.][0-9]+)$ ]]
 then
   IP2="dhcp"
+fi
+
+
+if [[ ! "$AIP2" =~ ^([0-9]+[.][0-9]+)$ ]] && [[ "$AIP2" != "" ]] && [[ "$AIP2" != "no" ]]
+then
+  AIP2="yes"
 fi
 
 if [ "$LA_NG" != "" ]
@@ -102,44 +113,39 @@ else
   UEFI="off"
 fi
 
-#pacman -Sy
-#pacman-db-upgrade
-#pacman-key --init
-#pacman-key --populate archlinux
-
 # create partitions
 
-umount ${DISK}* 2> /dev/null
+umount ${DSK}* 2> /dev/null
 diskstart=2048s
 diskpart=
-dd if=/dev/zero of=$DISK bs=1 count=2048 > /dev/null 2>&1
-#dd if=/dev/zero of=$DISK bs=1 count=2048
+dd if=/dev/zero of=$DSK bs=1 count=2048 > /dev/null 2>&1
+#dd if=/dev/zero of=$DSK bs=1 count=2048
 if [ "$UEFI" = "off" ]; then
-  parted --script $DISK mklabel msdos > /dev/null 2>&1
+  parted --script $DSK mklabel msdos > /dev/null 2>&1
 else
-  parted --script $DISK mklabel gpt > /dev/null 2>&1
+  parted --script $DSK mklabel gpt > /dev/null 2>&1
 fi
-parted --script --align optimal $DISK mkpart primary fat16 $diskstart 192MiB > /dev/null 2>&1
-parted $DISK set 1 boot on > /dev/null 2>&1
+parted --script --align optimal $DSK mkpart primary fat16 $diskstart 192MiB > /dev/null 2>&1
+parted $DSK set 1 boot on > /dev/null 2>&1
 diskstart=192MiB
 if [ "$UEFI" = "off" ]; then
   GRUB="grub"
 fi
 if [ "$SWAP" = "off" ]; then
-  parted --script --align optimal $DISK mkpart primary ext4 $diskstart 100% > /dev/null 2>&1
+  parted --script --align optimal $DSK mkpart primary ext4 $diskstart 100% > /dev/null 2>&1
   swapsize=0
 else
   swapsize=$(cat /proc/meminfo | grep MemTotal | sed "s/[^:]*: *\(.*\) kB/\1000/g")
   ((swapsize=swapsize+2**30))
   swapsize=$(numfmt --to=si $swapsize)
-  parted --script --align optimal $DISK mkpart primary linux-swap $diskstart $swapsize > /dev/null 2>&1
-  parted --script --align optimal $DISK mkpart primary ext4 $swapsize 100% > /dev/null 2>&1
+  parted --script --align optimal $DSK mkpart primary linux-swap $diskstart $swapsize > /dev/null 2>&1
+  parted --script --align optimal $DSK mkpart primary ext4 $swapsize 100% > /dev/null 2>&1
 fi
 BOOT=
 ROOT=
-for diskpart in $(ls ${DISK}*); do
+for diskpart in $(ls ${DSK}*); do
   if [[ "$diskpart" =~ ^([a-z/]+([0-9]n)?[0-9]p|[a-z/]+)[0-9]$ ]]; then
-    if [ "$diskpart" != "$DISK" ]; then
+    if [ "$diskpart" != "$DSK" ]; then
       if [ "$BOOT" = "" ]; then
         BOOT=$diskpart
         echo "  boot: $BOOT"
@@ -174,16 +180,48 @@ if [ "$SWAP" != "off" ]; then
 fi
 mkfs -t ext4 -F $ROOT
 yes y | tune2fs -U $(cat /proc/sys/kernel/random/uuid) $ROOT
-
-#prepare chroot
 mount $ROOT /mnt
 if [ "$BOOT" != "" ]; then
   mkdir -p /mnt/boot
   mount $BOOT /mnt/boot
 fi
-pacstrap /mnt arch-install-scripts base gptfdisk ntp nfs-utils cifs-utils samba sudo $GRUB
 
-#create chroot script that uses "inchroot"
+# check 'custom'
+pacman -Sy --noconfirm pacman-contrib > /dev/null 2>&1 
+if [[ "$AIP2" != "" ]] && [[ "$AIP2" != "yes" ]]; then
+  aip2server="http://192.168.$AIP2:8080"
+  echo "Server = $aip2server" > /etc/pacman.d/mirrorlist
+  if [[ -n $(curl -s "$aip2server" | grep "custom\.db") ]]; then
+    cat >>/etc/pacman.conf <<EOF
+[custom]
+SigLevel = Optional TrustAll
+Server = $aip2server
+EOF
+  else
+    aip2server=
+  fi
+fi
+
+# rankmirrors
+echo "Ranking mirrors ... "
+MIRRORLIST_URL="https://www.archlinux.org/mirrorlist/?country=all&protocol=http&protocol=https&ip_version=4"
+curl -s "$MIRRORLIST_URL" | \
+    sed -e 's/^#Server/Server/' -e '/^#/d' | \
+    rankmirrors -n 8 - >> /etc/pacman.d/mirrorlist
+pacman -Sy
+
+pacstrap /mnt arch-install-scripts base gptfdisk ntp nfs-utils cifs-utils samba sudo git python vim $GRUB
+
+if [[ "$aip2server" != "" ]]; then
+  cat >>/etc/pacman.conf <<EOF
+[custom]
+SigLevel = Optional TrustAll
+Server = $aip2server
+EOF
+fi
+
+
+# create chroot script
 
 cat > /mnt/rollarchroot << EOF
 #!/usr/bin/env bash
@@ -193,22 +231,23 @@ cat > /mnt/rollarchroot << EOF
 # - setup_time: using \$ZONE
 # - setup_locale: using \$LA_NG
 # - setup_escape: Caps_Lock becomes Escape
-# - setup_network: with \$IP2 and \$PC, use netctl, but also create systemd file
+# - setup_network: with \$IP2 and \$HST, use netctl, but also create systemd file
 # - setup_boot: EFI boot if /sys/firmware/efi, else BIOS using grub
-# - setup_fstab: wiht \$DISK partitions
+# - setup_fstab: wiht \$DSK partitions
 # - setup_user: using \$USR and \$PW, the latter also for root
 #
 # After installation, *delete* this file or at least the line with \$PW
 
 ## see https://github.com/rpuntaie/rollarch
 
-export DISK=$DISK
+export DSK=$DSK
 export USR=$USR
 export PW='$PW'
-export PC=$PC
+export HST=$HST
 export LA_NG=$LA_NG
 export ZONE=$ZONE
 export IP2=$IP2
+export AIP2=$AIP2
 export BOOT=$BOOT
 export SWAP=$SWAP
 export ROOT=$ROOT
@@ -224,6 +263,13 @@ partid() {
   done
 }
 export -f partid
+
+setup_arch_proxy() {
+ ln -s /var/lib/pacman/sync/*.db /var/cache/pacman/pkg
+ cd /usr/lib/systemd/system/
+ cat darkhttpd.service | sed -e "s/Webserver/ArchProxy/g" -e "s,/srv/http.*$,/var/cache/pacman/pkg --no-server-id --port 8080,g" > ArchProxy.service
+ systemctl --now enable ArchProxy
+}
 
 setup_time(){
   for z in \$(find /usr/share/zoneinfo/ -iname "*\$ZONE"); do
@@ -281,19 +327,23 @@ export -f setup_escape
 
 #for VirtualBox use bridged to make static netctl work
 setup_network(){
-  echo \$PC > /etc/hostname
+  echo \$HST > /etc/hostname
   cat > /etc/hosts << END
 127.0.0.1     localhost
 ::1           localhost
-127.0.0.1     \$PC.localdomain  \$PC
+127.0.0.1     \$HST.localdomain  \$HST
 END
+  ## in case of avahi and nss-mdns:
+  #sudo sed -ie "s/resolve/mdns4_minimal [NOTFOUND=return] resolve/g" /etc/nsswitch
   if [ "\$IP2" != "dhcp" ]; then
     #IP2="1.100"
     local IPE=\${IP2##*.} #100
     local IPB=\${IP2%\$IPE} #1.
     local NS=192.168.\${IPB}1
     local CIDR="192.168.\$IP2/24"
-    echo "nameserver \$NS" > /etc/resolv.conf
+    #echo "nameserver \$NS" > /etc/resolv.conf
+    sed -i -e "s/#DNS=.*$/DNS=\$NS/g" -e "s/#FallbackDNS/FallbackDNS/g" -e "s/#LLMNR/LLMNR/g" -e "s/#Multi/Multi/g" /etc/systemd/resolved.conf
+    ln -sf /run/systemd/stub-resolv.conf /etc/resolv.conf
   fi
   for NIC in \$(ip link show|grep " UP \| DOWN "|sed "s/^[^:]: \([^:]\+\).*/\1/g"); do
     if [ \${NIC:0:1} = "e" ] && [ "\$had_e" = "" ]; then
@@ -328,6 +378,33 @@ ExecStop=/usr/bin/ip link set dev \$NIC down
 [Install]
 WantedBy=multi-user.target
 END
+        cat > /etc/systemd/network/20-wired.network << END
+[Match]
+Name=\$NIC
+
+[Network]
+Address=\$CIDR
+Gateway=\$NS
+DNS=\$NS
+LLMNR=yes
+MulticastDNS=yes
+
+[Route]
+Metric=10
+END
+      else
+        cat > /etc/systemd/network/20-wired.network << END
+[Match]
+Name=\$NIC
+
+[Network]
+DHCP=ipv4
+LLMNR=yes
+MulticastDNS=yes
+
+[DHCP]
+RouteMetric=10
+END
       fi
       cat > /etc/netctl/de << END
 Description='dhcp ethernet'
@@ -350,8 +427,22 @@ Address=('\$CIDR')
 Gateway=('\$NS')
 DNS=('\$NS')
 END
-      fi
-      cat > /etc/netctl/dw << END
+        cat > /etc/systemd/network/25-wireless.network << END
+[Match]
+Name=\$NIC
+
+[Network]
+Address=\$CIDR
+Gateway=\$NS
+DNS=\$NS
+LLMNR=yes
+MulticastDNS=yes
+
+[Route]
+Metric=20
+END
+      else
+        cat > /etc/netctl/dw << END
 Description='dhcp wireless'
 Interface=\$NIC
 Connection=wireless
@@ -360,22 +451,34 @@ IP=dhcp
 ESSID='TODO'
 Key='TODO'
 END
+        cat > /etc/systemd/network/25-wireless.network << END
+[Match]
+Name=\$NIC
+
+[Network]
+DHCP=ipv4
+LLMNR=yes
+MulticastDNS=yes
+
+[DHCP]
+RouteMetric=20
+END
+      fi
     fi
   done
-  if [[ "\$IP2" = "dhcp" ]]; then
-    netctl start d\${NIC:0:1}
-    netctl enable d\${NIC:0:1} > /dev/null 2>&1
-    #systemctl start dhcpcd
-    #systemctl enable dhcpcd > /dev/null 2>&1
-  else
-    netctl start s\${NIC:0:1}
-    netctl enable s\${NIC:0:1} > /dev/null 2>&1
-    #systemctl start network
-    #systemctl enable network > /dev/null 2>&1
-  fi
+  #if [[ "\$IP2" = "dhcp" ]]; then
+  #  netctl --now enable d\${NIC:0:1} > /dev/null 2>&1
+  #  #systemctl --now enable dhcpcd > /dev/null 2>&1
+  #else
+  #  netctl --now enable s\${NIC:0:1} > /dev/null 2>&1
+  #  #systemctl --now enable network > /dev/null 2>&1
+  #fi
+  systemctl --now enable systemd-networkd > /dev/null 2>&1
+  systemctl --now enable systemd-resolved > /dev/null 2>&1
   #edit /etc/exports to nfs export folders
-  systemctl enable nfs-server.service
+  systemctl --now enable nfs-server.service > /dev/null 2>&1
   curl -Ls https://raw.githubusercontent.com/samba-team/samba/master/examples/smb.conf.default|sed -e "s,log file = .*$,logging = systemd,g" -e "s,MYGROUP,WORKGROUP,g" > /etc/samba/smb.conf
+  #systemctl --now enable smb.service > /dev/null 2>&1
 }
 export -f setup_network
 
@@ -398,13 +501,13 @@ setup_boot(){
     bootctl --path=/boot install
     PARTUUID="\$(blkid -s PARTUUID -o value \$ROOT)"
     APPEND="options root=PARTUUID=\${PARTUUID} rw quiet splash loglevel=0 console=tty2"
-    echo "title   \${PC}
+    echo "title   \${HST}
 linux   /vmlinuz-linux
 \${UCODE_STRING}initrd  /initramfs-linux.img
 \${APPEND}" > /boot/loader/entries/arch.conf
   else
     mkinitcpio -p linux
-    grub-install --target=i386-pc --recheck \$DISK > /dev/null 2>&1
+    grub-install --target=i386-pc --recheck \$DSK > /dev/null 2>&1
     grub-mkconfig -o "/boot/grub/grub.cfg" > /dev/null 2>&1
   fi
   echo "cifs" > /etc/modules-load.d/cifs.conf
@@ -449,6 +552,9 @@ then
   setup_boot
   setup_fstab
   setup_user
+  if [[ \$AIP2 = "yes" ]]; then
+    setup_arch_proxy
+  fi
   exit
 fi
 
@@ -459,16 +565,16 @@ chmod a+x /mnt/rollarchroot
 # arch-chroot
 arch-chroot /mnt /rollarchroot
 #rm -rf /mnt/rollarchroot
-umount ${DISK}* 2> /dev/null
+umount ${DSK}* 2> /dev/null
 echo "
   Arch Linux is ready.
 
   Next
 
-  - type 'poweroff'
-  - remove the media afterwards
-  - boot
-  - delete '/rollarchroot' or at least the line containing the password
-  - install further packages
+  'poweroff', remove media, boot
+  delete '/rollarchroot' or at least the line containing the password
+  mount -t cifs //196.168.x.yyy/share share -o username=$USR,vers=2.0
+  mount -t nfs 192.168.y.zzz:/path/to/share share
+  pacman -S rollarch-xmonad
 "
 

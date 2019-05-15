@@ -1,4 +1,6 @@
 mock(){
+  function curl() { return 0; }
+  export -f curl
   function ping() { return 0; }
   export -f ping
   function ntpdate() { return 0; }
@@ -11,6 +13,8 @@ mock(){
   export -f pacman-db-upgrade
   function pacman-key() { echo "$*"; }
   export -f pacman-key
+  function rankmirrors() { return 0; }
+  export -f rankmirrors
   function dd() { echo "$*"; }
   export -f dd
   function parted() { echo "$*"; }
