@@ -165,15 +165,8 @@ for diskpart in $(ls ${DSK}*); do
   fi
 done
 if [ "$ROOT" = "" ]; then
-  raise 'unable to find the partition'
+  raise 'unable to find ROOT the partition'
   exit 1
-fi
-if [ "$BOOT" != "" ]; then
-  if [ "$UEFI" = "off" ]; then
-    mkfs -t ext2 -F $BOOT > /dev/null 2>&1
-  else
-    mkfs -t vfat $BOOT > /dev/null 2>&1
-  fi
 fi
 if [ "$SWAP" != "off" ]; then
   yes y | mkswap $SWAP
@@ -181,10 +174,17 @@ fi
 mkfs -t ext4 -F $ROOT > /dev/null 2>&1
 yes y | tune2fs -U $(cat /proc/sys/kernel/random/uuid) $ROOT > /dev/null 2>&1
 mount $ROOT /mnt
-if [ "$BOOT" != "" ]; then
-  mkdir -p /mnt/boot
-  mount $BOOT /mnt/boot
+if [ "$BOOT" = "" ]; then
+  raise 'unable to find BOOT the partition'
+  exit 1
 fi
+if [ "$UEFI" = "off" ]; then
+  mkfs -t ext2 -F $BOOT > /dev/null 2>&1
+else
+  mkfs -t vfat $BOOT > /dev/null 2>&1
+fi
+mkdir -p /mnt/boot
+mount $BOOT /mnt/boot
 
 # check 'custom'
 pacman -Sy --noconfirm pacman-contrib > /dev/null 2>&1
