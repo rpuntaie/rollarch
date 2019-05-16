@@ -192,7 +192,7 @@ if [[ "$AIP2" != "" ]] && [[ "$AIP2" != "yes" ]]; then
   aip2server="http://192.168.$AIP2:8080"
   echo "Server = $aip2server" > /etc/pacman.d/mirrorlist
   if [[ -n $(curl -s "$aip2server" | grep "custom\.db") ]]; then
-    cat >>/etc/pacman.conf <<EOF
+    cat >> /etc/pacman.conf << EOF
 [custom]
 SigLevel = Optional TrustAll
 Server = $aip2server
@@ -213,7 +213,7 @@ pacman -Sy
 pacstrap /mnt arch-install-scripts base dialog wpa_supplicant ntp nfs-utils samba sudo git python vim $GRUB
 
 if [[ "$aip2server" != "" ]]; then
-  cat >>/etc/pacman.conf <<EOF
+  cat >> /mnt/etc/pacman.conf << EOF
 [custom]
 SigLevel = Optional TrustAll
 Server = $aip2server
