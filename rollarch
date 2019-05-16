@@ -517,26 +517,29 @@ linux   /vmlinuz-linux
 export -f setup_boot
 
 setup_fstab(){
-  partid() {
-    blkid -g
-    for info in \$(blkid -o value "\$1"); do
-      if [ "\$info" != "msdos" ]; then
-        echo \$info
-        return
-      fi
-    done
-  }
+  genfstab -U -p / > /etc/fstab
+  blkid -g
+  for info in \$(blkid -o value "\$BOOT"); do
+    if [ "\$info" != "msdos" ]; then
+      sed -ie "s#\$BOOT#UUID=\$info#" /etc/fstab
+      break
+    fi
+  done
+  for info in \$(blkid -o value "\$ROOT"); do
+    if [ "\$info" != "msdos" ]; then
+      sed -ie "s#\$ROOT#UUID=\$info#" /etc/fstab
+      break
+    fi
+  done
   if [ "\$SWAP" != "off" ]; then
     swapon \$SWAP
+    for info in \$(blkid -o value "\$SWAP"); do
+      if [ "\$info" != "msdos" ]; then
+        sed -ie "s#\$SWAP#UUID=\$info#" /etc/fstab
+        break
+      fi
+    done
   fi
-  genfstab -U -p / > /etc/fstab
-  if [ "\$BOOT" != "" ]; then
-    sed -ie "s#\$BOOT#UUID=\$(partid \$BOOT)#" /etc/fstab
-  fi
-  if [ "\$SWAP" != "off" ]; then
-    sed -ie "s#\$SWAP#UUID=\$(partid \$SWAP)#" /etc/fstab
-  fi
-  sed -ie "s#\$ROOT#UUID=$(partid \$ROOT)#" /etc/fstab
   cat /etc/fstab | sed -r 's/^(# )?(\/etc|efivarfs).*//' > /etc/fstab.tmp
   mv /etc/fstab.tmp /etc/fstab
 }
