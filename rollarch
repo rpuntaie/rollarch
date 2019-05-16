@@ -332,7 +332,6 @@ END
     ## #systemd-resolved instead of
     ## echo "nameserver \$NS" > /etc/resolv.conf
     sed -i -e "s/#DNS=.*$/DNS=\$NS/g" -e "s/#FallbackDNS/FallbackDNS/g" -e "s/#LLMNR/LLMNR/g" -e "s/#Multi/Multi/g" /etc/systemd/resolved.conf
-    ln -sf /run/systemd/stub-resolv.conf /etc/resolv.conf > /dev/null 2>&1
   fi
   for NIC in \$(ip link show|grep " UP \| DOWN "|sed "s/^[^:]: \([^:]\+\).*/\1/g"); do
     if [ \${NIC:0:1} = "e" ] && [ "\$had_e" = "" ]; then
@@ -585,6 +584,7 @@ chmod a+x /mnt/rollarchroot
 # arch-chroot
 arch-chroot /mnt /rollarchroot
 sed -i -e "s/PW=.*$/PW=/g" /mnt/rollarchroot
+ln -sf /run/systemd/stub-resolv.conf /mnt/etc/resolv.conf > /dev/null 2>&1
 umount $BOOT > /dev/null 2>&1
 umount $ROOT > /dev/null 2>&1
 echo "
