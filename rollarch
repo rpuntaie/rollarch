@@ -241,29 +241,18 @@ cat > /mnt/rollarchroot << EOF
 
 ## see https://github.com/rpuntaie/rollarch
 
-export DSK=$DSK
-export USR=$USR
-export PW='$PW'
-export HST=$HST
-export LA_NG=$LA_NG
-export ZONE=$ZONE
-export IP2=$IP2
-export AIP2=$AIP2
-export BOOT=$BOOT
-export SWAP=$SWAP
-export ROOT=$ROOT
-export UEFI=$UEFI
-
-partid() {
-  blkid -g
-  for info in \$(blkid -o value "\$1"); do
-    if [ "\$info" != "msdos" ]; then
-      echo \$info
-      return
-    fi
-  done
-}
-export -f partid
+DSK=$DSK
+USR=$USR
+PW='$PW'
+HST=$HST
+LA_NG=$LA_NG
+ZONE=$ZONE
+IP2=$IP2
+AIP2=$AIP2
+BOOT=$BOOT
+SWAP=$SWAP
+ROOT=$ROOT
+UEFI=$UEFI
 
 setup_arch_proxy() {
  ln -s /var/lib/pacman/sync/*.db /var/cache/pacman/pkg
@@ -343,7 +332,6 @@ END
     ## #systemd-resolved instead of
     ## echo "nameserver \$NS" > /etc/resolv.conf
     sed -i -e "s/#DNS=.*$/DNS=\$NS/g" -e "s/#FallbackDNS/FallbackDNS/g" -e "s/#LLMNR/LLMNR/g" -e "s/#Multi/Multi/g" /etc/systemd/resolved.conf
-    mv /etc/resolv.conf /etc/resolv.conf.org
     ln -sf /run/systemd/stub-resolv.conf /etc/resolv.conf > /dev/null 2>&1
   fi
   for NIC in \$(ip link show|grep " UP \| DOWN "|sed "s/^[^:]: \([^:]\+\).*/\1/g"); do
@@ -530,6 +518,15 @@ linux   /vmlinuz-linux
 export -f setup_boot
 
 setup_fstab(){
+  partid() {
+    blkid -g
+    for info in \$(blkid -o value "\$1"); do
+      if [ "\$info" != "msdos" ]; then
+        echo \$info
+        return
+      fi
+    done
+  }
   if [ "\$SWAP" != "off" ]; then
     swapon \$SWAP
   fi
