@@ -584,9 +584,10 @@ EOF
 chmod a+x /mnt/rollarchroot
 
 # arch-chroot
-arch-chroot /mnt /rollarchroot
-sed -ie "s/PW=.*$/PW=/g" /mnt/rollarchroot
-umount ${DSK}* 2> /dev/null
+arch-chroot /mnt rollarchroot
+sed -i -e "s/PW=.*$/PW=/g" /mnt/rollarchroot
+umount $BOOT > /dev/null 2>&1
+umount $ROOT > /dev/null 2>&1
 echo "
   Arch Linux is ready. '/rollarchroot' is still there, but without PW.
 
