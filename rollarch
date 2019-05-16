@@ -8,7 +8,7 @@
 #   https://git.io/installarch
 #
 # Call as root to install Arch Linux::
-#   curl -OLs https://git.io/installarch
+#   curl -OLs https://git.io/installarch #inspect, modify, ...
 #   DSK=/dev/sda USR=A PW=B HST=C IP2=1.106 ZONE=Berlin bash installarch
 #
 # Required:
@@ -210,7 +210,7 @@ curl -s "$MIRRORLIST_URL" | \
     rankmirrors -n 8 -m 0.5 - >> /etc/pacman.d/mirrorlist
 pacman -Sy
 
-pacstrap /mnt arch-install-scripts base gptfdisk ntp nfs-utils cifs-utils samba sudo git python vim $GRUB
+pacstrap /mnt arch-install-scripts base dialog wpa_supplicant ntp nfs-utils samba sudo git python vim $GRUB
 
 if [[ "$aip2server" != "" ]]; then
   cat >>/etc/pacman.conf <<EOF
@@ -333,15 +333,14 @@ setup_network(){
 ::1           localhost
 127.0.0.1     \$HST.localdomain  \$HST
 END
-  ## in case of avahi and nss-mdns:
-  #sudo sed -ie "s/resolve/mdns4_minimal [NOTFOUND=return] resolve/g" /etc/nsswitch
   if [ "\$IP2" != "dhcp" ]; then
     #IP2="1.100"
     local IPE=\${IP2##*.} #100
     local IPB=\${IP2%\$IPE} #1.
     local NS=192.168.\${IPB}1
     local CIDR="192.168.\$IP2/24"
-    #echo "nameserver \$NS" > /etc/resolv.conf
+    ## #systemd-resolved instead of
+    ## echo "nameserver \$NS" > /etc/resolv.conf
     sed -i -e "s/#DNS=.*$/DNS=\$NS/g" -e "s/#FallbackDNS/FallbackDNS/g" -e "s/#LLMNR/LLMNR/g" -e "s/#Multi/Multi/g" /etc/systemd/resolved.conf
     ln -sf /run/systemd/stub-resolv.conf /etc/resolv.conf
   fi
@@ -466,24 +465,38 @@ END
       fi
     fi
   done
-  #if [[ "\$IP2" = "dhcp" ]]; then
-  #  netctl --now enable d\${NIC:0:1} > /dev/null 2>&1
-  #  #systemctl --now enable dhcpcd > /dev/null 2>&1
-  #else
-  #  netctl --now enable s\${NIC:0:1} > /dev/null 2>&1
-  #  #systemctl --now enable network > /dev/null 2>&1
-  #fi
+  ## #systemd-networkd instead of netctl, but config for the latter was made
+  ## if [[ "\$IP2" = "dhcp" ]]; then
+  ##   netctl --now enable d\${NIC:0:1} > /dev/null 2>&1
+  ##   #systemctl --now enable dhcpcd > /dev/null 2>&1
+  ## else
+  ##   netctl --now enable s\${NIC:0:1} > /dev/null 2>&1
+  ##   #systemctl --now enable network > /dev/null 2>&1
+  ## fi
   systemctl --now enable systemd-networkd > /dev/null 2>&1
   systemctl --now enable systemd-resolved > /dev/null 2>&1
   #edit /etc/exports to nfs export folders
   systemctl --now enable nfs-server.service > /dev/null 2>&1
-  curl -Ls https://raw.githubusercontent.com/samba-team/samba/master/examples/smb.conf.default|sed -e "s,log file = .*$,logging = systemd,g" -e "s,MYGROUP,WORKGROUP,g" > /etc/samba/smb.conf
-  #systemctl --now enable smb.service > /dev/null 2>&1
+  ## samba
+  cat > /etc/samba/smb.conf << END
+[global]
+   usershare path = /var/lib/samba/usershares
+   usershare max shares = 100
+   usershare allow guests = yes
+   usershare owner only = yes
+
+END
+  curl -Ls https://raw.githubusercontent.com/samba-team/samba/master/examples/smb.conf.default|sed \
+    -e "s,log file = .*$,logging = systemd,g" -e "s,MYGROUP,WORKGROUP,g" -e "s/\[global\]//g" >> /etc/samba/smb.conf
+  mkdir /var/lib/samba/usershares
+  groupadd -r sambashare
+  chown root:sambashare /var/lib/samba/usershares
+  chmod 1770 /var/lib/samba/usershares
+  systemctl --now enable smb nmb > /dev/null 2>&1
 }
 export -f setup_network
 
 setup_boot(){
-  pacman -S --needed --noconfirm dialog wpa_supplicant iw > /dev/null 2>&1
   UCODE=''
   UCODE_STRING=''
   if [ "\$(cat /proc/cpuinfo | grep GenuineIntel)" != "" ]; then
@@ -540,6 +553,7 @@ setup_user(){
 \$PW" | passwd \$USR
   echo -e "\$PW
 \$PW" | smbpasswd -a \$USR
+  gpasswd sambashare -a \$USR
 }
 export -f setup_user
 
@@ -551,7 +565,14 @@ then
   setup_network
   setup_boot
   setup_fstab
-  setup_user
+
+  if [[ -z "$PW" ]]; then
+    PW=$(dialog --stdout --passwordbox "Enter password for $USR and root" 0 0) || exit 1
+  fi
+  if [[ -n "$PW" ]]; then
+    setup_user
+  fi
+
   if [[ \$AIP2 = "yes" ]]; then
     setup_arch_proxy
   fi
@@ -564,17 +585,17 @@ chmod a+x /mnt/rollarchroot
 
 # arch-chroot
 arch-chroot /mnt /rollarchroot
-#rm -rf /mnt/rollarchroot
+sed -ie "s/PW=.*$/PW=/g" /mnt/rollarchroot
 umount ${DSK}* 2> /dev/null
 echo "
-  Arch Linux is ready.
+  Arch Linux is ready. '/rollarchroot' is still there, but without PW.
 
-  Next
-
+  Next:
+  
   'poweroff', remove media, boot
-  delete '/rollarchroot' or at least the line containing the password
-  mount -t cifs //196.168.x.yyy/share share -o username=$USR,vers=2.0
-  mount -t nfs 192.168.y.zzz:/path/to/share share
+  net usershare add myshare /home/$USR/path 
+  mount -t cifs //196.168.x.y/share share -o username=$USR,vers=2.0
+  mount -t nfs 192.168.y.z:/path/to/share share
   further (meta) packages (e.g. pacman -S rollarch-xmonad)
 "
 
