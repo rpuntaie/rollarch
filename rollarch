@@ -28,7 +28,6 @@
 #   - check parameters
 #   - create partitions
 #   - check 'custom' at 192.168.$AIP2
-#   - rankmirrors
 #   - pacstrap
 #   - create chroot script
 #   - arch-chroot
@@ -187,7 +186,8 @@ mkdir -p /mnt/boot
 mount $BOOT /mnt/boot
 
 # check 'custom'
-pacman -Sy --noconfirm pacman-contrib > /dev/null 2>&1
+mv /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.org
+##RANK: pacman -Sy --noconfirm pacman-contrib > /dev/null 2>&1
 if [[ "$AIP2" != "" ]] && [[ "$AIP2" != "yes" ]]; then
   aip2server="http://192.168.$AIP2:8080"
   echo "Server = $aip2server" > /etc/pacman.d/mirrorlist
@@ -202,12 +202,13 @@ EOF
   fi
 fi
 
-# rankmirrors
-echo "Ranking mirrors ... "
-MIRRORLIST_URL="https://www.archlinux.org/mirrorlist/?country=all&protocol=http&protocol=https&ip_version=4"
-curl -s "$MIRRORLIST_URL" | \
-    sed -e 's/^#Server/Server/' -e '/^#/d' | \
-    rankmirrors -n 8 -m 0.5 - >> /etc/pacman.d/mirrorlist
+cat /etc/pacman.d/mirrorlist.org >> /etc/pacman.d/mirrorlist
+#RANK: # rankmirrors takes too long
+#RANK: echo "Ranking mirrors ... "
+#RANK: MIRRORLIST_URL="https://www.archlinux.org/mirrorlist/?country=all&protocol=http&protocol=https&ip_version=4"
+#RANK: curl -s "$MIRRORLIST_URL" | \
+#RANK:     sed -e 's/^#Server/Server/' -e '/^#/d' | \
+#RANK:     rankmirrors -n 8 --max-time 0.1 - >> /etc/pacman.d/mirrorlist
 pacman -Sy
 
 pacstrap /mnt arch-install-scripts base dialog wpa_supplicant ntp nfs-utils samba sudo git python vim $GRUB
@@ -566,10 +567,10 @@ then
   setup_boot
   setup_fstab
 
-  if [[ -z "$PW" ]]; then
-    PW=$(dialog --stdout --passwordbox "Enter password for $USR and root" 0 0) || exit 1
+  if [[ -z "\$PW" ]]; then
+    PW=\$(dialog --stdout --passwordbox "Enter password for \$USR and root" 0 0) || exit 1
   fi
-  if [[ -n "$PW" ]]; then
+  if [[ -n "\$PW" ]]; then
     setup_user
   fi
 

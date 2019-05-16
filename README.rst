@@ -26,10 +26,10 @@ Inspired by:
 - `arch-pkgs <https://github.com/mdaffin/arch-pkgs>`__
 - `how to create archlinux repository <https://fusion809.github.io/how-to-create-archlinux-repository/>`__
 
-Status:
+Status: 
 Tested for VirtualBox (EFI and BIOS) and BIOS PC.
 
-VirtualBox needs *Bridged Adapter* to enable access to your LAN.
+VirtualBox needs *Bridged Adapter* to enable access to LAN.
 
 
 ----
