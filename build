@@ -1,0 +1,29 @@
+#!/bin/bash
+
+set -uo pipefail
+trap 's=$?; echo "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
+
+LOCAL_PATH=$HOME/.local/share/arch-repo
+REPO_NAME=custom
+
+PACKAGES=${@:-pkg/*}
+CHROOT="$PWD/root"
+
+mkdir -p "$LOCAL_PATH"
+mkdir -p "$CHROOT"
+
+[[ -d "$CHROOT/root" ]] || mkarchroot -C /etc/pacman.conf "$CHROOT/root" base base-devel
+
+for package in $PACKAGES; do
+    cd "$package"
+    rm -f *.pkg.tar.xz
+    makechrootpkg -cur $CHROOT
+    cd -
+done
+
+ln -sf "$REPO_NAME.db.tar.gz" "$LOCAL_PATH/$REPO_NAME.db"
+ln -sf "$REPO_NAME.files.tar.gz" "$LOCAL_PATH/$REPO_NAME.files"
+
+repo-add "$LOCAL_PATH/$REPO_NAME.db.tar.gz" "${PACKAGES[@]}/"*.pkg.tar.xz
+
+find $LOCAL_PATH -maxdepth 1 -and -not -type d -exec ln -sf {} /var/cache/pacman/pkg \;

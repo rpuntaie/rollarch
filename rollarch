@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-declare -r myname=$(basename $0)
+declare -r myname=${0##*/}
 declare -r myver='0.0.1'
 
 usage() {
@@ -323,14 +323,13 @@ export -f setup_locale
 setup_escape(){
   # change: keycode  58 = Escape
   local KBD=$(find /usr/share/kbd/keymaps/ -iname "us.map.gz")
-  local olddir="\$(pwd)"
-  cd "\$(dirname \$KBD)"
-  KBD=\$(basename \$KBD)
+  cd "\${KBD%/*}"
+  KBD=\${KBD##*/}
   cp \$KBD rollarch\$KBD.map.gz
   gunzip rollarch\$KBD.map.gz
   sed -ie "s/keycode *58 *= *Caps_Lock/keycode 58 = Escape/g" rollarch\$KBD.map
   gzip rollarch\$KBD.map
-  cd "\$olddir"
+  cd -
   loadkeys rollarch\$KBD
   cat > /etc/vconsole.conf << END
 KEYMAP=rollarch\$KBD

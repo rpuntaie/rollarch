@@ -45,11 +45,13 @@ An optional ``AIP2=x.y``, e.g. ``1.199``, uses ``192.168.1.199`` as `local proxy
    cat darkhttpd.service | sed -e "s/Webserver/ArchProxy/g" -e "s,/srv/http.*$,/var/cache/pacman/pkg --no-server-id --port 8080,g" > ArchProxy.service
    systemctl --now enable ArchProxy
 
-You can then *manually* merge in your folder with ``custom.db.tar.gz`` via
+You can then merge in your folder containing ``custom.db.tar.gz`` via
 
 .. code:: sh
 
    find /abs/path/to/folder -maxdepth 1 -and -not -type d -exec ln -sf {} /var/cache/pacman/pkg \;
+
+This is done after building, in the ``build`` script.
 
 
 ----
