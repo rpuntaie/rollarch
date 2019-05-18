@@ -3,7 +3,7 @@
 set -uo pipefail
 trap 's=$?; echo "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
 
-LOCAL_PATH=$HOME/.local/share/arch-repo
+LOCAL_PATH=/var/cache/pacman/custom
 REPO_NAME=custom
 
 PACKAGES=${@:-pkg/*}
@@ -24,6 +24,10 @@ done
 ln -sf "$REPO_NAME.db.tar.gz" "$LOCAL_PATH/$REPO_NAME.db"
 ln -sf "$REPO_NAME.files.tar.gz" "$LOCAL_PATH/$REPO_NAME.files"
 
-repo-add "$LOCAL_PATH/$REPO_NAME.db.tar.gz" "${PACKAGES[@]}/"*.pkg.tar.xz
+pkgs="${PACKAGES[@]}/"*.pkg.tar.xz
+for pkg in $pkgs
+do
+    repo-add "$LOCAL_PATH/$REPO_NAME.db.tar.gz" $pkg
+    ln -sf $pkg /var/cache/pacman/pkg
+done
 
-find $LOCAL_PATH -maxdepth 1 -and -not -type d -exec ln -sf {} /var/cache/pacman/pkg \;

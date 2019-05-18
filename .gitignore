@@ -1,1 +1,5 @@
 rollarch.env
+root
+*.log
+*.gz
+*.xz

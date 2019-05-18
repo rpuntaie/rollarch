@@ -18,7 +18,7 @@ usage() {
   echo "  DSK=/dev/sda USR=A PW=B HST=C IP2=1.106 ZONE=Berlin bash installarch"
   echo
   echo "All parameters following 'installarch' are Arch or custom packages."
-  echo "Default: base dialog wpa_supplicant ntp nfs-utils samba sudo git python vim"
+  echo "Default: base base-devel dialog wpa_supplicant ntp nfs-utils samba sudo git python vim"
   echo
   echo "If the custom repo's name is 'custom',"
   echo "'AIP2=x.y' for 192.168.x.y is the only additional parameter needed.".
@@ -232,7 +232,7 @@ if [[ "$@" != "" ]]
 then
   pacstrap /mnt $GRUB $@
 else
-  pacstrap /mnt $GRUB arch-install-scripts base dialog wpa_supplicant ntp nfs-utils samba sudo git python vim
+  pacstrap /mnt $GRUB arch-install-scripts base base-devel dialog wpa_supplicant ntp nfs-utils samba sudo git python vim
 fi
 
 if [[ "$aip2server" != "" ]]; then
@@ -257,8 +257,10 @@ BOOT=$BOOT
 SWAP=$SWAP
 ROOT=$ROOT
 UEFI=$UEFI
-curl -OLs https://raw.githubusercontent.com/rpuntaie/rollarch/master/rollarchroot
-chmod a+x ./rollarchroot
+if [[ -e rollarchroot ]]; then
+  curl -OLs https://raw.githubusercontent.com/rpuntaie/rollarch/master/rollarchroot
+  chmod a+x ./rollarchroot
+fi
 source ./rollarchroot
 setup_all
 "
