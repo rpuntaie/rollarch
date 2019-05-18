@@ -243,6 +243,12 @@ Server = $aip2server
 EOF
 fi
 
+if [[ ! -e rollarchroot ]]; then
+  curl -OLs https://raw.githubusercontent.com/rpuntaie/rollarch/master/rollarchroot
+  chmod a+x ./rollarchroot
+fi
+mv ./rollarchroot /mnt/
+
 # arch-chroot
 arch-chroot /mnt bash -c "
 DSK=$DSK
@@ -257,11 +263,7 @@ BOOT=$BOOT
 SWAP=$SWAP
 ROOT=$ROOT
 UEFI=$UEFI
-if [[ -e rollarchroot ]]; then
-  curl -OLs https://raw.githubusercontent.com/rpuntaie/rollarch/master/rollarchroot
-  chmod a+x ./rollarchroot
-fi
-source ./rollarchroot
+. ./rollarchroot
 setup_all
 "
 
@@ -270,7 +272,7 @@ ln -sf /run/systemd/stub-resolv.conf /mnt/etc/resolv.conf &>/dev/null
 umount $BOOT &>/dev/null
 umount $ROOT &>/dev/null
 echo "
-  Arch Linux is ready. '/rollarchroot' is still there, but without PW.
+  Arch Linux is ready. '/rollarchroot' is still there.
 
   Next:
 
