@@ -206,8 +206,11 @@ mv /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.org
 ##RANK: pacman -Sy --noconfirm pacman-contrib &>/dev/null
 if [[ "$AIP2" != "no" ]] && [[ "$AIP2" != "yes" ]]; then
   aip2server="http://192.168.$AIP2:8080"
-  echo "Server = $aip2server" > /etc/pacman.d/mirrorlist
-  if [[ -n $(curl -s "$aip2server" | grep "custom\.db") ]]; then
+  if [[ $(head -n1 /etc/pacman.d/mirrorlist.org) != "Server = $aip2server" ]]; then
+    echo "Server = $aip2server" > /etc/pacman.d/mirrorlist
+  fi
+  if [[ $(tail -n1 /etc/pacman.conf) != "Server = $aip2server" ]] &&
+     [[ -n $(curl -s "$aip2server" | grep "custom\.db") ]]; then
     cat >> /etc/pacman.conf << EOF
 [custom]
 SigLevel = Optional TrustAll
