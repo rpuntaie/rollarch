@@ -249,6 +249,10 @@ if [[ ! -e rollarchroot ]]; then
 fi
 mv ./rollarchroot /mnt/
 
+if [[ ! -e /mnt/usr/bin/bash ]]; then
+  exit 1
+fi
+
 # arch-chroot
 arch-chroot /mnt bash -c "
 DSK=$DSK

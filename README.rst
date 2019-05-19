@@ -28,50 +28,26 @@ Inspired by:
 
 Status: 
 Tested for VirtualBox (EFI and BIOS) and BIOS PC.
+Work in progress.
 
 VirtualBox needs *Bridged Adapter* to enable access to LAN.
 
 
 ----
 
+Usage of `local proxy`_ and `custom packages`_:
 
-An optional ``AIP2=x.y``, e.g. ``1.199``, uses ``192.168.1.199`` as `local proxy`_.
-``AIP2=yes`` makes this install a `local proxy`_ by including:
+- The repo for the (meta = dependencies only) `custom packages`_ is named ``custom``.
 
-.. code:: sh
+- An optional ``AIP2=yes`` makes this install a `local proxy`_.
 
-   ln -s /var/lib/pacman/sync/*.db /var/cache/pacman/pkg
-   cd /usr/lib/systemd/system/
-   cat darkhttpd.service | sed -e "s/Webserver/ArchProxy/g" -e "s,/srv/http.*$,/var/cache/pacman/pkg --no-server-id --port 8080,g" > ArchProxy.service
-   systemctl --now enable ArchProxy
+- If you want, the `build` script builds, adds to,
+  and merges your ``custom`` repo and `custom packages`_
+  with the rest of the packages of the `local proxy`_.
 
-You can then merge in your folder containing ``custom.db.tar.gz`` via
-
-.. code:: sh
-
-   find /abs/path/to/folder -maxdepth 1 -and -not -type d -exec ln -sf {} /var/cache/pacman/pkg \;
-
-This is done after building, in the ``build`` script.
-
-
-----
-
-
-About (meta = dependencies only) `custom packages`_: 
-
-- Name the custom repo ``custom``.
-
-- You can serve them from a local folder (e.g. CIFS or NFS mount), which contains
-
-  - ``custom.db.tar.gz``
-  - created via ``repo-add custom.db.tar.gz your-*.pkg.tar.xz``.
-
-    - To create a ``*.pkg.tar.xz``, have a folder with a ``PKGBUILD`` and 
-    - do ``makepkg`` there, then 
-    - move the ``*.pkg.tar.xz`` to the ``custom`` package folder
-
-- uncomment and edit the ``custom`` entry at the end of ``/etc/pacman.conf``
-- ``pacman -Sy your``
+- In a new install, an optional ``AIP2=x.y``, e.g. ``1.199``, uses ``192.168.1.199`` as `local proxy`_.
+  ``mirrorlist`` gets a ``Server = 191.168.1.199`` at the top.
+  If the install script finds a ``custom`` repo there, ``pacman.conf`` is changed to use it.
 
 .. _`local proxy`: https://wiki.archlinux.org/index.php/Pacman/Tips_and_tricks#Network_shared_pacman_cache
 .. _`custom packages`: https://wiki.archlinux.org/index.php/Pacman/Tips_and_tricks#Custom_local_repository

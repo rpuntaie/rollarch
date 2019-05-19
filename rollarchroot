@@ -1,17 +1,28 @@
 #!/usr/bin/env bash
 
-# Functions after arch-chroot
-#
-# - setup_time: using $ZONE
-# - setup_locale: using $LA_NG
-# - setup_escape: Caps_Lock becomes Escape
-# - setup_network: with $IP2 and $HST, use netctl, but also create systemd file
-# - setup_boot: EFI boot if /sys/firmware/efi, else BIOS using grub
-# - setup_fstab: wiht $DSK partitions
-# - setup_user: using $USR and $PW, the latter also for root
-# - setup_arch_proxy if AIP2=yes
+rollarchrootusage(){
+  echo "Required defines:"
+  echo "DSK USR PW HST LA_NG ZONE IP2 AIP2 BOOT SWAP ROOT UEFI"
+  echo ""
+  echo "Functions for after arch-chroot"
+  echo ""
+  echo "- setup_time: using $ZONE"
+  echo "- setup_locale: using $LA_NG"
+  echo "- setup_escape: Caps_Lock becomes Escape"
+  echo "- setup_network: with $IP2 and $HST, use netctl, but also create systemd file"
+  echo "- setup_boot: EFI boot if /sys/firmware/efi, else BIOS using grub"
+  echo "- setup_fstab: wiht $DSK partitions"
+  echo "- setup_user: using $USR and $PW, the latter also for root"
+  echo "- setup_arch_proxy if AIP2=yes"
+  echo "- setup_all does all of the above"
+  echo ""
+  echo "See https://github.com/rpuntaie/rollarch"
+  exit 0
+}
 
-## see https://github.com/rpuntaie/rollarch
+if [[ $1 = "--help" ]] || [[ $1 = "-h" ]]; then
+  rollarchrootusage
+fi
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     for req in DSK USR PW HST LA_NG ZONE IP2 AIP2 BOOT SWAP ROOT UEFI
