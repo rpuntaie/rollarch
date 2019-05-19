@@ -1,13 +1,10 @@
 # Maintainer: Michael Daffin <michael@daffin.io>
 pkgbase='mdaffin'
-pkgname=(mdaffin-base mdaffin-desktop mdaffin-laptop mdaffin-dell-xps-13
-mdaffin-devel mdaffin-devel-virtualisation mdaffin-devel-languages
-mdaffin-devel-embedded mdaffin-arch-repo mdaffin-devel-devops mdaffin-gaming)
+pkgname=(mdaffin-base mdaffin-desktop mdaffin-devel)
 pkgver=30
 pkgrel=1
 pkgdesc="System config for mdaffin systems"
 arch=(any)
-url="https://github.com/mdaffin/arch-repo"
 license=(MIT)
 groups=(mdaffin)
 
@@ -25,8 +22,6 @@ source=(
     mdaffin-desktop-i3-config
     mdaffin-desktop.termite
     mdaffin-desktop.sh
-    mdaffin-dell-xps-13-hidpi.sh
-    mdaffin-dell-xps-13-hidpi-monitor.conf
     mdaffin-devel-rust.vim
     mdaffin-devel-rust.sh
     mdaffin-devel-go.vim
@@ -38,8 +33,7 @@ source=(
 # The sources all live in this repo and so are version controlled and checked
 # summed through git. There is not much point in adding these extra checksums
 # here espically when they have to be changed for every update to them.
-sha256sums=(SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP
-SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP)
+sha256sums=(SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP)
 
 package_mdaffin-base() {
     provides=(vim vi)
@@ -47,15 +41,17 @@ package_mdaffin-base() {
     install=mdaffin-base.install
 
     # Base group
-    depends=(bash bzip2 coreutils cryptsetup device-mapper dhcpcd diffutils
-    e2fsprogs file filesystem findutils gawk gcc-libs gettext glibc grep gzip
-    inetutils iproute2 iputils less licenses linux logrotate man-db man-pages
-    mdadm pacman pciutils perl procps-ng psmisc s-nail sed shadow
-    sysfsutils systemd-sysvcompat tar texinfo usbutils util-linux which)
-    # Explicitly removed from the base group: jfsutils lvm2 nano netctl reiserfsprogs vi xfsprogs
+    depends=(bash bzip2 coreutils cryptsetup device-mapper dhcpcd diffutils e2fsprogs file
+    filesystem findutils gawk gcc-libs gettext glibc grep gzip inetutils iproute2
+    iputils jfsutils less licenses linux linux-firmware logrotate lvm2 man-db
+    man-pages mdadm nano netctl pacman pciutils perl procps-ng psmisc s-nail sed
+    shadow sysfsutils systemd-sysvcompat tar texinfo usbutils util-linux which
+    xfsprogs arch-install-scripts devtools dialog wpa_supplicant ntp
+    nfs-utils samba sudo git python vim)
+    # Explicitly removed from the base group: vi 
 
     # Extra general packages
-    depends+=(sudo ripgrep exa fd tmux wget fzf unzip dialog pacman-contrib bat ncdu keybase)
+    depends+=(ripgrep exa fd tmux wget fzf unzip dialog pacman-contrib bat ncdu keybase)
 
     install -Dm 0644 mdaffin-base-vconsole.conf "${pkgdir}/etc/vconsole.conf"
     install -Dm 0640 mdaffin-base.sudoers "${pkgdir}/etc/sudoers.d/mdaffin-base"
@@ -64,7 +60,7 @@ package_mdaffin-base() {
     depends+=(lsof bind-tools mtr socat htop iotop openbsd-netcat strace)
 
     # Networking
-    depends+=(wpa_supplicant iwd avahi nss-mdns openssh)
+    depends+=(wpa_supplicant openssh)
 
     # Shells
     depends+=(zsh grml-zsh-config)
@@ -76,8 +72,8 @@ package_mdaffin-base() {
     depends+=(exfat-utils dosfstools f2fs-tools)
 
     # Editor
-    depends+=(oni neovim python-neovim neovim-ale neovim-fugitive)
-    depends+=(gtk2) # Missing dependency for oni
+    depends+=(neovim python-neovim neovim-ale)
+    depends+=(gtk2)
     install -dm 0755 "${pkgdir}/usr/bin"
     ln -s /usr/bin/nvim "${pkgdir}/usr/bin/vim"
     ln -s /usr/bin/nvim "${pkgdir}/usr/bin/vi"
@@ -87,7 +83,7 @@ package_mdaffin-base() {
 
     # Fonts
     depends+=(noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra
-    ttf-monofur ttf-dejavu xorg-fonts-misc)
+    ttf-dejavu xorg-fonts-misc)
 
     install -Dm 0644 mdaffin-base-enp.network "${pkgdir}/usr/lib/systemd/network/90-mdaffin-base-enp.network"
     install -Dm 0644 mdaffin-base-wlp.network "${pkgdir}/usr/lib/systemd/network/90-mdaffin-base-wlp.network"
@@ -117,7 +113,7 @@ package_mdaffin-desktop() {
     depends+=(redshift python-gobject bluez bluez-utils pulseaudio pulseaudio-alsa pulseaudio-bluetooth pavucontrol paprefs scrot)
 
     # Drivers and utilities
-    depends+=(libinput-gestures xf86-input-libinput xf86-input-synaptics
+    depends+=(xf86-input-libinput xf86-input-synaptics
     xf86-video-intel xf86-video-vesa nvidia nvidia-utils)
 
     # Xorg packages and utilities
@@ -135,48 +131,22 @@ package_mdaffin-desktop() {
     install -Dm 0755 mdaffin-desktop.sh "${pkgdir}/etc/X11/xinit/xinitrc.d/30-mdaffin-desktop.sh"
 }
 
-package_mdaffin-gaming() {
-    depends=(mdaffin-desktop steam nvidia nvidia-utils lib32-nvidia-utils
-    lib32-libpulse ttf-liberation wqy-zenhei)
-}
-
-package_mdaffin-laptop() {
-    depends=('mdaffin-desktop' 'powertop')
-}
-
-package_mdaffin-dell-xps-13() {
-    depends=('mdaffin-laptop')
-
-    install -Dm 0755 mdaffin-dell-xps-13-hidpi.sh \
-        "${pkgdir}/etc/X11/xinit/xinitrc.d/20-hidpi.sh"
-    install -Dm 0644 mdaffin-dell-xps-13-hidpi-monitor.conf \
-        "${pkgdir}/etc/X11/xorg.conf.d/90-hidpi-monitor.conf"
-}
-
 package_mdaffin-devel() {
     depends=(mdaffin-base)
 
     # Base Group
-    depends+=(autoconf automake binutils bison fakeroot file findutils flex
-    gawk gcc gettext grep groff gzip libtool m4 make pacman patch pkg-config
-    sed sudo systemd texinfo util-linux which)
+    depends+=(autoconf automake binutils bison fakeroot file findutils flex gawk gcc gettext
+    grep groff gzip libtool m4 make pacman patch pkgconf sed sudo systemd texinfo
+    util-linux which)
 
     # General tools
-    depends+=(git cmake jq)
-}
-
-package_mdaffin-devel-virtualisation() {
-    depends=(mdaffin-devel)
+    depends+=(cmake jq terraform)
 
     # Virtualisation
-    depends+=(virtualbox virtualbox-host-modules-arch vagrant)
+    depends+=(virtualbox vagrant)
 
     # Docker
     depends+=(docker docker-compose dnsmasq)
-}
-
-package_mdaffin-devel-languages() {
-    depends=(mdaffin-devel)
 
     # Rust
     depends+=(neovim-rust-git rustup)
@@ -189,24 +159,10 @@ package_mdaffin-devel-languages() {
     install -Dm 0755 mdaffin-devel-go.sh "${pkgdir}/etc/profile.d/mdaffin-devel-go.sh"
 
     # Node
-    depends+=(yarn npm nodejs prettier vale)
+    depends+=(yarn npm nodejs prettier)
     install -Dm 0644 mdaffin-devel-web.vim "${pkgdir}/usr/share/nvim/runtime/plugin/mdaffin-devel-web.vim"
     install -Dm 0755 mdaffin-devel-web.sh "${pkgdir}/etc/profile.d/mdaffin-devel-web.sh"
+
+    depends+=(mdaffin-devel qemu qemu-arch-extra picocom ddrescue arm-none-eabi-gcc)
 }
 
-package_mdaffin-devel-embedded() {
-    depends=(mdaffin-devel)
-
-    depends+=(mdaffin-devel qemu qemu-arch-extra picocom arm-linux-gnueabihf-gcc ddrescue)
-}
-
-package_mdaffin-arch-repo() {
-    depends=(mdaffin-devel)
-    conflicts=(repose)
-
-    depends+=(mdaffin-devel devtools aurutils s3cmd)
-}
-
-package_mdaffin-devel-devops() {
-    depends=(mdaffin-devel-virtualisation mdaffin-devel-languages terraform minikube kubernetes-helm kubectl-bin)
-}
