@@ -1,6 +1,14 @@
-# Maintainer: Michael Daffin <michael@daffin.io>
+# Based on Michael Daffin <michael@daffin.io>
+# modified to cope with missing packages and to fit to different install script
+# meta packages were combined, but installed packages are (almost) as before
+#
+# # curl -OLs git://git.io/installarch
+# # DSK=/dev/sda USR=u PW=p HST=up ZONE=London LA_NG=en_GB IP2=1.121 AIP2=1.108 ./installarch mdaffin
+#
+# change u, p, IP2 and AIP2
+
 pkgbase='mdaffin'
-pkgname=(mdaffin-base mdaffin-desktop mdaffin-devel)
+pkgname=(mdaffin-base mdaffin-gui)
 pkgver=30
 pkgrel=1
 pkgdesc="System config for mdaffin systems"
@@ -16,12 +24,12 @@ source=(
     mdaffin-base-vconsole.conf
     mdaffin-base-enp.network
     mdaffin-base-wlp.network
-    mdaffin-desktop-sddm.conf
-    mdaffin-desktop-00-keyboard.conf
-    mdaffin-desktop-50-mouse-acceleration.conf
-    mdaffin-desktop-i3-config
-    mdaffin-desktop.termite
-    mdaffin-desktop.sh
+    mdaffin-gui-sddm.conf
+    mdaffin-gui-00-keyboard.conf
+    mdaffin-gui-50-mouse-acceleration.conf
+    mdaffin-gui-i3-config
+    mdaffin-gui.termite
+    mdaffin-gui.sh
     mdaffin-devel-rust.vim
     mdaffin-devel-rust.sh
     mdaffin-devel-go.vim
@@ -38,17 +46,17 @@ sha256sums=(SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKI
 package_mdaffin-base() {
     provides=(vim vi)
     conflicts=(vim vi)
-    install=mdaffin-base.install
 
     # Base group
-    depends=(bash bzip2 coreutils cryptsetup device-mapper dhcpcd diffutils e2fsprogs file
-    filesystem findutils gawk gcc-libs gettext glibc grep gzip inetutils iproute2
-    iputils jfsutils less licenses linux linux-firmware logrotate lvm2 man-db
-    man-pages mdadm nano netctl pacman pciutils perl procps-ng psmisc s-nail sed
-    shadow sysfsutils systemd-sysvcompat tar texinfo usbutils util-linux which
-    xfsprogs arch-install-scripts devtools dialog wpa_supplicant ntp
-    nfs-utils samba sudo git python vim)
-    # Explicitly removed from the base group: vi 
+    # Explicitly removed from the base group: jfsutils lvm2 nano reiserfsprogs vi xfsprogs
+    depends=(bash bzip2 coreutils cryptsetup device-mapper dhcpcd diffutils
+    e2fsprogs file filesystem findutils gawk gcc-libs gettext glibc grep gzip
+    inetutils iproute2 iputils less licenses linux linux-firmware logrotate man-db man-pages
+    mdadm netctl pacman pciutils perl procps-ng psmisc s-nail sed shadow
+    sysfsutils systemd-sysvcompat tar texinfo usbutils util-linux which)
+
+    # partly needed by rollarchroot
+    depends+=(nfs-utils samba dialog wpa_supplicant ntp openssh devtools sudo git python)
 
     # Extra general packages
     depends+=(ripgrep exa fd tmux wget fzf unzip dialog pacman-contrib bat ncdu keybase)
@@ -71,9 +79,19 @@ package_mdaffin-base() {
     # Filesystems
     depends+=(exfat-utils dosfstools f2fs-tools)
 
+    install -Dm 0644 mdaffin-base-enp.network "${pkgdir}/usr/lib/systemd/network/90-mdaffin-base-enp.network"
+    install -Dm 0644 mdaffin-base-wlp.network "${pkgdir}/usr/lib/systemd/network/90-mdaffin-base-wlp.network"
+
+    # Base Devel Group
+    depends+=(autoconf automake binutils bison fakeroot file findutils flex gawk gcc gettext
+    grep groff gzip libtool m4 make pacman patch pkgconf sed systemd texinfo
+    util-linux which)
+
+    # General tools
+    depends+=(cmake jq terraform)
+
     # Editor
     depends+=(neovim python-neovim neovim-ale)
-    depends+=(gtk2)
     install -dm 0755 "${pkgdir}/usr/bin"
     ln -s /usr/bin/nvim "${pkgdir}/usr/bin/vim"
     ln -s /usr/bin/nvim "${pkgdir}/usr/bin/vi"
@@ -81,69 +99,19 @@ package_mdaffin-base() {
     ln -sf /usr/share/vim/vimfiles/plugin/fzf.vim "${pkgdir}/usr/share/nvim/runtime/plugin/fzf.vim"
     install -Dm 0644 mdaffin-base.vim "${pkgdir}/usr/share/nvim/runtime/plugin/mdaffin-base.vim"
 
+}
+
+
+package_mdaffin-gui() {
+    depends=(mdaffin-base)
+    install=mdaffin-gui.install
+
+    # Virtualisation
+    depends+=(virtualbox-guest-modules-arch virtualbox-guest-utils virtualbox-host-modules-arch virtualbox vagrant)
+
     # Fonts
     depends+=(noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra
     ttf-dejavu xorg-fonts-misc)
-
-    install -Dm 0644 mdaffin-base-enp.network "${pkgdir}/usr/lib/systemd/network/90-mdaffin-base-enp.network"
-    install -Dm 0644 mdaffin-base-wlp.network "${pkgdir}/usr/lib/systemd/network/90-mdaffin-base-wlp.network"
-}
-
-package_mdaffin-desktop() {
-    install=mdaffin-desktop.install
-    depends=(mdaffin-base)
-
-    # I3 Desktop
-    depends+=(rofi i3-wm i3status i3blocks i3lock dmenu compton)
-    install -Dm 0644 mdaffin-desktop-i3-config "${pkgdir}/etc/i3/mdaffin-desktop-config"
-
-    # Login manager
-    depends+=(sddm rng-tools)
-    install -Dm 0644 mdaffin-desktop-sddm.conf "${pkgdir}/etc/sddm.conf"
-
-    # Applications
-    depends+=(alacritty firefox)
-    install -Dm 0644 mdaffin-desktop.termite "${pkgdir}/etc/xdg/termite/mdaffin-desktop.config"
-
-    # Not sure why these where installed :/ keeping for refence incase something breaks
-    #openvpn
-    #python-xdg
-
-    # Utility
-    depends+=(redshift python-gobject bluez bluez-utils pulseaudio pulseaudio-alsa pulseaudio-bluetooth pavucontrol paprefs scrot)
-
-    # Drivers and utilities
-    depends+=(xf86-input-libinput xf86-input-synaptics
-    xf86-video-intel xf86-video-vesa nvidia nvidia-utils)
-
-    # Xorg packages and utilities
-    depends+=(xorg-xsetroot xorg-xkill xorg-xbacklight xorg-bdftopcf
-    xorg-iceauth xorg-luit xorg-mkfontdir xorg-mkfontscale xorg-sessreg
-    xorg-setxkbmap xorg-smproxy xorg-x11perf xorg-xauth xorg-xbacklight
-    xorg-xcmsdb xorg-xcursorgen xorg-xdpyinfo xorg-xdriinfo xorg-xev
-    xorg-xgamma xorg-xhost xorg-xinput xorg-xkbcomp xorg-xkbevd xorg-xkbutils
-    xorg-xkill xorg-xlsatoms xorg-xlsclients xorg-xmodmap xorg-xpr xorg-xprop
-    xorg-xrandr xorg-xrdb xorg-xrefresh xorg-xset xorg-xsetroot xorg-xvinfo
-    xorg-xwd xorg-xwininfo xorg-xwud)
-
-    install -Dm 0644 mdaffin-desktop-00-keyboard.conf "${pkgdir}/etc/X11/xorg.conf.d/00-keyboard.conf"
-    install -Dm 0644 mdaffin-desktop-50-mouse-acceleration.conf "${pkgdir}/etc/X11/xorg.conf.d/50-mouse-acceleration.conf"
-    install -Dm 0755 mdaffin-desktop.sh "${pkgdir}/etc/X11/xinit/xinitrc.d/30-mdaffin-desktop.sh"
-}
-
-package_mdaffin-devel() {
-    depends=(mdaffin-base)
-
-    # Base Group
-    depends+=(autoconf automake binutils bison fakeroot file findutils flex gawk gcc gettext
-    grep groff gzip libtool m4 make pacman patch pkgconf sed sudo systemd texinfo
-    util-linux which)
-
-    # General tools
-    depends+=(cmake jq terraform)
-
-    # Virtualisation
-    depends+=(virtualbox vagrant)
 
     # Docker
     depends+=(docker docker-compose dnsmasq)
@@ -163,6 +131,39 @@ package_mdaffin-devel() {
     install -Dm 0644 mdaffin-devel-web.vim "${pkgdir}/usr/share/nvim/runtime/plugin/mdaffin-devel-web.vim"
     install -Dm 0755 mdaffin-devel-web.sh "${pkgdir}/etc/profile.d/mdaffin-devel-web.sh"
 
-    depends+=(mdaffin-devel qemu qemu-arch-extra picocom ddrescue arm-none-eabi-gcc)
+    depends+=(qemu qemu-arch-extra picocom ddrescue arm-none-eabi-gcc)
+
+    # I3 window manager
+    depends+=(rofi i3-wm i3status i3blocks i3lock dmenu compton)
+    install -Dm 0644 mdaffin-gui-i3-config "${pkgdir}/etc/i3/mdaffin-gui-config"
+
+    # Login manager
+    depends+=(sddm rng-tools)
+    install -Dm 0644 mdaffin-gui-sddm.conf "${pkgdir}/etc/sddm.conf"
+
+    # Applications
+    depends+=(alacritty firefox)
+    install -Dm 0644 mdaffin-gui.termite "${pkgdir}/etc/xdg/termite/mdaffin-gui.config"
+
+    # Utility
+    depends+=(redshift python-gobject bluez bluez-utils pulseaudio pulseaudio-alsa pulseaudio-bluetooth pavucontrol paprefs scrot)
+
+    # Drivers and utilities
+    depends+=(xf86-input-libinput xf86-input-synaptics
+    xf86-video-intel xf86-video-vesa nvidia nvidia-utils)
+
+    # Xorg packages and utilities
+    depends+=(xorg-xsetroot xorg-xkill xorg-xbacklight xorg-bdftopcf
+    xorg-iceauth xorg-luit xorg-mkfontdir xorg-mkfontscale xorg-sessreg
+    xorg-setxkbmap xorg-smproxy xorg-x11perf xorg-xauth xorg-xbacklight
+    xorg-xcmsdb xorg-xcursorgen xorg-xdpyinfo xorg-xdriinfo xorg-xev
+    xorg-xgamma xorg-xhost xorg-xinput xorg-xkbcomp xorg-xkbevd xorg-xkbutils
+    xorg-xkill xorg-xlsatoms xorg-xlsclients xorg-xmodmap xorg-xpr xorg-xprop
+    xorg-xrandr xorg-xrdb xorg-xrefresh xorg-xset xorg-xsetroot xorg-xvinfo
+    xorg-xwd xorg-xwininfo xorg-xwud)
+
+    install -Dm 0644 mdaffin-gui-00-keyboard.conf "${pkgdir}/etc/X11/xorg.conf.d/00-keyboard.conf"
+    install -Dm 0644 mdaffin-gui-50-mouse-acceleration.conf "${pkgdir}/etc/X11/xorg.conf.d/50-mouse-acceleration.conf"
+    install -Dm 0755 mdaffin-gui.sh "${pkgdir}/etc/X11/xinit/xinitrc.d/30-mdaffin-gui.sh"
 }
 

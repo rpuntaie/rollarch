@@ -9,14 +9,13 @@ rollarchrootusage(){
   echo "- setup_time: using $ZONE"
   echo "- setup_locale: using $LA_NG"
   echo "- setup_escape: Caps_Lock becomes Escape"
-  echo "- setup_network: with $IP2 and $HST, use netctl, but also create systemd file"
+  echo "- setup_network: with $IP2 and $HST; use systemd-networkd, but keep netctl settings"
   echo "- setup_boot: EFI boot if /sys/firmware/efi, else BIOS using grub"
-  echo "- setup_fstab: wiht $DSK partitions"
   echo "- setup_user: using $USR and $PW, the latter also for root"
   echo "- setup_arch_proxy if AIP2=yes"
   echo "- setup_all does all of the above"
   echo ""
-  echo "See https://github.com/rpuntaie/rollarch"
+  echo "See https://github.com/rpuntaie/rollarch[root]"
   exit 0
 }
 
@@ -53,54 +52,58 @@ setup_time(){
     fi
   done
   hwclock --systohc
-  cat > /etc/systemd/timesyncd.conf << END
+  cat > /etc/systemd/timesyncd.conf <<EOF
 [Time]
 NTP=0.arch.pool.ntp.org 1.arch.pool.ntp.org 2.arch.pool.ntp.org 3.arch.pool.ntp.org
 FallbackNTP=0.pool.ntp.org 1.pool.ntp.org
 RootDistanceMaxSec=5
 PollIntervalMinSec=32
 PollIntervalMaxSec=2048
-END
+EOF
   timedatectl set-ntp true
 }
 
 setup_locale(){
-  if [ "$LA_NG" != "" ]
-  then
-    cat /etc/locale.gen | grep -E "#${LA_NG}.* UTF-8" | sed -r "s/^#(.*)/\1/" > /etc/locale.tmp
+  if [[ ! -e /etc/locale.gen ]]; then
+    if [ "$LA_NG" != "" ]
+    then
+      cat /etc/locale.gen | grep -E "#${LA_NG}.* UTF-8" | sed -r "s/^#(.*)/\1/" > /etc/locale.tmp
+    fi
+    echo 'en_US.UTF-8 UTF-8' >> /etc/locale.tmp
+    mv /etc/locale.tmp /etc/locale.gen
+    locale-gen
+    locale > /etc/locale.conf
   fi
-  echo 'en_US.UTF-8 UTF-8' >> /etc/locale.tmp
-  mv /etc/locale.tmp /etc/locale.gen
-  locale-gen
-  locale > /etc/locale.conf
 }
 
 setup_escape(){
-  # change: keycode  58 = Escape
-  local KBD=$(find /usr/share/kbd/keymaps/ -iname "us.map.gz")
-  cd "${KBD%/*}"
-  KBD=${KBD##*/}
-  cp $KBD rollarch$KBD.map.gz
-  gunzip rollarch$KBD.map.gz
-  sed -ie "s/keycode *58 *= *Caps_Lock/keycode 58 = Escape/g" rollarch$KBD.map
-  gzip rollarch$KBD.map
-  cd -
-  loadkeys rollarch$KBD
-  cat > /etc/vconsole.conf << END
+  if [[ ! -e  /etc/vconsole.conf ]]; then
+    # change: keycode  58 = Escape
+    local KBD=$(find /usr/share/kbd/keymaps/ -iname "us.map.gz")
+    cd "${KBD%/*}"
+    KBD=${KBD##*/}
+    cp $KBD rollarch$KBD.map.gz
+    gunzip rollarch$KBD.map.gz
+    sed -ie "s/keycode *58 *= *Caps_Lock/keycode 58 = Escape/g" rollarch$KBD.map
+    gzip rollarch$KBD.map
+    cd -
+    loadkeys rollarch$KBD
+    cat > /etc/vconsole.conf <<EOF
 KEYMAP=rollarch$KBD
 FONT=lat9w-16
 FONT_MAP=8859-1_to_uni
-END
+EOF
+  fi
 }
 
 #for VirtualBox use bridged to make static netctl work
 setup_network(){
   echo $HST > /etc/hostname
-  cat > /etc/hosts << END
+  cat > /etc/hosts <<EOF
 127.0.0.1     localhost
 ::1           localhost
 127.0.0.1     $HST.localdomain  $HST
-END
+EOF
   if [ "$IP2" != "dhcp" ]; then
     #IP2="1.100"
     local IPE=${IP2##*.} #100
@@ -115,7 +118,7 @@ END
     if [ ${NIC:0:1} = "e" ] && [ "$had_e" = "" ]; then
       local had_e="yes"
       if [ "$IP2" != "dhcp" ]; then
-        cat > /etc/netctl/se << END
+        cat > /etc/netctl/se <<EOF
 Description='static ethernet'
 Interface=$NIC
 Connection=ethernet
@@ -123,8 +126,8 @@ IP=static
 Address=('$CIDR')
 Gateway=('$NS')
 DNS=('$NS')
-END
-        cat > /etc/systemd/system/network.service << END
+EOF
+        cat > /etc/systemd/system/network.service <<EOF
 [Unit]
 Description=Network Connectivity
 Wants=network.target
@@ -143,8 +146,8 @@ ExecStop=/usr/bin/ip link set dev $NIC down
 
 [Install]
 WantedBy=multi-user.target
-END
-        cat > /etc/systemd/network/20-wired.network << END
+EOF
+        cat > /etc/systemd/network/20-wired.network <<EOF
 [Match]
 Name=$NIC
 
@@ -157,15 +160,15 @@ MulticastDNS=yes
 
 [Route]
 Metric=10
-END
+EOF
       else
-        cat > /etc/netctl/de << END
+        cat > /etc/netctl/de <<EOF
 Description='dhcp ethernet'
 Interface=$NIC
 Connection=ethernet
 IP=dhcp
-END
-        cat > /etc/systemd/network/20-wired.network << END
+EOF
+        cat > /etc/systemd/network/20-wired.network <<EOF
 [Match]
 Name=$NIC
 
@@ -176,12 +179,12 @@ MulticastDNS=yes
 
 [DHCP]
 RouteMetric=10
-END
+EOF
       fi
     elif [ ${NIC:0:1} = "w" ] && [ "$had_w" = "" ]; then
       local had_w="yes"
       if [ "$IP2" != "dhcp" ]; then
-        cat > /etc/netctl/sw << END
+        cat > /etc/netctl/sw <<EOF
 Description='static wireless'
 Interface=$NIC
 Connection=wireless
@@ -192,8 +195,8 @@ IP=static
 Address=('$CIDR')
 Gateway=('$NS')
 DNS=('$NS')
-END
-        cat > /etc/systemd/network/25-wireless.network << END
+EOF
+        cat > /etc/systemd/network/25-wireless.network <<EOF
 [Match]
 Name=$NIC
 
@@ -206,9 +209,9 @@ MulticastDNS=yes
 
 [Route]
 Metric=20
-END
+EOF
       else
-        cat > /etc/netctl/dw << END
+        cat > /etc/netctl/dw <<EOF
 Description='dhcp wireless'
 Interface=$NIC
 Connection=wireless
@@ -216,8 +219,8 @@ Security=wpa
 IP=dhcp
 ESSID='TODO'
 Key='TODO'
-END
-        cat > /etc/systemd/network/25-wireless.network << END
+EOF
+        cat > /etc/systemd/network/25-wireless.network <<EOF
 [Match]
 Name=$NIC
 
@@ -228,7 +231,7 @@ MulticastDNS=yes
 
 [DHCP]
 RouteMetric=20
-END
+EOF
       fi
     fi
   done
@@ -245,14 +248,14 @@ END
   #edit /etc/exports to nfs export folders
   systemctl enable nfs-server.service &>/dev/null
   ## samba
-  cat > /etc/samba/smb.conf << END
+  cat > /etc/samba/smb.conf <<EOF
 [global]
    usershare path = /var/lib/samba/usershares
    usershare max shares = 100
    usershare allow guests = yes
    usershare owner only = yes
 
-END
+EOF
   curl -Ls https://raw.githubusercontent.com/samba-team/samba/master/examples/smb.conf.default|sed \
     -e "s,log file = .*$,logging = systemd,g" -e "s,MYGROUP,WORKGROUP,g" -e "s/\[global\]//g" >> /etc/samba/smb.conf
   mkdir -p /var/lib/samba/usershares
@@ -292,34 +295,6 @@ ${APPEND}" > /boot/loader/entries/arch.conf
   echo "cifs" > /etc/modules-load.d/cifs.conf
 }
 
-setup_fstab(){
-  genfstab -U -p / > /etc/fstab
-  blkid -g
-  for info in $(blkid -o value "$BOOT"); do
-    if [ "$info" != "msdos" ]; then
-      sed -ie "s#$BOOT#UUID=$info#" /etc/fstab
-      break
-    fi
-  done
-  for info in $(blkid -o value "$ROOT"); do
-    if [ "$info" != "msdos" ]; then
-      sed -ie "s#$ROOT#UUID=$info#" /etc/fstab
-      break
-    fi
-  done
-  if [ "$SWAP" != "off" ]; then
-    swapon $SWAP
-    for info in $(blkid -o value "$SWAP"); do
-      if [ "$info" != "msdos" ]; then
-        sed -ie "s#$SWAP#UUID=$info#" /etc/fstab
-        break
-      fi
-    done
-  fi
-  cat /etc/fstab | sed -r 's/^(# )?(\/etc|efivarfs).*//' > /etc/fstab.tmp
-  mv /etc/fstab.tmp /etc/fstab
-}
-
 setup_user(){
   sed -i -e "s/^# *\(%wheel ALL=(ALL) ALL\)/\1/" /etc/sudoers
   echo -e "$PW
@@ -338,7 +313,6 @@ setup_all(){
   setup_escape
   setup_network
   setup_boot
-  setup_fstab
 
   if [[ -z "$PW" ]]; then
     PW=$(dialog --stdout --passwordbox "Enter password for $USR and root" 0 0) || exit 1

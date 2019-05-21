@@ -238,6 +238,8 @@ else
   pacstrap /mnt $GRUB arch-install-scripts base base-devel devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim
 fi
 
+genfstab -t PARTUUID /mnt >> /mnt/etc/fstab
+
 if [[ "$aip2server" != "" ]]; then
   cat >> /mnt/etc/pacman.conf << EOF
 [custom]

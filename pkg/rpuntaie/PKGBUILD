@@ -1,0 +1,115 @@
+
+pkgbase='rpuntaie'
+pkgname=(rpuntaie-base rpuntaie-gui)
+pkgver=10
+pkgrel=1
+pkgdesc="System config for rpuntaie systems"
+arch=(any)
+license=(MIT)
+groups=(rpuntaie)
+
+source=(
+)
+
+# The sources all live in this repo and so are version controlled and checked
+# summed through git. There is not much point in adding these extra checksums
+# here espically when they have to be changed for every update to them.
+sha256sums=()
+
+package_rpuntaie-base() {
+    provides=(vim vi)
+    conflicts=(vim vi)
+    install=rpuntaie.install
+
+    # Base group: Explicitly removed from the base group: vi 
+    depends=(bash bzip2 coreutils cryptsetup device-mapper dhcpcd diffutils e2fsprogs file
+    filesystem findutils gawk gcc-libs gettext glibc grep gzip inetutils iproute2
+    iputils jfsutils less licenses linux linux-firmware logrotate lvm2 man-db
+    man-pages mdadm nano netctl pacman pciutils perl procps-ng psmisc s-nail sed
+    shadow sysfsutils systemd-sysvcompat tar texinfo usbutils util-linux which xfsprogs)
+
+    # partly needed by rollarchroot
+    depends+=(nfs-utils samba sudo git python devtools dialog wpa_supplicant ntp openssh)
+
+    # Extra general packages
+    depends+=(ripgrep exa fd tmux wget fzf unzip pacman-contrib bat ncdu keybase)
+
+    # Debugging tools
+    depends+=(lsof bind-tools mtr socat htop iotop openbsd-netcat strace)
+
+    # Shells
+    depends+=(zsh grml-zsh-config)
+
+    # Filesystems
+    depends+=(exfat-utils dosfstools f2fs-tools)
+
+    # Base Group
+    depends+=(autoconf automake binutils bison fakeroot file findutils flex gawk gcc gettext
+    grep groff gzip libtool m4 make pacman patch pkgconf sed systemd texinfo
+    util-linux which)
+
+    # General tools
+    depends+=(cmake jq terraform)
+
+    # Editor nvim vor CLI and gvim for GUI (see below)
+    depends+=(neovim python-neovim neovim-ale)
+    install -dm 0755 "${pkgdir}/usr/bin"
+    ln -s /usr/bin/nvim "${pkgdir}/usr/bin/vim"
+    ln -s /usr/bin/nvim "${pkgdir}/usr/bin/vi"
+    install -dm755 "${pkgdir}/usr/share/nvim/runtime/plugin/"
+    ln -sf /usr/share/vim/vimfiles/plugin/fzf.vim "${pkgdir}/usr/share/nvim/runtime/plugin/fzf.vim"
+}
+
+
+package_rpuntaie-gui() {
+    depends=(rpuntaie-base)
+    install=rpuntaie-gui.install
+
+    depends+=(gvim vim-ale)
+
+    # Fonts
+    depends+=(noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra
+    ttf-dejavu ttf-freefont xorg-fonts-misc)
+
+    # Virtualisation
+    depends+=(virtualbox-guest-modules-arch virtualbox-guest-utils virtualbox-host-modules-arch virtualbox vagrant)
+
+    # Docker
+    depends+=(docker docker-compose dnsmasq)
+
+    # Go
+    depends+=(go)
+
+    # Haskell
+    depends+=(ghc pandoc cabal-install)
+
+    # Node
+    depends+=(yarn npm nodejs prettier)
+
+    # Embedded
+    depends+=(qemu qemu-arch-extra picocom ddrescue arm-none-eabi-gcc)
+
+    # xmonad window manager
+    depends+=(xmonad xmonad-contrib dmenu gmrun)
+
+    # Applications
+    depends+=(alacritty firefox)
+
+    # Utility
+    depends+=(redshift python-gobject bluez bluez-utils pulseaudio pulseaudio-alsa pulseaudio-bluetooth pavucontrol paprefs scrot)
+
+    # Drivers and utilities
+    depends+=(xf86-input-libinput xf86-input-synaptics
+    xf86-video-intel xf86-video-vesa nvidia nvidia-utils)
+
+    # Xorg packages and utilities
+    depends+=(xorg-xsetroot xorg-xkill xorg-xbacklight xorg-bdftopcf
+    xorg-iceauth xorg-luit xorg-mkfontdir xorg-mkfontscale xorg-sessreg
+    xorg-setxkbmap xorg-smproxy xorg-x11perf xorg-xauth xorg-xbacklight
+    xorg-xcmsdb xorg-xcursorgen xorg-xdpyinfo xorg-xdriinfo xorg-xev
+    xorg-xgamma xorg-xhost xorg-xinput xorg-xkbcomp xorg-xkbevd xorg-xkbutils
+    xorg-xkill xorg-xlsatoms xorg-xlsclients xorg-xmodmap xorg-xpr xorg-xprop
+    xorg-xrandr xorg-xrdb xorg-xrefresh xorg-xset xorg-xsetroot xorg-xvinfo
+    xorg-xwd xorg-xwininfo xorg-xwud)
+}
+
