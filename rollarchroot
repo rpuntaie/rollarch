@@ -9,7 +9,7 @@ rollarchrootusage(){
   echo "- setup_time: using $ZONE"
   echo "- setup_locale: using $LA_NG"
   echo "- setup_escape: Caps_Lock becomes Escape"
-  echo "- setup_network: with $IP2 and $HST; use systemd-networkd, but keep netctl settings"
+  echo "- setup_network: with $IP2 and $HST; uses systemd-networkd"
   echo "- setup_boot: EFI boot if /sys/firmware/efi, else BIOS using grub"
   echo "- setup_user: using $USR and $PW, the latter also for root"
   echo "- setup_arch_proxy if AIP2=yes"
@@ -96,7 +96,7 @@ EOF
   fi
 }
 
-#for VirtualBox use bridged to make static netctl work
+#for VirtualBox use bridged to have access to LAN
 setup_network(){
   echo $HST > /etc/hostname
   cat > /etc/hosts <<EOF
@@ -118,15 +118,6 @@ EOF
     if [ ${NIC:0:1} = "e" ] && [ "$had_e" = "" ]; then
       local had_e="yes"
       if [ "$IP2" != "dhcp" ]; then
-        cat > /etc/netctl/se <<EOF
-Description='static ethernet'
-Interface=$NIC
-Connection=ethernet
-IP=static
-Address=('$CIDR')
-Gateway=('$NS')
-DNS=('$NS')
-EOF
         cat > /etc/systemd/system/network.service <<EOF
 [Unit]
 Description=Network Connectivity
@@ -162,12 +153,6 @@ MulticastDNS=yes
 Metric=10
 EOF
       else
-        cat > /etc/netctl/de <<EOF
-Description='dhcp ethernet'
-Interface=$NIC
-Connection=ethernet
-IP=dhcp
-EOF
         cat > /etc/systemd/network/20-wired.network <<EOF
 [Match]
 Name=$NIC
@@ -184,18 +169,6 @@ EOF
     elif [ ${NIC:0:1} = "w" ] && [ "$had_w" = "" ]; then
       local had_w="yes"
       if [ "$IP2" != "dhcp" ]; then
-        cat > /etc/netctl/sw <<EOF
-Description='static wireless'
-Interface=$NIC
-Connection=wireless
-Security=wpa
-ESSID='TODO'
-Key='TODO'
-IP=static
-Address=('$CIDR')
-Gateway=('$NS')
-DNS=('$NS')
-EOF
         cat > /etc/systemd/network/25-wireless.network <<EOF
 [Match]
 Name=$NIC
@@ -211,15 +184,6 @@ MulticastDNS=yes
 Metric=20
 EOF
       else
-        cat > /etc/netctl/dw <<EOF
-Description='dhcp wireless'
-Interface=$NIC
-Connection=wireless
-Security=wpa
-IP=dhcp
-ESSID='TODO'
-Key='TODO'
-EOF
         cat > /etc/systemd/network/25-wireless.network <<EOF
 [Match]
 Name=$NIC
@@ -235,14 +199,6 @@ EOF
       fi
     fi
   done
-  ## #systemd-networkd instead of netctl, but config for the latter was made
-  ## if [[ "$IP2" = "dhcp" ]]; then
-  ##   netctl enable d${NIC:0:1} &>/dev/null
-  ##   #systemctl enable dhcpcd &>/dev/null
-  ## else
-  ##   netctl enable s${NIC:0:1} &>/dev/null
-  ##   #systemctl enable network &>/dev/null
-  ## fi
   systemctl enable systemd-networkd &>/dev/null
   systemctl enable systemd-resolved &>/dev/null
   #edit /etc/exports to nfs export folders

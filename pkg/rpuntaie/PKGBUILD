@@ -17,16 +17,16 @@ source=(
 sha256sums=()
 
 package_rpuntaie-base() {
-    provides=(vim vi)
-    conflicts=(vim vi)
-    install=rpuntaie.install
+    provides=(vi)
+    conflicts=(vi)
 
-    # Base group: Explicitly removed from the base group: vi 
+    # Base group:
+    # Explicitly removed from the base group: jfsutils lvm2 nano reiserfsprogs vi xfsprogs
     depends=(bash bzip2 coreutils cryptsetup device-mapper dhcpcd diffutils e2fsprogs file
     filesystem findutils gawk gcc-libs gettext glibc grep gzip inetutils iproute2
-    iputils jfsutils less licenses linux linux-firmware logrotate lvm2 man-db
-    man-pages mdadm nano netctl pacman pciutils perl procps-ng psmisc s-nail sed
-    shadow sysfsutils systemd-sysvcompat tar texinfo usbutils util-linux which xfsprogs)
+    iputils less licenses linux linux-firmware logrotate man-db
+    man-pages mdadm pacman pciutils perl procps-ng psmisc s-nail sed
+    shadow sysfsutils systemd-sysvcompat tar texinfo usbutils util-linux which)
 
     # partly needed by rollarchroot
     depends+=(nfs-utils samba sudo git python devtools dialog wpa_supplicant ntp openssh)
@@ -49,12 +49,11 @@ package_rpuntaie-base() {
     util-linux which)
 
     # General tools
-    depends+=(cmake jq terraform)
+    depends+=(cmake jq)
 
     # Editor nvim vor CLI and gvim for GUI (see below)
     depends+=(neovim python-neovim neovim-ale)
     install -dm 0755 "${pkgdir}/usr/bin"
-    ln -s /usr/bin/nvim "${pkgdir}/usr/bin/vim"
     ln -s /usr/bin/nvim "${pkgdir}/usr/bin/vi"
     install -dm755 "${pkgdir}/usr/share/nvim/runtime/plugin/"
     ln -sf /usr/share/vim/vimfiles/plugin/fzf.vim "${pkgdir}/usr/share/nvim/runtime/plugin/fzf.vim"
@@ -63,7 +62,6 @@ package_rpuntaie-base() {
 
 package_rpuntaie-gui() {
     depends=(rpuntaie-base)
-    install=rpuntaie-gui.install
 
     depends+=(gvim vim-ale)
 
