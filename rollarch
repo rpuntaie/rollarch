@@ -276,7 +276,7 @@ UEFI=$UEFI
 setup_all
 "
 
-ln -sf /run/systemd/stub-resolv.conf /mnt/etc/resolv.conf &>/dev/null
+ln -sf /run/systemd/resolve/stub-resolv.conf /mnt/etc/resolv.conf &>/dev/null
 
 umount $BOOT &>/dev/null
 umount $ROOT &>/dev/null

@@ -280,6 +280,11 @@ setup_all(){
   if [[ $AIP2 = "yes" ]]; then
     setup_arch_proxy
   fi
+
+  if [[ -z $(grep -q "^flags.*\ hypervisor\ " /proc/cpuinfo) ]]; then
+    systemctl enable vboxservice
+    #in .xinitrc: VBoxClient-all && exec xmonad
+  fi
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]

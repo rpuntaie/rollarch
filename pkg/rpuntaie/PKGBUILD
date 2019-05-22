@@ -32,7 +32,8 @@ package_rpuntaie-base() {
     depends+=(nfs-utils samba sudo git python devtools dialog wpa_supplicant ntp openssh)
 
     # Extra general packages
-    depends+=(ripgrep exa fd tmux wget fzf unzip pacman-contrib bat ncdu keybase)
+    depends+=(ripgrep fd bc tmux wget fzf unzip pacman-contrib bat ncdu keybase
+    the_silver_searcher rtorrent tree p7zip)
 
     # Debugging tools
     depends+=(lsof bind-tools mtr socat htop iotop openbsd-netcat strace)
@@ -48,8 +49,8 @@ package_rpuntaie-base() {
     grep groff gzip libtool m4 make pacman patch pkgconf sed systemd texinfo
     util-linux which)
 
-    # General tools
-    depends+=(cmake jq)
+    # C/C++
+    depends+=(cmake meson cscope ctags clang gdb boost)
 
     # Editor nvim vor CLI and gvim for GUI (see below)
     depends+=(neovim python-neovim neovim-ale)
@@ -63,7 +64,55 @@ package_rpuntaie-base() {
 package_rpuntaie-gui() {
     depends=(rpuntaie-base)
 
-    depends+=(gvim vim-ale)
+    depends+=(gvim powerline powerline-fonts)
+
+    # Python
+    depends+=(python-gobject python-pyside python-scipy python-sympy python-cairocffi
+    python-docker python-docutils python-gmpy2 python-jinja python-matplotlib
+    python-pillow python-pip python-pygal python-pygments python-pytest python-setuptools
+    python-snowballstemmer python-virtualenv python-yaml python-django python-tox
+    python-cvxopt python-webtest python-sphinx python-lxml python-pyx ipython jupyter)
+
+    # Go
+    depends+=(go)
+
+    # .NET
+    depends+=(dotnet-sdk skia-sharp)
+
+    # Haskell
+    depends+=(ghc pandoc cabal-install)
+
+    # Java/JS
+    depends+=(openjdk yarn npm nodejs prettier)
+
+    # DB
+    depends+=(sqlite mariadb)
+
+    # PHP/Mediawiki
+    depends+=(php nginx mediawiki)
+
+    # Bluetooth
+    depends+=(bluez bluez-utils)
+
+    # Audio
+    depends+=(alsa-utils pulseaudio pulseaudio-alsa pulseaudio-bluetooth pavucontrol paprefs)
+
+    # Drivers and utilities
+    depends+=(xf86-input-libinput xf86-input-synaptics
+    xf86-video-intel xf86-video-vesa nvidia nvidia-utils)
+
+    # Xorg packages and utilities
+    depends+=(xorg-xsetroot xorg-xkill xorg-xbacklight xorg-bdftopcf
+    xorg-iceauth xorg-luit xorg-mkfontdir xorg-mkfontscale xorg-sessreg
+    xorg-setxkbmap xorg-smproxy xorg-x11perf xorg-xauth
+    xorg-xcmsdb xorg-xcursorgen xorg-xdpyinfo xorg-xdriinfo xorg-xev
+    xorg-xgamma xorg-xhost xorg-xinput xorg-xkbcomp xorg-xkbevd xorg-xkbutils
+    xorg-xlsatoms xorg-xlsclients xorg-xmodmap xorg-xpr xorg-xprop
+    xorg-xrandr xorg-xrdb xorg-xrefresh xorg-xset xorg-xvinfo
+    xorg-xwd xorg-xwininfo xorg-xwud xorg-xrbd xorg-server)
+
+    # xmonad window manager
+    depends+=(xmonad xmonad-contrib xterm alacritty xorg-xinit dmenu gmrun scrot)
 
     # Fonts
     depends+=(noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra
@@ -75,39 +124,36 @@ package_rpuntaie-gui() {
     # Docker
     depends+=(docker docker-compose dnsmasq)
 
-    # Go
-    depends+=(go)
-
-    # Haskell
-    depends+=(ghc pandoc cabal-install)
-
-    # Node
-    depends+=(yarn npm nodejs prettier)
-
     # Embedded
     depends+=(qemu qemu-arch-extra picocom ddrescue arm-none-eabi-gcc)
 
-    # xmonad window manager
-    depends+=(xmonad xmonad-contrib dmenu gmrun)
+    # Electronics
+    depends+=(kicad arduino arduino-docs)
 
-    # Applications
-    depends+=(alacritty firefox)
+    # Drawing
+    depends+=(opencascade librecad blender gimp inkscape sk1 fontforge imagemagick imagemagick-doc)
 
-    # Utility
-    depends+=(redshift python-gobject bluez bluez-utils pulseaudio pulseaudio-alsa pulseaudio-bluetooth pavucontrol paprefs scrot)
+    # Office
+    depends+=(libreoffice-fresh 
+    texlive-core texlive-fontsextra texlive-formatsextra texlive-latexextra texlive-langcyrillic)
 
-    # Drivers and utilities
-    depends+=(xf86-input-libinput xf86-input-synaptics
-    xf86-video-intel xf86-video-vesa nvidia nvidia-utils)
+    # Tex
+    depends+=(texlive mathjax)
 
-    # Xorg packages and utilities
-    depends+=(xorg-xsetroot xorg-xkill xorg-xbacklight xorg-bdftopcf
-    xorg-iceauth xorg-luit xorg-mkfontdir xorg-mkfontscale xorg-sessreg
-    xorg-setxkbmap xorg-smproxy xorg-x11perf xorg-xauth xorg-xbacklight
-    xorg-xcmsdb xorg-xcursorgen xorg-xdpyinfo xorg-xdriinfo xorg-xev
-    xorg-xgamma xorg-xhost xorg-xinput xorg-xkbcomp xorg-xkbevd xorg-xkbutils
-    xorg-xkill xorg-xlsatoms xorg-xlsclients xorg-xmodmap xorg-xpr xorg-xprop
-    xorg-xrandr xorg-xrdb xorg-xrefresh xorg-xset xorg-xsetroot xorg-xvinfo
-    xorg-xwd xorg-xwininfo xorg-xwud)
+    # Vidoe
+    depends+=(vlc ffmpeg)
+
+    # viewers
+    depends+=(firefox chromium evince thunar ghostscript mupdf thunderbird)
+
+    # dicts
+    depends+=(goldendict aspell-de aspell-en aspell-es aspell-fr aspell-it aspell-ru)
+
+    # maths
+    depends+=(octave sagemath r geogebra root gnuplot)
+
+    # science
+    depends+=(pymol)
 }
+
 
