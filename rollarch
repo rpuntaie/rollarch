@@ -230,9 +230,10 @@ fi
 cat /etc/pacman.d/mirrorlist.org >> /etc/pacman.d/mirrorlist
 pacman -Sy
 
-
+META=
 if [[ "$@" != "" ]]
 then
+  META="$@"
   pacstrap /mnt $GRUB $@
 else
   pacstrap /mnt $GRUB arch-install-scripts base base-devel devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim
@@ -274,6 +275,15 @@ ROOT=$ROOT
 UEFI=$UEFI
 . ./rollarchroot
 setup_all
+if [[ -n $META ]]; then
+  for m in $META; do
+    if [[ m =~ .*-meta ]]; then
+      #make explicit
+      pacman -D $(LANG=C pacman -Si $m |sed -n '/Depends\ On/,/:/p'|sed '$d'|cut -d: -f2 |tr -d '>=[0-9]') --asexplicit
+      pacman -R $m
+    fi
+  done
+fi
 "
 
 ln -sf /run/systemd/resolve/stub-resolv.conf /mnt/etc/resolv.conf &>/dev/null

@@ -255,7 +255,8 @@ setup_user(){
   sed -i -e "s/^# *\(%wheel ALL=(ALL) ALL\)/\1/" /etc/sudoers
   echo -e "$PW
 $PW" | passwd
-  useradd -m -g users -G wheel,storage,power,video,audio,lp,games,scanner -s /bin/bash $USR &>/dev/null
+  useradd -m -g users -G wheel,uucp,storage,power,video,audio,lp,games,scanner -s /usr/bin/zsh $USR &>/dev/null
+  chsh -s /usr/bin/zsh
   echo -e "$PW
 $PW" | passwd $USR
   echo -e "$PW

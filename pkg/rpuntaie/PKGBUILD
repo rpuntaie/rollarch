@@ -1,22 +1,14 @@
+# # curl -OLs git://git.io/installarch
+# # DSK=/dev/sda USR=u PW=p HST=up ZONE=Vienna IP2=1.121 AIP2=1.108 ./installarch rpuntaie-meta
 
-pkgbase='rpuntaie'
-pkgname=(rpuntaie-base rpuntaie-gui)
+pkgname=(rpuntaie-meta)
 pkgver=10
 pkgrel=1
-pkgdesc="System config for rpuntaie systems"
+pkgdesc="Archlinux for rpuntaie"
 arch=(any)
 license=(MIT)
-groups=(rpuntaie)
 
-source=(
-)
-
-# The sources all live in this repo and so are version controlled and checked
-# summed through git. There is not much point in adding these extra checksums
-# here espically when they have to be changed for every update to them.
-sha256sums=()
-
-package_rpuntaie-base() {
+package_rpuntaie-meta() {
     provides=(vi)
     conflicts=(vi)
 
@@ -32,7 +24,7 @@ package_rpuntaie-base() {
     depends+=(nfs-utils samba sudo git python devtools dialog wpa_supplicant ntp openssh)
 
     # Extra general packages
-    depends+=(ripgrep fd bc tmux wget fzf unzip pacman-contrib bat ncdu keybase
+    depends+=(stow ripgrep fd bc tmux wget fzf unzip pacman-contrib bat ncdu keybase
     the_silver_searcher rtorrent tree p7zip)
 
     # Debugging tools
@@ -45,29 +37,25 @@ package_rpuntaie-base() {
     depends+=(exfat-utils dosfstools f2fs-tools)
 
     # Base Group
-    depends+=(autoconf automake binutils bison fakeroot file findutils flex gawk gcc gettext
-    grep groff gzip libtool m4 make pacman patch pkgconf sed systemd texinfo
-    util-linux which)
+    depends+=(autoconf automake binutils bison fakeroot flex gcc
+    groff libtool m4 make patch pkgconf systemd)
 
     # C/C++
     depends+=(cmake meson cscope ctags clang gdb boost)
 
     # Editor nvim vor CLI and gvim for GUI (see below)
-    depends+=(neovim python-neovim neovim-ale)
+    depends+=(neovim python-neovim)
     install -dm 0755 "${pkgdir}/usr/bin"
     ln -s /usr/bin/nvim "${pkgdir}/usr/bin/vi"
     install -dm755 "${pkgdir}/usr/share/nvim/runtime/plugin/"
     ln -sf /usr/share/vim/vimfiles/plugin/fzf.vim "${pkgdir}/usr/share/nvim/runtime/plugin/fzf.vim"
-}
 
 
-package_rpuntaie-gui() {
-    depends=(rpuntaie-base)
-
+    ## GUI
     depends+=(gvim powerline powerline-fonts)
 
     # Python
-    depends+=(python-gobject python-pyside python-scipy python-sympy python-cairocffi
+    depends+=(python-gobject python-pyqt5 python-scipy python-sympy python-cairocffi
     python-docker python-docutils python-gmpy2 python-jinja python-matplotlib
     python-pillow python-pip python-pygal python-pygments python-pytest python-setuptools
     python-snowballstemmer python-virtualenv python-yaml python-django python-tox
@@ -83,7 +71,7 @@ package_rpuntaie-gui() {
     depends+=(ghc pandoc cabal-install)
 
     # Java/JS
-    depends+=(openjdk yarn npm nodejs prettier)
+    depends+=(jdk10-openjdk yarn npm nodejs prettier)
 
     # DB
     depends+=(sqlite mariadb)
@@ -109,7 +97,7 @@ package_rpuntaie-gui() {
     xorg-xgamma xorg-xhost xorg-xinput xorg-xkbcomp xorg-xkbevd xorg-xkbutils
     xorg-xlsatoms xorg-xlsclients xorg-xmodmap xorg-xpr xorg-xprop
     xorg-xrandr xorg-xrdb xorg-xrefresh xorg-xset xorg-xvinfo
-    xorg-xwd xorg-xwininfo xorg-xwud xorg-xrbd xorg-server)
+    xorg-xwd xorg-xwininfo xorg-xwud xorg-server)
 
     # xmonad window manager
     depends+=(xmonad xmonad-contrib xterm alacritty xorg-xinit dmenu gmrun scrot)
@@ -134,11 +122,8 @@ package_rpuntaie-gui() {
     depends+=(opencascade librecad blender gimp inkscape sk1 fontforge imagemagick imagemagick-doc)
 
     # Office
-    depends+=(libreoffice-fresh 
+    depends+=(libreoffice-fresh mathjax
     texlive-core texlive-fontsextra texlive-formatsextra texlive-latexextra texlive-langcyrillic)
-
-    # Tex
-    depends+=(texlive mathjax)
 
     # Vidoe
     depends+=(vlc ffmpeg)

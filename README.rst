@@ -48,13 +48,16 @@ Usage of `local proxy`_ and `custom packages`_:
 
 .. code:: sh
 
-    DSK=/dev/sda USR=A PW=B HST=C IP2=1.106 ZONE=Berlin bash installarch <your-pacstrap-meta-pkg>
+    DSK=/dev/sda USR=A PW=B HST=C IP2=1.106 ZONE=Berlin bash installarch <your-pacstrap-meta>
     
-If the optional ``your-pacstrap-meta-pkg`` is provided, it can do setup beyond what ``rollarchroot`` does,
+If the optional ``your-pacstrap-meta`` is provided, it can do setup beyond what ``rollarchroot`` does,
 as that is still called afterwards.
+If the name ends in ``-meta`` the dependencies are made ``--asexplicit`` and the orphaned package is removed.
+To make this work meta packages should not depend on each other.
 
-``mdaffin``, kept from `arch-pkgs`_, and ``rpuntaie`` are two meta packages.
-For the latter: As ``pacman`` does not touch ``$HOME``, `dotfiles`_ should be done after installation.
+``mdaffin-meta``, transformed from `arch-pkgs`_, and ``rpuntaie-meta`` are two meta packages.
+For the latter: As ``pacman`` does not touch ``$HOME``, `dotfiles`_ should be done after installation,
+e.g. via `stow <https://www.gnu.org/software/stow/>`_.
 
 
 ----

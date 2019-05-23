@@ -3,18 +3,17 @@
 # meta packages were combined, but installed packages are (almost) as before
 #
 # # curl -OLs git://git.io/installarch
-# # DSK=/dev/sda USR=u PW=p HST=up ZONE=London LA_NG=en_GB IP2=1.121 AIP2=1.108 ./installarch mdaffin
+# # DSK=/dev/sda USR=u PW=p HST=up ZONE=London LA_NG=en_GB IP2=1.121 AIP2=1.108 ./installarch mdaffin-meta
 #
 # change u, p, IP2 and AIP2
 
-pkgbase='mdaffin'
-pkgname=(mdaffin-base mdaffin-gui)
+pkgbase='mdaffin-meta'
+pkgname=(mdaffin-meta)
 pkgver=30
 pkgrel=1
 pkgdesc="System config for mdaffin systems"
 arch=(any)
 license=(MIT)
-groups=(mdaffin)
 
 source=(
     mdaffin-base.sh
@@ -43,9 +42,10 @@ source=(
 # here espically when they have to be changed for every update to them.
 sha256sums=(SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP)
 
-package_mdaffin-base() {
+package_mdaffin-meta() {
     provides=(vim vi)
     conflicts=(vim vi)
+    install=mdaffin-gui.install
 
     # Base group
     # Explicitly removed from the base group: jfsutils lvm2 nano reiserfsprogs vi xfsprogs
@@ -59,7 +59,7 @@ package_mdaffin-base() {
     depends+=(nfs-utils samba dialog wpa_supplicant ntp openssh devtools sudo git python)
 
     # Extra general packages
-    depends+=(ripgrep exa fd tmux wget fzf unzip dialog pacman-contrib bat ncdu keybase)
+    depends+=(stow ripgrep exa fd tmux wget fzf unzip dialog pacman-contrib bat ncdu keybase)
 
     install -Dm 0644 mdaffin-base-vconsole.conf "${pkgdir}/etc/vconsole.conf"
     install -Dm 0640 mdaffin-base.sudoers "${pkgdir}/etc/sudoers.d/mdaffin-base"
@@ -98,13 +98,6 @@ package_mdaffin-base() {
     install -dm755 "${pkgdir}/usr/share/nvim/runtime/plugin/"
     ln -sf /usr/share/vim/vimfiles/plugin/fzf.vim "${pkgdir}/usr/share/nvim/runtime/plugin/fzf.vim"
     install -Dm 0644 mdaffin-base.vim "${pkgdir}/usr/share/nvim/runtime/plugin/mdaffin-base.vim"
-
-}
-
-
-package_mdaffin-gui() {
-    depends=(mdaffin-base)
-    install=mdaffin-gui.install
 
     # Virtualisation
     depends+=(virtualbox-guest-modules-arch virtualbox-guest-utils virtualbox-host-modules-arch virtualbox vagrant)
