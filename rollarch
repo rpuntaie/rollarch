@@ -277,10 +277,10 @@ UEFI=$UEFI
 setup_all
 if [[ -n $META ]]; then
   for m in $META; do
-    if [[ m =~ .*-meta ]]; then
+    if [[ \$m =~ .*-meta ]]; then
       #make explicit
-      pacman -D $(LANG=C pacman -Si $m |sed -n '/Depends\ On/,/:/p'|sed '$d'|cut -d: -f2 |tr -d '>=[0-9]') --asexplicit
-      pacman -R $m
+      pacman -D \$(LANG=C pacman -Si \$m |sed -n '/Depends\ On/,/:/p'|sed '\$d'|cut -d: -f2 |tr -d '>=[0-9]') --asexplicit
+      pacman -R \$m
     fi
   done
 fi

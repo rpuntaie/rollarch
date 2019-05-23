@@ -7,7 +7,6 @@
 #
 # change u, p, IP2 and AIP2
 
-pkgbase='mdaffin-meta'
 pkgname=(mdaffin-meta)
 pkgver=30
 pkgrel=1
