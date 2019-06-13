@@ -23,9 +23,11 @@ package_rpuntaie-meta() {
     # partly needed by rollarchroot
     depends+=(nfs-utils samba sudo git python devtools dialog wpa_supplicant ntp openssh)
 
-    # extra general packages
-    depends+=(stow ripgrep fd bc tmux wget fzf unzip pacman-contrib bat ncdu keybase
+    # extra general packages (ag=the_silver_searcher)
+    depends+=(stow ripgrep fd bc tmux wget fzf unzip pacman-contrib bat ncdu 
     the_silver_searcher rtorrent tree p7zip ranger feh links)
+
+    depends+=(keybase kbfs keybase-gui) #pulls gnupg (gpg)
 
     # debugging tools
     depends+=(lsof bind-tools mtr socat htop iotop openbsd-netcat strace)

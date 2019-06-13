@@ -39,7 +39,7 @@ setup_arch_proxy() {
   ln -s /var/lib/pacman/sync/*.db /var/cache/pacman/pkg
   cd /usr/lib/systemd/system/
   cat darkhttpd.service | sed -e "s/Webserver/ArchProxy/g" -e "s,/srv/http.*$,/var/cache/pacman/pkg --no-server-id --port 8080,g" > ArchProxy.service
-  systemctl enable ArchProxy
+  systemctl enable ArchProxy &>/dev/null
 }
 
 setup_time(){
@@ -221,6 +221,11 @@ EOF
   systemctl enable smb nmb &>/dev/null
 }
 
+setup_keybase() {
+  pacman -S --needed --noconfirm keybase &>/dev/null
+  systemctl enable --user keybase &>/dev/null
+}
+
 setup_boot(){
   UCODE=''
   UCODE_STRING=''
@@ -270,6 +275,7 @@ setup_all(){
   setup_escape
   setup_network
   setup_boot
+  setup_keybase
 
   if [[ -z "$PW" ]]; then
     PW=$(dialog --stdout --passwordbox "Enter password for $USR and root" 0 0) || exit 1
