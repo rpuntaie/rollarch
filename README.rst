@@ -1,3 +1,10 @@
+********
+Rollarch
+********
+
+Purpose
+=======
+
 Automates Arch Linux installation by
 
 - install script and
@@ -19,49 +26,67 @@ Usage:
     
 The URL is short for ``https://raw.githubusercontent.com/rpuntaie/rollarch/master/rollarch``.
 
----- 
+Status
+======
 
-Status: 
 Tested for VirtualBox (EFI and BIOS) and BIOS PC.
-Work in progress.
 
 VirtualBox needs *Bridged Adapter* to enable access to LAN.
 
 
-----
+Custom Packages
+===============
 
-
-Usage of `local proxy`_ and `custom packages`_:
+How `local proxy`_ and `custom packages`_ is used:
 
 - The repo for the (meta = dependencies only) `custom packages`_ is named ``custom``.
 
 - An optional ``AIP2=yes`` makes this install a `local proxy`_.
+  You can do this later with:
 
-- If you want, the `build` script builds, adds to,
-  and merges your ``custom`` repo and `custom packages`_
-  with the rest of the packages of the `local proxy`_.
+  .. code:: sh
+
+    . rollarchroot
+    setup_arch_proxy
+
+- To make/update custom packages in the proxy, do
+
+  .. code:: sh
+
+    cd rollarch
+    ./build
+
+  Before doing so, 
+  you can clone some packages from AUR into the ``pkg`` subfolder.
+
+  The ``build`` script 
+
+  - fetches the submodules from AUR
+  - builds all packages
+  - adds to and merges your ``custom`` repo and `custom packages`_
+    with the rest of the packages of the `local proxy`_.
 
 - In a new install, an optional ``AIP2=x.y``, e.g. ``1.199``, uses ``192.168.1.199`` as `local proxy`_.
   ``mirrorlist`` gets a ``Server = 191.168.1.199`` at the top.
-  If the install script finds a ``custom`` repo there, ``pacman.conf`` is changed to use it.
+  If the install script finds a repo there named ``custom``, ``pacman.conf`` is changed to use it.
+
+  .. code:: sh
+  
+      DSK=/dev/sda USR=A PW=B HST=C IP2=1.106 ZONE=Berlin bash installarch <your-pacstrap-meta>
+      
+  The optional ``your-pacstrap-meta`` is a meta package that needs to be provided by the `local proxy`_.
+
+  If the name ends in ``-meta`` the dependencies are made ``--asexplicit`` and the resulting orphaned ``your-pacstrap-meta`` package is removed.
+  To make this work meta packages should not depend on each other.
+
+  Examples:
+
+  - ``mdaffin-meta``, transformed from `arch-pkgs`_, and 
+  - ``rpuntaie-meta``. Here `dotfiles`_ should be added afterwards to complete the installation
 
 
-.. code:: sh
-
-    DSK=/dev/sda USR=A PW=B HST=C IP2=1.106 ZONE=Berlin bash installarch <your-pacstrap-meta>
-    
-If the optional ``your-pacstrap-meta`` is provided, it can do setup beyond what ``rollarchroot`` does,
-as that is still called afterwards.
-If the name ends in ``-meta`` the dependencies are made ``--asexplicit`` and the orphaned package is removed.
-To make this work meta packages should not depend on each other.
-
-``mdaffin-meta``, transformed from `arch-pkgs`_, and ``rpuntaie-meta`` are two meta packages.
-For the latter: As ``pacman`` does not touch ``$HOME``, `dotfiles`_ should be done after installation,
-e.g. via `stow <https://www.gnu.org/software/stow/>`_.
-
-
-----
-
+Thanks
+======
 
 Inspired by:
 

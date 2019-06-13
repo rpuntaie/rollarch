@@ -1,0 +1,7 @@
+[submodule "pkg/yay"]
+    path = pkg/yay
+    url = https://aur.archlinux.org/yay
+
+[submodule "pkg/antigen-git"]
+    path = pkg/antigen-git
+    url = https://aur.archlinux.org/antigen-gi
