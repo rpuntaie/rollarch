@@ -21,7 +21,8 @@ package_rpuntaie-meta() {
     shadow sysfsutils systemd-sysvcompat tar texinfo usbutils util-linux which)
 
     # partly needed by rollarchroot
-    depends+=(nfs-utils samba sudo git python devtools dialog wpa_supplicant ntp openssh)
+    depends+=(nfs-utils samba sudo git mercurial subversion
+    python devtools dialog wpa_supplicant ntp openssh)
 
     # extra general packages (ag=the_silver_searcher)
     depends+=(stow ripgrep fd bc tmux wget fzf unzip pacman-contrib bat ncdu 
@@ -31,9 +32,6 @@ package_rpuntaie-meta() {
 
     # debugging tools
     depends+=(lsof bind-tools mtr socat htop iotop openbsd-netcat strace)
-
-    # shells
-    depends+=(zsh grml-zsh-config)
 
     # filesystems
     depends+=(exfat-utils dosfstools f2fs-tools)
@@ -45,18 +43,15 @@ package_rpuntaie-meta() {
     # C/C++
     depends+=(cmake meson cscope ctags llvm clang gdb lldb boost)
 
-    # DB
-    depends+=(sqlite mariadb)
+    # zsh (to configure via dotfiles, or install grm-zsh-config afterwards)
+    depends+=(acpi powerline powerline-fonts awesome-terminal-fonts zsh)
 
     # editor nvim vor CLI and gvim for GUI (see below)
-    depends+=(neovim python-neovim)
+    depends+=(neovim python-neovim gvim)
     install -dm 0755 "${pkgdir}/usr/bin"
     ln -s /usr/bin/nvim "${pkgdir}/usr/bin/vi"
     install -dm755 "${pkgdir}/usr/share/nvim/runtime/plugin/"
     ln -sf /usr/share/vim/vimfiles/plugin/fzf.vim "${pkgdir}/usr/share/nvim/runtime/plugin/fzf.vim"
-
-    # gvim
-    depends+=(gvim powerline powerline-fonts)
 
     # Python
     depends+=(python-gobject python-pyqt5 python-scipy python-sympy python-cairocffi
@@ -65,6 +60,9 @@ package_rpuntaie-meta() {
     python-snowballstemmer python-virtualenv python-yaml python-django python-tox
     python-pandas python-cvxopt python-webtest python-sphinx python-lxml python-pyx 
     ipython jupyter)
+
+    # DB
+    depends+=(sqlite mariadb)
 
     # Java/JS
     depends+=(jdk-openjdk yarn npm nodejs prettier scala gradle clojure groovy)
