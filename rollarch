@@ -32,7 +32,7 @@ usage() {
   echo "  ZONE [e.g. Vienna]"
   echo
   echo "Optional:"
-  echo "  SWAP [on|off] (off), set to on for non-SSD"
+  echo "  SWAP [on|off] (off), set to 'on' for non-SSD"
   echo "  IP2 [e.g. 1.106] for 192.168.1.106, else 'dhcp'"
   echo "  LA_NG in addition to en_US [e.g. de_DE] (none)"
   echo "  AIP2 [e.g. 1.199 | yes, to create Arch Proxy] (none)"
@@ -110,11 +110,14 @@ fi
 
 if [ "$LA_NG" != "" ]
 then
-  if [ "$LA_NG" = "en_US" ] || [[ ! "$LA_NG" =~ ^([a-z][a-z]_[A-Z][A-Z])$ ]]
-  then
-    echo 'additional LA_NG wrong' >&2
-    exit 1
-  fi
+  for la_ng in $LA_NG
+  do
+    if [ "$la_ng" = "en_US" ] || [[ ! "$la_ng" =~ ^([a-z][a-z]_[A-Z][A-Z])$ ]]
+    then
+      echo 'additional LA_NG wrong' >&2
+      exit 1
+    fi
+  done
 fi
 
 if [ "$SWAP" != "on" ]
@@ -201,8 +204,27 @@ fi
 mkdir -p /mnt/boot
 mount $BOOT /mnt/boot
 
+#for test_helper.bash
+if [[ -z $PACMAN_MIRROR_LIST ]]; then
+  PACMAN_MIRROR_LIST=/etc/pacman.d/mirrorlist
+fi
+if [[ -z $PACMAN_MIRROR_LIST ]]; then
+  MNT_ETC_FSTAB=/mnt/etc/fstab
+fi
+if [[ -z $MNT_ETC_PACMAN_CONF ]]; then
+  MNT_ETC_PACMAN_CONF=/mnt/etc/pacman.conf
+fi
+if [[ ! $(type check_mnt_bash) =~ .*function.* ]]; then
+  function check_mnt_bash()
+  {
+    if [[ ! -e /mnt/usr/bin/bash ]]; then
+      exit 1
+    fi
+  }
+fi
+
 # check 'custom'
-mv /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.org
+mv $PACMAN_MIRROR_LIST /etc/pacman.d/mirrorlist.org
 ##RANK: pacman -Sy --noconfirm pacman-contrib &>/dev/null
 if [[ "$AIP2" != "no" ]] && [[ "$AIP2" != "yes" ]]; then
   aip2server="http://192.168.$AIP2:8080"
@@ -227,7 +249,7 @@ fi
 #RANK: curl -s "$MIRRORLIST_URL" | \
 #RANK:     sed -e 's/^#Server/Server/' -e '/^#/d' | \
 #RANK:     rankmirrors -n 8 --max-time 0.1 - >> /etc/pacman.d/mirrorlist
-cat /etc/pacman.d/mirrorlist.org >> /etc/pacman.d/mirrorlist
+cat /etc/pacman.d/mirrorlist.org >> $PACMAN_MIRROR_LIST
 pacman -Sy
 
 META=
@@ -239,10 +261,10 @@ else
   pacstrap /mnt $GRUB arch-install-scripts base base-devel devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim
 fi
 
-genfstab -t PARTUUID /mnt >> /mnt/etc/fstab
+genfstab -t PARTUUID /mnt >> $MNT_ETC_FSTAB
 
 if [[ "$aip2server" != "" ]]; then
-  cat >> /mnt/etc/pacman.conf << EOF
+  cat >> $MNT_ETC_PACMAN_CONF << EOF
 [custom]
 SigLevel = Optional TrustAll
 Server = $aip2server
@@ -255,9 +277,7 @@ if [[ ! -e rollarchroot ]]; then
 fi
 mv ./rollarchroot /mnt/
 
-if [[ ! -e /mnt/usr/bin/bash ]]; then
-  exit 1
-fi
+check_mnt_bash
 
 # arch-chroot
 arch-chroot /mnt bash -c "
@@ -265,7 +285,7 @@ DSK=$DSK
 USR=$USR
 PW='$PW'
 HST=$HST
-LA_NG=$LA_NG
+LA_NG="$LA_NG"
 ZONE=$ZONE
 IP2=$IP2
 AIP2=$AIP2
@@ -275,9 +295,9 @@ ROOT=$ROOT
 UEFI=$UEFI
 . ./rollarchroot
 setup_all
-if [[ -n $META ]]; then
-  for m in $META; do
-    if [[ \$m =~ .*-meta ]]; then
+if [[ -n \$META ]]; then
+  for m in \$META; do
+    if [[ "\$m" =~ .*-meta ]]; then
       #make explicit
       pacman -D \$(LANG=C pacman -Si \$m |sed -n '/Depends\ On/,/:/p'|sed '\$d'|cut -d: -f2 |tr -d '>=[0-9]') --asexplicit
       pacman -R --noconfirm \$m
@@ -290,15 +310,25 @@ ln -sf /run/systemd/resolve/stub-resolv.conf /mnt/etc/resolv.conf &>/dev/null
 
 umount $BOOT &>/dev/null
 umount $ROOT &>/dev/null
-echo "
+echo "\033[0;32
   Arch Linux is ready. '/rollarchroot' is still there.
 
-  Next:
-
   'poweroff', remove media, boot
-  net usershare add myshare /home/$USR/path
-  mount -t cifs //196.168.x.y/share share -o username=$USR,vers=2.0
-  mount -t nfs 192.168.y.z:/path/to/share share
-  further (meta) packages (e.g. pacman -S rollarch-xmonad)
+
+  TODO
+  ====
+
+  cifs share and mount:
+
+  $ net usershare add cifs_share /home/$USR/path_to_cifs_share
+  $ mount -t cifs //196.168.$IP2/cifs_share cifs_share -o username=$USR,vers=2.0
+
+  nfs mount:
+
+  $ mount -t nfs 192.168.$IP2:/home/$USR/path_to_nfs_share nfs_share
+
+  user services:
+
+  $ systemctl enable --user keybase
 "
 

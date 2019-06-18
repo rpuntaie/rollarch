@@ -26,9 +26,9 @@ package_rpuntaie-meta() {
 
     # extra general packages (ag=the_silver_searcher)
     depends+=(stow ripgrep fd bc tmux wget fzf unzip pacman-contrib bat ncdu 
-    the_silver_searcher rtorrent tree p7zip ranger feh links)
+    the_silver_searcher rtorrent tree p7zip ranger)
 
-    depends+=(keybase kbfs keybase-gui) #pulls gnupg (gpg)
+    depends+=(keybase kbfs keybase-gui qrencode pass) #pulls gnupg (gpg)
 
     # debugging tools
     depends+=(lsof bind-tools mtr socat htop iotop openbsd-netcat strace)
@@ -77,13 +77,13 @@ package_rpuntaie-meta() {
     # PHP/Mediawiki
     depends+=(php nginx mediawiki)
 
-    # Bluetooth
+    # bluetooth
     depends+=(bluez bluez-utils)
 
-    # Audio
+    # audio
     depends+=(alsa-utils pulseaudio pulseaudio-alsa pulseaudio-bluetooth pavucontrol paprefs)
 
-    # Drivers and utilities
+    # drivers and utilities
     depends+=(xf86-input-libinput xf86-input-synaptics
     xf86-video-intel xf86-video-vesa nvidia nvidia-utils)
 
@@ -101,35 +101,41 @@ package_rpuntaie-meta() {
     depends+=(xmonad xmonad-contrib xterm alacritty xorg-xinit dmenu gmrun scrot slock
     libnotify dunst)
 
-    # Fonts
+    # fonts
     depends+=(noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra
     ttf-dejavu ttf-freefont xorg-fonts-misc)
 
-    # Virtualisation
+    # virtualisation
     depends+=(virtualbox-guest-modules-arch virtualbox-guest-utils virtualbox-host-modules-arch virtualbox vagrant)
 
-    # Docker
+    # docker
     depends+=(docker docker-compose dnsmasq)
 
-    # Embedded
+    # embedded
     depends+=(qemu qemu-arch-extra picocom ddrescue arm-none-eabi-gcc)
 
-    # Electronics
+    # electronics
     depends+=(kicad arduino arduino-docs)
 
-    # Graphics
+    # graphics
     depends+=(vtk mayavi opencascade librecad blender gimp krita inkscape sk1
     fontforge imagemagick imagemagick-doc processing openscad)
 
-    # Office
+    # office
     depends+=(libreoffice-fresh mathjax
     texlive-core texlive-fontsextra texlive-formatsextra texlive-latexextra texlive-langcyrillic)
 
-    # Vidoe
+    # video
     depends+=(vlc ffmpeg)
 
+    # browsers
+    depends+=(firefox chromium links qutebrowser)
+
     # viewers
-    depends+=(firefox chromium evince thunar ghostscript mupdf thunderbird)
+    depends+=(feh links evince thunar ghostscript mupdf)
+
+    # mail, IRC
+    depends+=(thunderbird neomutt offlineimap msmtp weechat)
 
     # dicts
     depends+=(goldendict aspell-de aspell-en aspell-es aspell-fr aspell-it aspell-ru)
@@ -139,6 +145,9 @@ package_rpuntaie-meta() {
 
     # science
     depends+=(pymol)
+
+    # organize, finance
+    depends+=(task ledger)
 }
 
 

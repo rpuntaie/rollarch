@@ -123,9 +123,9 @@ load test_helper
 @test "CHROOT preparation" {
     mock
     DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on run ./rollarch
+    #echo "#${lines[13]:0:4}" >&3
     [ "$status" -eq 0 ]
-    run tree rollarch.env
-    [ "${lines[0]}" = "rollarch.env" ]
-    [ "${lines[1]:1:7}" = "── boot" ]
+    [ "${lines[12]:0:4}" = "DSK=" ]
+    [ "${lines[13]:0:4}" = "USR=" ]
 }
 

@@ -24,7 +24,25 @@ Usage:
     curl -OLs https://git.io/installarch #inspect, modify
     DSK=/dev/sda USR=A PW=B HST=C IP2=1.106 ZONE=Berlin bash installarch
     
-The URL is short for ``https://raw.githubusercontent.com/rpuntaie/rollarch/master/rollarch``.
+``https://git.io/installarch`` is short for 
+``https://raw.githubusercontent.com/rpuntaie/rollarch/master/rollarch``.
+
+:DSK: disk on which to install (not partition)
+:USR: main user of the system
+:PW: password of main user
+:HST: host name of the system
+:ZONE: a city name ending that can be found in ``/usr/shar/zoneinfo``
+
+Optional:
+
+:IP2: (192.168.)x.y, [e.g. 1.106], else DHCP is set up
+:SWAP: [on|off] (off), set to ``on`` for non-SSD
+:IP2:  For 192.168.1.106, else 'dhcp'
+:LA_NG: Space separated list of xx_YY used in addition to en_US [e.g. "de_DE ru_RU"]
+        Don't include ``en_US``.
+:AIP2: [e.g. 1.199 | yes, to create Arch Proxy].
+       The x.y of another arch linux machin (the local proxy)
+
 
 Status
 ======
@@ -41,8 +59,8 @@ How `local proxy`_ and `custom packages`_ is used:
 
 - The repo for the (meta = dependencies only) `custom packages`_ is named ``custom``.
 
-- An optional ``AIP2=yes`` makes this install a `local proxy`_.
-  You can do this later with:
+- An optional ``AIP2=yes`` makes the install a `local proxy`_.
+  You can do this after installation with:
 
   .. code:: sh
 
@@ -63,7 +81,7 @@ How `local proxy`_ and `custom packages`_ is used:
 
   - fetches the submodules from AUR
   - builds all packages
-  - adds to and merges your ``custom`` repo and `custom packages`_
+  - adds to, and merges your ``custom`` repo and `custom packages`_
     with the rest of the packages of the `local proxy`_.
 
 - Make a new install with
@@ -71,6 +89,7 @@ How `local proxy`_ and `custom packages`_ is used:
   .. code:: sh
   
       DSK=/dev/sda USR=A PW=B HST=C IP2=1.106 AIP2=1.108 ZONE=Vienna bash installarch <your-packages>
+      #e.g. DSK=/dev/sda USR=u PW=p HST=up121 ZONE=Vienna IP2=1.121 AIP2=1.108 bash installarch rpuntaie-meta yay
       
   The optional ``your-packages`` are either provided by the ArchLinux repos or by a `local proxy`_ (AIP2) of yours.
   The optional ``AIP2=x.y``, e.g. ``1.199``, uses ``192.168.1.199`` as `local proxy`_.
