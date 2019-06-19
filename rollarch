@@ -292,8 +292,7 @@ if [[ -n \$META ]]; then
 fi
 if [[ -n \$DOTS ]]; then
   cd /home/$USR
-  HOME=/home/$USR
-  $(curl -Ls $DOTS)
+  sudo -H -u $USR bash -c '$(curl -Ls $DOTS)'
 fi
 "
 
