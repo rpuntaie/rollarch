@@ -293,7 +293,7 @@ fi
 if [[ -n \$DOTS ]]; then
   cd /home/$USR
   HOME=/home/$USR
-  $(curl -Ls \$DOTS)
+  $(curl -Ls $DOTS)
 fi
 "
 
