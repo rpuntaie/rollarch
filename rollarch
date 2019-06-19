@@ -36,6 +36,7 @@ usage() {
   echo "  IP2 [e.g. 1.106] for 192.168.1.106, else 'dhcp'"
   echo "  LA_NG in addition to en_US [e.g. de_DE] (none)"
   echo "  AIP2 [e.g. 1.199 | yes, to create Arch Proxy] (none)"
+  echo "  DOTS: URL to a bash installation script for dot files"
   echo
   echo "Desription:"
   echo "  - check parameters"
@@ -44,7 +45,6 @@ usage() {
   echo "  - pacstrap"
   echo "  - arch-chroot"
   echo
-  echo "Rankmirrors takes long, but if you accept that, uncomment the lines marked RANK"
   exit 0
 }
 
@@ -207,7 +207,6 @@ mount $BOOT /mnt/boot
 # check 'custom'
 PACMAN_MIRROR_LIST=${PACMAN_MIRROR_LIST:-/etc/pacman.d/mirrorlist}
 mv $PACMAN_MIRROR_LIST /etc/pacman.d/mirrorlist.org
-##RANK: pacman -Sy --noconfirm pacman-contrib &>/dev/null
 if [[ "$AIP2" != "no" ]] && [[ "$AIP2" != "yes" ]]; then
   aip2server="http://192.168.$AIP2:8080"
   if [[ $(head -n1 /etc/pacman.d/mirrorlist.org) != "Server = $aip2server" ]]; then
@@ -225,12 +224,6 @@ EOF
   fi
 fi
 
-#RANK: # rankmirrors takes too long
-#RANK: echo "Ranking mirrors ... "
-#RANK: MIRRORLIST_URL="https://www.archlinux.org/mirrorlist/?country=all&protocol=http&protocol=https&ip_version=4"
-#RANK: curl -Ls "$MIRRORLIST_URL" | \
-#RANK:     sed -e 's/^#Server/Server/' -e '/^#/d' | \
-#RANK:     rankmirrors -n 8 --max-time 0.1 - >> /etc/pacman.d/mirrorlist
 cat /etc/pacman.d/mirrorlist.org >> $PACMAN_MIRROR_LIST
 pacman -Sy
 
@@ -284,6 +277,8 @@ BOOT=$BOOT
 SWAP=$SWAP
 ROOT=$ROOT
 UEFI=$UEFI
+META='$META'
+DOTS='$DOTS'
 . ./rollarchroot
 setup_all
 if [[ -n \$META ]]; then
@@ -297,6 +292,7 @@ if [[ -n \$META ]]; then
 fi
 if [[ -n \$DOTS ]]; then
   cd /home/$USR
+  HOME=/home/$USR
   $(curl -Ls \$DOTS)
 fi
 "
@@ -305,7 +301,7 @@ ln -sf /run/systemd/resolve/stub-resolv.conf /mnt/etc/resolv.conf &>/dev/null
 
 umount $BOOT &>/dev/null
 umount $ROOT &>/dev/null
-echo "\033[0;32m
+echo -e "\033[0;32m
   Arch Linux is ready. '/rollarchroot' is still there.
 
   'poweroff', remove media, boot

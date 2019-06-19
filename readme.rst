@@ -42,6 +42,7 @@ Optional:
         Don't include ``en_US``.
 :AIP2: [e.g. 1.199 | yes, to create Arch Proxy].
        The x.y of another arch linux machin (the local proxy)
+:DOTS: URL to a bash installation script for dot files
 
 
 Status

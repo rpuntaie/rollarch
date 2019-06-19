@@ -1,5 +1,8 @@
 #!/bin/bash
 
+find root -exec rm -rf {} +
+rm -rf "root"
+
 #clone aur packages into ``pkg`` folder
 git pull --recurse-submodules
 
