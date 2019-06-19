@@ -13,11 +13,11 @@ package_rpuntaie-meta() {
     conflicts=(vi)
 
     # Base group:
-    # Explicitly removed from the base group: jfsutils lvm2 nano reiserfsprogs vi xfsprogs
+    # Explicitly removed from the base group: jfsutils lvm2 reiserfsprogs vi xfsprogs
     depends=(bash bzip2 coreutils cryptsetup device-mapper dhcpcd diffutils e2fsprogs file
     filesystem findutils gawk gcc-libs gettext glibc grep gzip inetutils iproute2
     iputils less licenses linux linux-firmware logrotate man-db
-    man-pages mdadm pacman pciutils perl procps-ng psmisc s-nail sed
+    man-pages mdadm pacman pciutils perl procps-ng psmisc s-nail sed nano
     shadow sysfsutils systemd-sysvcompat tar texinfo usbutils util-linux which)
 
     # partly needed by rollarchroot

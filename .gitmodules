@@ -1,4 +1,5 @@
 [submodule "pkg/yay"]
 	path = pkg/yay
 	url = https://aur.archlinux.org/yay
+	ignore = dirty
 

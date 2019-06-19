@@ -204,26 +204,8 @@ fi
 mkdir -p /mnt/boot
 mount $BOOT /mnt/boot
 
-#for test_helper.bash
-if [[ -z $PACMAN_MIRROR_LIST ]]; then
-  PACMAN_MIRROR_LIST=/etc/pacman.d/mirrorlist
-fi
-if [[ -z $PACMAN_MIRROR_LIST ]]; then
-  MNT_ETC_FSTAB=/mnt/etc/fstab
-fi
-if [[ -z $MNT_ETC_PACMAN_CONF ]]; then
-  MNT_ETC_PACMAN_CONF=/mnt/etc/pacman.conf
-fi
-if [[ ! $(type check_mnt_bash) =~ .*function.* ]]; then
-  function check_mnt_bash()
-  {
-    if [[ ! -e /mnt/usr/bin/bash ]]; then
-      exit 1
-    fi
-  }
-fi
-
 # check 'custom'
+PACMAN_MIRROR_LIST=${PACMAN_MIRROR_LIST:-/etc/pacman.d/mirrorlist}
 mv $PACMAN_MIRROR_LIST /etc/pacman.d/mirrorlist.org
 ##RANK: pacman -Sy --noconfirm pacman-contrib &>/dev/null
 if [[ "$AIP2" != "no" ]] && [[ "$AIP2" != "yes" ]]; then
@@ -246,7 +228,7 @@ fi
 #RANK: # rankmirrors takes too long
 #RANK: echo "Ranking mirrors ... "
 #RANK: MIRRORLIST_URL="https://www.archlinux.org/mirrorlist/?country=all&protocol=http&protocol=https&ip_version=4"
-#RANK: curl -s "$MIRRORLIST_URL" | \
+#RANK: curl -Ls "$MIRRORLIST_URL" | \
 #RANK:     sed -e 's/^#Server/Server/' -e '/^#/d' | \
 #RANK:     rankmirrors -n 8 --max-time 0.1 - >> /etc/pacman.d/mirrorlist
 cat /etc/pacman.d/mirrorlist.org >> $PACMAN_MIRROR_LIST
@@ -258,13 +240,13 @@ then
   META="$@"
   pacstrap /mnt $GRUB $@
 else
-  pacstrap /mnt $GRUB arch-install-scripts base base-devel devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim
+  pacstrap /mnt $GRUB arch-install-scripts base base-devel devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim zsh
 fi
 
-genfstab -t PARTUUID /mnt >> $MNT_ETC_FSTAB
+genfstab -t PARTUUID /mnt >> ${MNT_ETC_FSTAB:-/mnt/etc/fstab}
 
 if [[ "$aip2server" != "" ]]; then
-  cat >> $MNT_ETC_PACMAN_CONF << EOF
+  cat >> ${MNT_ETC_PACMAN_CONF:-/mnt/etc/pacman.conf} << EOF
 [custom]
 SigLevel = Optional TrustAll
 Server = $aip2server
@@ -276,6 +258,15 @@ if [[ ! -e rollarchroot ]]; then
   chmod a+x ./rollarchroot
 fi
 mv ./rollarchroot /mnt/
+
+if [[ ! $(type check_mnt_bash) =~ .*function.* ]]; then
+  function check_mnt_bash()
+  {
+    if [[ ! -e /mnt/usr/bin/bash ]]; then
+      exit 1
+    fi
+  }
+fi
 
 check_mnt_bash
 
@@ -304,19 +295,20 @@ if [[ -n \$META ]]; then
     fi
   done
 fi
+if [[ -n \$DOTS ]]; then
+  cd /home/$USR
+  $(curl -Ls \$DOTS)
+fi
 "
 
 ln -sf /run/systemd/resolve/stub-resolv.conf /mnt/etc/resolv.conf &>/dev/null
 
 umount $BOOT &>/dev/null
 umount $ROOT &>/dev/null
-echo "\033[0;32
+echo "\033[0;32m
   Arch Linux is ready. '/rollarchroot' is still there.
 
   'poweroff', remove media, boot
-
-  TODO
-  ====
 
   cifs share and mount:
 
@@ -327,8 +319,5 @@ echo "\033[0;32
 
   $ mount -t nfs 192.168.$IP2:/home/$USR/path_to_nfs_share nfs_share
 
-  user services:
-
-  $ systemctl enable --user keybase
 "
 

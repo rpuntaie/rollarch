@@ -89,7 +89,6 @@ How `local proxy`_ and `custom packages`_ is used:
   .. code:: sh
   
       DSK=/dev/sda USR=A PW=B HST=C IP2=1.106 AIP2=1.108 ZONE=Vienna bash installarch <your-packages>
-      #e.g. DSK=/dev/sda USR=u PW=p HST=up121 ZONE=Vienna IP2=1.121 AIP2=1.108 bash installarch rpuntaie-meta yay
       
   The optional ``your-packages`` are either provided by the ArchLinux repos or by a `local proxy`_ (AIP2) of yours.
   The optional ``AIP2=x.y``, e.g. ``1.199``, uses ``192.168.1.199`` as `local proxy`_.
@@ -101,22 +100,42 @@ How `local proxy`_ and `custom packages`_ is used:
 
   Examples:
 
-  - ``mdaffin-meta``, transformed from `arch-pkgs`_, and 
-  - ``rpuntaie-meta``. Here `dotfiles`_ should be added afterwards to complete the installation
+  - ``mdaffin-meta``: Transformed from `arch-pkgs`_ to fit to the above guidelines. Also configures, globally.
+  - ``rpuntaie-meta``: `dotfiles`_ are installed afterwards. See `include dotfiles`_.
+
+Include dotfiles
+================
+
+The Archlinux `dotfiles`_ wiki shows different methods to install dot files.
+A shell script can be wrapped over all of these methods.
+
+For this add a ``DOTS`` define.
+
+- ``DOTS`` specifies your 
+  `possibly shortened <https://bit.do/list-of-url-shorteners.php>`__
+  URL to a script that is directly forwarded to bash and does all the installation
+  including downloading/cloning.
+  The script is executed from within ``arch-chroot``, after ``cd /home/$USR``.
+
+
+As an example, my complete ArchLinux install with dotfiles:
+
+.. code:: sh
+
+    #replace all the defines
+    curl -OLs https://git.io/installarch
+    DSK=/dev/sda USR=u PW=p HST=up121 ZONE=Vienna IP2=1.121 AIP2=1.108 bash DOTS=file:///dotfiles_install installarch rpuntaie-meta yay
 
 
 Thanks
 ======
 
-Inspired by:
-
-- `archibold <https://github.com/WebReflection/archibold.io/tree/gh-pages>`__.
-- `arch-pkgs`_
-- `how to create archlinux repository <https://fusion809.github.io/how-to-create-archlinux-repository/>`__
+Inspired by `mdaffin`_ and
+`how to create archlinux repository <https://fusion809.github.io/how-to-create-archlinux-repository/>`__.
 
 
 
-.. _`arch-pkgs`: https://github.com/mdaffin/arch-pkgs
+.. _`mdaffin`: https://github.com/mdaffin/arch-pkgs
 .. _`local proxy`: https://wiki.archlinux.org/index.php/Pacman/Tips_and_tricks#Network_shared_pacman_cache
 .. _`custom packages`: https://wiki.archlinux.org/index.php/Pacman/Tips_and_tricks#Custom_local_repository
 .. _`dotfiles`: https://wiki.archlinux.org/index.php/Dotfiles
