@@ -124,7 +124,7 @@ As an example, my complete ArchLinux install with dotfiles:
 
     #replace all the defines
     curl -OLs https://git.io/installarch
-    DSK=/dev/sda USR=u PW=p HST=up121 ZONE=Vienna IP2=1.121 AIP2=1.108 bash DOTS=file:///dotfiles_install installarch rpuntaie-meta yay
+    DSK=/dev/sda USR=u PW=p HST=up121 ZONE=Vienna IP2=1.121 AIP2=1.108 bash DOTS=https://git.io/fjVcp installarch rpuntaie-meta yay
 
 
 Thanks
