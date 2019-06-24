@@ -248,7 +248,7 @@ ${APPEND}" > /boot/loader/entries/arch.conf
 }
 
 setup_user(){
-  useradd -m -g users -G wheel,uucp,storage,power,video,audio,lp,games,scanner -s /usr/bin/bash $USR &>/dev/null
+  useradd -m -g users -G wheel,uucp,storage,power,video,audio,lp,games,scanner,plugdev -s /usr/bin/bash $USR &>/dev/null
   if [ -e /usr/bin/zsh ]; then
     chsh -s /usr/bin/zsh $USR
   fi
