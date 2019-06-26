@@ -67,7 +67,7 @@ package_rpuntaie-meta() {
 
     # Other Languages
     depends+=(go mono dotnet-sdk skia-sharp ghc pandoc cabal-install git-annex lua rust julia 
-    openblas gcc-fortran gcc-objc ruby fpc)
+    openblas gcc-fortran gcc-objc tk ruby fpc)
 
     # IDE's
     depends+=(atom eclipse-cpp intellij-idea-community-edition lazarus)
@@ -143,7 +143,7 @@ package_rpuntaie-meta() {
     depends+=(eom feh links evince thunar ghostscript mupdf zathura)
 
     # mail, IRC
-    depends+=(thunderbird neomutt offlineimap msmtp weechat)
+    depends+=(thunderbird mutt offlineimap msmtp weechat)
 
     # dicts
     depends+=(dictd aspell-de aspell-en aspell-es aspell-fr aspell-it aspell-ru

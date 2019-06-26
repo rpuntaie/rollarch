@@ -258,6 +258,7 @@ if [[ ! -e rollarchroot ]]; then
 fi
 mv ./rollarchroot /mnt/
 
+#produces a "not found" error in bash, but if is entered
 if [[ ! $(type check_mnt_bash) =~ .*function.* ]]; then
   function check_mnt_bash()
   {
