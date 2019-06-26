@@ -96,7 +96,7 @@ package_rpuntaie-meta() {
     xorg-xwd xorg-xwininfo xorg-xwud xorg-server openssh-askpass)
 
     # window manager
-    depends+=(xmonad xmonad-contrib i3 openbox
+    depends+=(xmonad xmonad-contrib i3-wm openbox
     xterm alacritty rxvt-unicode xorg-xinit dmenu gmrun scrot slock
     libnotify dunst xsel xclip dex)
 

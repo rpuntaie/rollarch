@@ -36,7 +36,7 @@ fi
 
 setup_arch_proxy() {
   pacman -S --needed --noconfirm darkhttpd &>/dev/null
-  ln -s /var/lib/pacman/sync/*.db /var/cache/pacman/pkg
+  ln -sf /var/lib/pacman/sync/*.db /var/cache/pacman/pkg
   cd /usr/lib/systemd/system/
   cat darkhttpd.service | sed -e "s/Webserver/ArchProxy/g" -e "s,/srv/http.*$,/var/cache/pacman/pkg --no-server-id --port 8080,g" > ArchProxy.service
   systemctl enable ArchProxy &>/dev/null
