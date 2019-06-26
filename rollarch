@@ -36,6 +36,8 @@ usage() {
   echo "  IP2 [e.g. 1.106] for 192.168.1.106, else 'dhcp'"
   echo "  LA_NG in addition to en_US [e.g. de_DE] (none)"
   echo "  AIP2 [e.g. 1.199 | yes, to create Arch Proxy] (none)"
+  echo "  KM: (US) one of 'localectl list-keymaps'."
+  echo "      If in upper case: ESCAPE->CAPS_LOCK and CAPS_LOCK->WIN"
   echo "  DOTS: URL to a bash installation script for dot files"
   echo
   echo "Desription:"
@@ -123,6 +125,10 @@ fi
 if [ "$SWAP" != "on" ]
 then
   SWAP="off"
+fi
+
+if [ "$KM" == "" ]; then
+  KM="US"
 fi
 
 if [ -e /sys/firmware/efi ]; then
@@ -278,6 +284,7 @@ SWAP=$SWAP
 ROOT=$ROOT
 UEFI=$UEFI
 META='$META'
+KM='$KM'
 DOTS='$DOTS'
 . ./rollarchroot
 setup_all

@@ -43,7 +43,8 @@ Optional:
 :AIP2: [e.g. 1.199 | yes, to create Arch Proxy].
        The x.y of another arch linux machin (the local proxy)
 :DOTS: URL to a bash installation script for dot files
-
+:KM: (US) one of ``localectl list-keymaps``.
+     If in upper case: ESCAPE->CAPS_LOCK and CAPS_LOCK->WIN
 
 Status
 ======

@@ -75,21 +75,23 @@ setup_locale(){
 }
 
 setup_escape(){
-  # change: keycode  58 = Escape
-  local KBD=$(find /usr/share/kbd/keymaps/ -iname "us.map.gz")
-  cd "${KBD%/*}"
-  KBD=${KBD##*/}
-  cp $KBD rollarch$KBD.map.gz
-  gunzip rollarch$KBD.map.gz
-  sed -ie "s/keycode *58 *= *Caps_Lock/keycode 58 = Escape/g" rollarch$KBD.map
-  gzip rollarch$KBD.map
-  cd -
+  local KBD=$(find /usr/share/kbd/keymaps/i386 -iname "$KM.map*")
+  if [[ $(echo $KM | tr '[:upper:]' '[:lower:]') != $KM ]]; then
+    # add: keycode  125 (WIN) = Caps_Lock 
+    # change: keycode  58 (Caps_Lock) = Escape 
+    cd "${KBD%/*}"
+    KBD=${KBD##*/}
+    cp $KBD rollarch$KBD.map.gz
+    gunzip rollarch$KBD.map.gz
+    sed -ie "s/keycode *58 *= *Caps_Lock/keycode 58 = Escape/g" rollarch$KBD.map
+    echo "keycode 125 = Caps_Lock" >> rollarch$KBD.map
+    gzip rollarch$KBD.map
+    cd -
+  else
+    KBD=${KBD##*/}
+  fi
   loadkeys rollarch$KBD
-  cat > /etc/vconsole.conf <<EOF
-KEYMAP=rollarch$KBD
-FONT=lat9w-16
-FONT_MAP=8859-1_to_uni
-EOF
+  localectl set-keymap keymap
 }
 
 #for VirtualBox use bridged to have access to LAN
@@ -215,6 +217,7 @@ EOF
   chown root:sambashare /var/lib/samba/usershares
   chmod 1770 /var/lib/samba/usershares
   systemctl enable smb nmb &>/dev/null
+  systemctl enable sshd &>/dev/null
 }
 
 setup_boot(){
@@ -248,7 +251,7 @@ ${APPEND}" > /boot/loader/entries/arch.conf
 }
 
 setup_user(){
-  useradd -m -g users -G wheel,uucp,storage,power,video,audio,lp,games,scanner,plugdev -s /usr/bin/bash $USR &>/dev/null
+  useradd -m -g users -G wheel,uucp,storage,power,video,audio,lp,games,scanner,plugdev,lock -s /usr/bin/bash $USR &>/dev/null
   if [ -e /usr/bin/zsh ]; then
     chsh -s /usr/bin/zsh $USR
   fi

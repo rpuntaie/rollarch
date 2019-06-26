@@ -9,15 +9,11 @@ arch=(any)
 license=(MIT)
 
 package_rpuntaie-meta() {
-    provides=(vi)
-    conflicts=(vi)
-
     # Base group:
-    # Explicitly removed from the base group: jfsutils lvm2 reiserfsprogs vi xfsprogs
     depends=(bash bzip2 coreutils cryptsetup device-mapper dhcpcd diffutils e2fsprogs file
     filesystem findutils gawk gcc-libs gettext glibc grep gzip inetutils iproute2
-    iputils less licenses linux linux-firmware logrotate man-db
-    man-pages mdadm pacman pciutils perl procps-ng psmisc s-nail sed nano
+    iputils less licenses linux linux-firmware logrotate man-db jfsutils lvm2 reiserfsprogs xfsprogs
+    man-pages mdadm pacman pciutils perl procps-ng psmisc s-nail sed nano vi
     shadow sysfsutils systemd-sysvcompat tar texinfo usbutils util-linux which)
 
     # partly needed by rollarchroot
@@ -41,32 +37,33 @@ package_rpuntaie-meta() {
     groff libtool m4 make patch pkgconf systemd)
 
     # C/C++
-    depends+=(cmake meson cscope ctags llvm clang gdb lldb boost)
+    depends+=(cmake meson cscope ctags llvm clang gdb lldb boost eigen)
 
     # zsh (to configure via dotfiles, or install grm-zsh-config afterwards)
     depends+=(acpi powerline powerline-fonts awesome-terminal-fonts
     zsh zsh-syntax-highlighting zsh-autosuggestions zsh-completions zsh-history-substring-search)
 
     # editor nvim vor CLI and gvim for GUI (see below)
-    depends+=(neovim python-neovim gvim)
-    install -dm 0755 "${pkgdir}/usr/bin"
-    ln -s /usr/bin/nvim "${pkgdir}/usr/bin/vi"
-    install -dm755 "${pkgdir}/usr/share/nvim/runtime/plugin/"
-    ln -sf /usr/share/vim/vimfiles/plugin/fzf.vim "${pkgdir}/usr/share/nvim/runtime/plugin/fzf.vim"
+    depends+=(neovim python-neovim gvim pluma)
 
     # Python
-    depends+=(python-gobject python-pyqt5 python-scipy python-sympy python-cairocffi
-    python-docker python-docutils python-gmpy2 python-jinja python-matplotlib
-    python-pillow python-pip python-pygal python-pygments python-pytest python-setuptools
-    python-snowballstemmer python-virtualenv python-yaml python-django python-tox
-    python-pandas python-cvxopt python-webtest python-sphinx python-lxml python-pyx 
-    python-nltk ipython jupyter)
+    depends+=(python-gobject python-pyqt5 python-scipy python-sympy
+    python-sip python-cffi python-cairocffi python-h5py python-beautifulsoup4
+    python-html5lib python-bleach python-pytz python-docker python-docutils
+    python-gmpy2 python-jinja python-matplotlib python-pillow python-pip
+    python-pygal python-pygments python-pylint python-whoosh python-watchdog
+    python-pytest python-mock python-pytest-mock python-coverage python-pytest-cov
+    python-setuptools python-wheel python-snowballstemmer python-virtualenv python-yaml
+    python-django python-tornado python-tox python-pandas python-cvxopt python-webtest
+    python-sphinx python-lxml python-pyx python-urllib3 python-dateutil
+    python-decorator python-pyparsing python-nltk 
+    ipython python-ipykernel jupyter cython)
 
     # DB
     depends+=(sqlite mariadb)
 
     # Java/JS
-    depends+=(jdk-openjdk yarn npm nodejs prettier scala gradle clojure groovy)
+    depends+=(jdk-openjdk yarn npm nodejs prettier scala sbt gradle clojure groovy ant maven)
 
     # Other Languages
     depends+=(go mono dotnet-sdk skia-sharp ghc pandoc cabal-install git-annex lua rust julia 
@@ -96,10 +93,11 @@ package_rpuntaie-meta() {
     xorg-xgamma xorg-xhost xorg-xinput xorg-xkbcomp xorg-xkbevd xorg-xkbutils
     xorg-xlsatoms xorg-xlsclients xorg-xmodmap xorg-xpr xorg-xprop
     xorg-xrandr xorg-xrdb xorg-xrefresh xorg-xset xorg-xvinfo
-    xorg-xwd xorg-xwininfo xorg-xwud xorg-server)
+    xorg-xwd xorg-xwininfo xorg-xwud xorg-server openssh-askpass)
 
-    # xmonad window manager
-    depends+=(xmonad xmonad-contrib xterm alacritty xorg-xinit dmenu gmrun scrot slock
+    # window manager
+    depends+=(xmonad xmonad-contrib i3 openbox
+    xterm alacritty rxvt-unicode xorg-xinit dmenu gmrun scrot slock
     libnotify dunst xsel xclip dex)
 
     # fonts
@@ -117,24 +115,32 @@ package_rpuntaie-meta() {
     depends+=(qemu qemu-arch-extra picocom ddrescue arm-none-eabi-gcc)
 
     # electronics
-    depends+=(kicad arduino arduino-docs)
+    depends+=(kicad arduino arduino-docs yosys)
 
     # graphics
-    depends+=(vtk mayavi opencascade librecad blender gimp krita inkscape sk1
-    fontforge imagemagick imagemagick-doc processing openscad)
+    depends+=(graphviz vtk mayavi opencascade
+    opencv opencv-samples
+    librecad blender gimp krita inkscape
+    sk1 fontforge imagemagick imagemagick-doc processing openscad)
 
     # office
-    depends+=(libreoffice-fresh mathjax
-    texlive-core texlive-fontsextra texlive-formatsextra texlive-latexextra texlive-langcyrillic)
+    depends+=(libreoffice-fresh)
+
+    # tex
+    depends+=(texlive-core mathjax
+    texlive-bibtexextra texlive-fontsextra
+    texlive-formatsextra texlive-games texlive-humanities texlive-langcyrillic
+    texlive-latexextra texlive-music texlive-pictures
+    texlive-pstricks texlive-publishers texlive-science)
 
     # video
     depends+=(vlc ffmpeg)
 
     # browsers
-    depends+=(firefox chromium links qutebrowser)
+    depends+=(firefox chromium links qutebrowser w3m)
 
     # viewers
-    depends+=(feh links evince thunar ghostscript mupdf)
+    depends+=(eom feh links evince thunar ghostscript mupdf zathura)
 
     # mail, IRC
     depends+=(thunderbird neomutt offlineimap msmtp weechat)
@@ -147,7 +153,7 @@ package_rpuntaie-meta() {
     depends+=(octave sagemath r geogebra root gnuplot)
 
     # science
-    depends+=(pymol)
+    depends+=(hdf5 pymol)
 
     # organize, finance
     depends+=(task ledger)
