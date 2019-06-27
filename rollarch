@@ -166,7 +166,6 @@ function roll_find_partitions()
 
 function roll_mkfs()
 {
-  MNT_PNT=${MNT_PNT:-/mnt}
   if [[ "$SWAP" != "off" ]]; then
     yes y | mkswap $SWAP
   fi
@@ -177,7 +176,6 @@ function roll_mkfs()
   else
     mkfs -t vfat $BOOT &>/dev/null
   fi
-  mkdir -p $MNT_PNT/boot
 }
 
 
@@ -185,6 +183,7 @@ function roll_mount()
 {
   MNT_PNT=${MNT_PNT:-/mnt}
   mount $ROOT $MNT_PNT
+  mkdir -p $MNT_PNT/boot
   mount $BOOT $MNT_PNT/boot
 }
 
