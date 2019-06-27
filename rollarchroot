@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-rollarchrootusage(){
+function rollarchrootusage(){
   echo "Required defines:"
-  echo "DSK USR PW HST LA_NG ZONE IP2 AIP2 BOOT SWAP ROOT UEFI"
+  echo "DSK USR PW HST LA_NG ZONE IP2 AIP2 BOOT SWAP ROOT UEFI KM"
   echo ""
   echo "Functions for after arch-chroot"
   echo ""
@@ -19,40 +19,39 @@ rollarchrootusage(){
   exit 0
 }
 
-if [[ $1 = "--help" ]] || [[ $1 = "-h" ]]; then
+if [[ $1 == "--help" ]] || [[ $1 == "-h" ]]; then
   rollarchrootusage
 fi
 
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    for req in DSK USR PW HST LA_NG ZONE IP2 AIP2 BOOT SWAP ROOT UEFI
-    do
-      if [ "${!req}" = "" ]
-      then
-        echo "Fatal: ${req} missing!" >&2
-        exit 1
-      fi
-    done
-fi
+for req in DSK USR PW HST LA_NG ZONE IP2 AIP2 BOOT SWAP ROOT UEFI KM
+do
+  if [[ "${!req}" == "" ]]; then
+    echo "Fatal: ${req} missing!" >&2
+    exit 1
+  fi
+done
 
-setup_arch_proxy() {
+function setup_arch_proxy() {
   pacman -S --needed --noconfirm darkhttpd &>/dev/null
-  ln -sf /var/lib/pacman/sync/*.db /var/cache/pacman/pkg
+  ln -s /var/lib/pacman/sync/*.db /var/cache/pacman/pkg
   cd /usr/lib/systemd/system/
   cat darkhttpd.service | sed -e "s/Webserver/ArchProxy/g" -e "s,/srv/http.*$,/var/cache/pacman/pkg --no-server-id --port 8080,g" > ArchProxy.service
   systemctl enable ArchProxy &>/dev/null
+  cd -
 }
 
-setup_time(){
+function setup_time(){
+  LOCALTIMECONF=${LOCALTIMECONF:-/etc/localtime}
+  SYSTEMTIMECONF=${SYSTEMTIMECONF:-/etc/systemd/timesyncd.conf}
   for z in $(find /usr/share/zoneinfo/ -iname "*$ZONE"); do
-    if [[ ! $z =~ ^.*/right/.*$ ]] && [[ ! $z =~ ^.*/posix/.*$ ]]
-    then
-      rm -rf /etc/localtime
-      ln -s "$z" /etc/localtime
+    if [[ ! $z =~ ^.*/right/.*$ ]] && [[ ! $z =~ ^.*/posix/.*$ ]]; then
+      rm -rf $LOCALTIMECONF
+      ln -s "$z" $LOCALTIMECONF
       break
     fi
   done
   hwclock --systohc
-  cat > /etc/systemd/timesyncd.conf <<EOF
+  cat > $SYSTEMTIMECONF <<EOF
 [Time]
 NTP=0.arch.pool.ntp.org 1.arch.pool.ntp.org 2.arch.pool.ntp.org 3.arch.pool.ntp.org
 FallbackNTP=0.pool.ntp.org 1.pool.ntp.org
@@ -63,24 +62,27 @@ EOF
   timedatectl set-ntp true
 }
 
-setup_locale(){
+function setup_locale(){
+  LOCALEGEN=${LOCALEGEN:-/etc/locale.gen}
+  LOCALECONF=${LOCALECONF:-/etc/locale.conf}
   local X=$LA_NG
   X+=" en_US"
   for x in $X
   do
-    sed -i -r "s/^#($x.* UTF-8)/\1/" /etc/locale.gen
+    sed -i -r "s/^#($x.* UTF-8)/\1/" $LOCALEGEN
   done
   locale-gen
-  LC_ALL="en_US.UTF-8" locale > /etc/locale.conf
+  LC_ALL="en_US.UTF-8" locale > $LOCALECONF
 }
 
-setup_escape(){
+function setup_escape(){
   local KBD=$(find /usr/share/kbd/keymaps/i386 -iname "$KM.map*")
   if [[ $(echo $KM | tr '[:upper:]' '[:lower:]') != $KM ]]; then
     # add: keycode  125 (WIN) = Caps_Lock 
     # change: keycode  58 (Caps_Lock) = Escape 
     cd "${KBD%/*}"
     KBD=${KBD##*/}
+    KBD=${KBD%%.*}
     cp $KBD rollarch$KBD.map.gz
     gunzip rollarch$KBD.map.gz
     sed -ie "s/keycode *58 *= *Caps_Lock/keycode 58 = Escape/g" rollarch$KBD.map
@@ -95,14 +97,23 @@ setup_escape(){
 }
 
 #for VirtualBox use bridged to have access to LAN
-setup_network(){
-  echo $HST > /etc/hostname
-  cat > /etc/hosts <<EOF
+function setup_network(){
+  LOADMODULECIFS=${LOADMODULECIFS:-/etc/modules-load.d/cifs.conf}
+  VARLIBSAMBAUSERSHARES=${VARLIBSAMBAUSERSHARES:-/var/lib/samba/usershares}
+  ETCSAMBASMB=${ETCSAMBASMB:-/etc/samba/smb.conf}
+  ETCSYSTEMDNETWORKWIRED=${ETCSYSTEMDNETWORKWIRED:-/etc/systemd/network/20-wired.network}
+  ETCSYSTEMDNETWORKWIRELESS=${ETCSYSTEMDNETWORKWIRELESS:-/etc/systemd/network/25-wireless.network}
+  ETCSYSTEMDSYSTEMNETWORKSERVICE=${ETCSYSTEMDSYSTEMNETWORKSERVICE:-/etc/systemd/system/network.service}
+  ETCSYSTEMDRESOLVEDCONF=${ETCSYSTEMDRESOLVEDCONF:-/etc/systemd/resolved.conf}
+  ETCHOSTS=${ETCHOSTS:-/etc/hosts}
+  ETCHOSTNAME=${ETCHOSTNAME:-/etc/hostname}
+  echo $HST > $ETCHOSTNAME
+  cat > $ETCHOSTS <<EOF
 127.0.0.1     localhost
 ::1           localhost
 127.0.0.1     $HST.localdomain  $HST
 EOF
-  if [ "$IP2" != "dhcp" ]; then
+  if [[ "$IP2" != "dhcp" ]]; then
     #IP2="1.100"
     local IPE=${IP2##*.} #100
     local IPB=${IP2%$IPE} #1.
@@ -110,13 +121,15 @@ EOF
     local CIDR="192.168.$IP2/24"
     ## #systemd-resolved instead of
     ## echo "nameserver $NS" > /etc/resolv.conf
-    sed -i -e "s/#DNS=.*$/DNS=$NS/g" -e "s/#FallbackDNS/FallbackDNS/g" -e "s/#LLMNR/LLMNR/g" -e "s/#Multi/Multi/g" /etc/systemd/resolved.conf
+    sed -i -e "s/#DNS=.*$/DNS=$NS/g" -e "s/#FallbackDNS/FallbackDNS/g" -e "s/#LLMNR/LLMNR/g" -e "s/#Multi/Multi/g" $ETCSYSTEMDRESOLVEDCONF
   fi
+  local had_e=""
+  local had_w=""
   for NIC in $(ip link show|grep " UP \| DOWN "|sed "s/^[^:]: \([^:]\+\).*/\1/g"); do
-    if [ ${NIC:0:1} = "e" ] && [ "$had_e" = "" ]; then
-      local had_e="yes"
-      if [ "$IP2" != "dhcp" ]; then
-        cat > /etc/systemd/system/network.service <<EOF
+    if [[ ${NIC:0:1} == "e" ]] && [[ "$had_e" == "" ]]; then
+      had_e="yes"
+      if [[ "$IP2" != "dhcp" ]]; then
+        cat > $ETCSYSTEMDSYSTEMNETWORKSERVICE <<EOF
 [Unit]
 Description=Network Connectivity
 Wants=network.target
@@ -136,7 +149,7 @@ ExecStop=/usr/bin/ip link set dev $NIC down
 [Install]
 WantedBy=multi-user.target
 EOF
-        cat > /etc/systemd/network/20-wired.network <<EOF
+        cat > $ETCSYSTEMDNETWORKWIRED <<EOF
 [Match]
 Name=$NIC
 
@@ -151,7 +164,7 @@ MulticastDNS=yes
 Metric=10
 EOF
       else
-        cat > /etc/systemd/network/20-wired.network <<EOF
+        cat > $ETCSYSTEMDNETWORKWIRED <<EOF
 [Match]
 Name=$NIC
 
@@ -164,10 +177,10 @@ MulticastDNS=yes
 RouteMetric=10
 EOF
       fi
-    elif [ ${NIC:0:1} = "w" ] && [ "$had_w" = "" ]; then
-      local had_w="yes"
-      if [ "$IP2" != "dhcp" ]; then
-        cat > /etc/systemd/network/25-wireless.network <<EOF
+    elif [[ ${NIC:0:1} == "w" ]] && [[ "$had_w" == "" ]]; then
+      had_w="yes"
+      if [[ "$IP2" != "dhcp" ]]; then
+        cat > $ETCSYSTEMDNETWORKWIRELESS <<EOF
 [Match]
 Name=$NIC
 
@@ -182,7 +195,7 @@ MulticastDNS=yes
 Metric=20
 EOF
       else
-        cat > /etc/systemd/network/25-wireless.network <<EOF
+        cat > $ETCSYSTEMDNETWORKWIRELESS <<EOF
 [Match]
 Name=$NIC
 
@@ -202,7 +215,7 @@ EOF
   #edit /etc/exports to nfs export folders
   systemctl enable nfs-server.service &>/dev/null
   ## samba
-  cat > /etc/samba/smb.conf <<EOF
+  cat > $ETCSAMBASMB <<EOF
 [global]
    usershare path = /var/lib/samba/usershares
    usershare max shares = 100
@@ -211,29 +224,31 @@ EOF
 
 EOF
   curl -Ls https://raw.githubusercontent.com/samba-team/samba/master/examples/smb.conf.default|sed \
-    -e "s,log file = .*$,logging = systemd,g" -e "s,MYGROUP,WORKGROUP,g" -e "s/\[global\]//g" >> /etc/samba/smb.conf
-  mkdir -p /var/lib/samba/usershares
-  groupadd -r sambashare &>dev/null
-  chown root:sambashare /var/lib/samba/usershares
-  chmod 1770 /var/lib/samba/usershares
+    -e "s,log file = .*$,logging = systemd,g" -e "s,MYGROUP,WORKGROUP,g" -e "s/\[global\]//g" >> $ETCSAMBASMB
+  mkdir -p $VARLIBSAMBAUSERSHARES
+  groupadd -r sambashare &>/dev/null
+  chown root:sambashare $VARLIBSAMBAUSERSHARES
+  chmod 1770 $VARLIBSAMBAUSERSHARES
   systemctl enable smb nmb &>/dev/null
   systemctl enable sshd &>/dev/null
+  echo "cifs" > $LOADMODULECIFS
 }
 
-setup_boot(){
+function setup_boot(){
+  ARCHLOADERCONF=${ARCHLOADERCONF:-/boot/loader/entries/arch.conf}
   UCODE=''
   UCODE_STRING=''
-  if [ "$(cat /proc/cpuinfo | grep GenuineIntel)" != "" ]; then
+  if [[ "$(cat /proc/cpuinfo | grep GenuineIntel)" != "" ]]; then
     UCODE='intel-ucode'
-  elif [ "$(cat /proc/cpuinfo | grep AuthenticAMD)" != "" ]; then
+  elif [[ "$(cat /proc/cpuinfo | grep AuthenticAMD)" != "" ]]; then
     UCODE='amd-ucode'
   fi
-  if [ "$UCODE" != "" ]; then
+  if [[ "$UCODE" != "" ]]; then
     UCODE_STRING="initrd  /${UCODE}.img
 "
     pacman -S --needed --noconfirm $UCODE &>/dev/null
   fi
-  if [ "$UEFI" = "on" ]; then
+  if [[ "$UEFI" == "on" ]]; then
     pacman -S --needed --noconfirm efibootmgr efitools &>/dev/null
     bootctl --path=/boot install
     PARTUUID="$(blkid -s PARTUUID -o value $ROOT)"
@@ -241,18 +256,17 @@ setup_boot(){
     echo "title   ${HST}
 linux   /vmlinuz-linux
 ${UCODE_STRING}initrd  /initramfs-linux.img
-${APPEND}" > /boot/loader/entries/arch.conf
+${APPEND}" > $ARCHLOADERCONF
   else
     mkinitcpio -p linux
     grub-install --target=i386-pc --recheck $DSK &>/dev/null
     grub-mkconfig -o "/boot/grub/grub.cfg" &>/dev/null
   fi
-  echo "cifs" > /etc/modules-load.d/cifs.conf
 }
 
-setup_user(){
+function setup_user(){
   useradd -m -g users -G wheel,uucp,storage,power,video,audio,lp,games,scanner,plugdev,lock -s /usr/bin/bash $USR &>/dev/null
-  if [ -e /usr/bin/zsh ]; then
+  if [[ -e /usr/bin/zsh ]]; then
     chsh -s /usr/bin/zsh $USR
   fi
   echo -e "$PW
@@ -265,7 +279,7 @@ $PW" | smbpasswd -a $USR
   sed -i -e "s/^# *\(%wheel ALL=(ALL) ALL\)/\1/" /etc/sudoers
 }
 
-setup_all(){
+function setup_all(){
   setup_time
   setup_locale
   setup_escape
@@ -279,7 +293,7 @@ setup_all(){
     setup_user
   fi
 
-  if [[ $AIP2 = "yes" ]]; then
+  if [[ $AIP2 == "yes" ]]; then
     setup_arch_proxy
   fi
 
@@ -289,8 +303,7 @@ setup_all(){
   fi
 }
 
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
-then
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   setup_all
   exit 0
 fi

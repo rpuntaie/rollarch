@@ -17,13 +17,16 @@ Look into `rollarch`__ to see what is done during installation.
 
 __ https://github.com/rpuntaie/rollarch/blob/master/rollarch
 
-Usage:
+Usage
+=====
+
+After booting the installation medium in the ``archiso`` prompt do
 
 .. code:: sh
 
     curl -OLs https://git.io/installarch #inspect, modify
     DSK=/dev/sda USR=A PW=B HST=C IP2=1.106 ZONE=Berlin bash installarch
-    
+
 ``https://git.io/installarch`` is short for 
 ``https://raw.githubusercontent.com/rpuntaie/rollarch/master/rollarch``.
 
@@ -46,13 +49,29 @@ Optional:
 :KM: (US) one of ``localectl list-keymaps``.
      If in upper case: ESCAPE->CAPS_LOCK and CAPS_LOCK->WIN
 
+Alternatively you can clone to another LAN box (e.g. 1.108) and add the path to NFS
+
+/etc/exports::
+
+   # Use `exportfs -arv` to reload.
+   /path/to/rollarch	    192.168.1.0/24(rw,sync,subtree_check)
+
+Then in the ``archiso`` prompt:
+
+.. code:: sh
+
+    mkdir rollarch
+    mount -t nfs 192.168.1.108:</path/to/rollarch> rollarch
+    cd rollarch
+    DSK=/dev/sda USR=A PW=B HST=C IP2=1.106 ZONE=Berlin bash rollarch
+
+
 Status
 ======
 
 Tested for VirtualBox (EFI and BIOS) and BIOS PC.
 
 VirtualBox needs *Bridged Adapter* to enable access to LAN.
-
 
 Custom Packages
 ===============
@@ -89,9 +108,9 @@ How `local proxy`_ and `custom packages`_ is used:
 - Make a new install with
 
   .. code:: sh
-  
+
       DSK=/dev/sda USR=A PW=B HST=C IP2=1.106 AIP2=1.108 ZONE=Vienna bash installarch <your-packages>
-      
+
   The optional ``your-packages`` are either provided by the ArchLinux repos or by a `local proxy`_ (AIP2) of yours.
   The optional ``AIP2=x.y``, e.g. ``1.199``, uses ``192.168.1.199`` as `local proxy`_.
   ``mirrorlist`` gets a ``Server = 191.168.1.199`` at the top.
@@ -134,7 +153,6 @@ Thanks
 
 Inspired by `mdaffin`_ and
 `how to create archlinux repository <https://fusion809.github.io/how-to-create-archlinux-repository/>`__.
-
 
 
 .. _`mdaffin`: https://github.com/mdaffin/arch-pkgs
