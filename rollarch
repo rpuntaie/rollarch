@@ -24,12 +24,12 @@ function rollarch_usage()
   echo "'AIP2=x.y' for 192.168.x.y is the only additional parameter needed.".
   echo "'AIP2=yes' sets up an ArchProxy server instead of using one."
   echo
-  echo "Required:"
-  echo "  DSK [e.g. dev/sdX]"
-  echo "  USR [not "root"]"
-  echo "  PW [e.g. 's$92 37d sdxG?']"
-  echo "  HST host network name"
-  echo "  ZONE [e.g. Vienna]"
+  echo "Required: values are exampes"
+  echo "# DSK=/dev/sda"
+  echo "# USR=u"
+  echo "# PW=p"
+  echo "# HST=up121"
+  echo "# ZONE=Vienna"
   echo
   echo "Optional:"
   echo "  SWAP [on|off] (off), set to 'on' for non-SSD"
@@ -47,7 +47,6 @@ function rollarch_usage()
   echo "  - pacstrap"
   echo "  - arch-chroot using rollarchroot script"
   echo
-  exit 0
 }
 
 function rollarch_check_internet()
@@ -55,7 +54,7 @@ function rollarch_check_internet()
   ping -c 1 -W 1 8.8.8.8 &>/dev/null
   if [[ $? != 0 ]]; then
     echo 'Fatal: Internet not available. Fix first.' >&2
-    exit 1
+    return 1
   fi
 
   if [[ "$(which ntpdate 2> /dev/null)" != "" ]]; then
@@ -71,23 +70,23 @@ function rollarch_check_defines()
   do
     if [[ "${!req}" == "" ]]; then
       echo "Fatal: ${req} missing!" >&2
-      exit 1
+      return 1
     fi
   done
 
   if [[ ! -e $DSK ]]; then
     echo 'Fatal: DSK wrong' >&2
-    exit 1
+    return 1
   fi
 
   if [[ "$USR" == "root" ]] || [[ "$(echo $USR | sed -e 's/[a-z]//g')" != "" ]]; then
     echo 'Fatal: USR wrong' >&2
-    exit 1
+    return 1
   fi
 
   if [[ $(find /usr/share/zoneinfo -iname "*$ZONE" | wc -l) == 0 ]]; then
     echo 'Fatal: ZONE wrong' >&2
-    exit 1
+    return 1
   fi
 
   if [[ ! "$IP2" =~ ^([0-9]+[.][0-9]+)$ ]]; then
@@ -106,7 +105,7 @@ function rollarch_check_defines()
     do
       if [[ "$la_ng" == "en_US" ]] || [[ ! "$la_ng" =~ ^([a-z][a-z]_[A-Z][A-Z])$ ]]; then
         echo 'additional LA_NG wrong' >&2
-        exit 1
+        return 1
       fi
     done
   fi
@@ -157,13 +156,12 @@ function roll_find_partitions()
   done
   if [[ "$ROOT" == "" ]]; then
     echo 'unable to find ROOT the partition' >&2
-    return 0
+    return 1
   fi
   if [[ "$BOOT" == "" ]]; then
     echo 'unable to find BOOT the partition' >&2
-    return 0
+    return 1
   fi
-  return 1
 }
 
 
@@ -219,7 +217,7 @@ function rollarch_partition()
     parted --script --align optimal $DSK mkpart primary ext4 $swapsize 100% &>/dev/null
   fi
   roll_find_partitions
-  [[ $? ]] || exit 1
+  [[ $?==0 ]] || return 1
   roll_mkfs
   roll_mount
 }
@@ -266,21 +264,22 @@ SigLevel = Optional TrustAll
 Server = $aip2server
 EOF
   fi
-
-  if [[ ! -e rollarchroot ]]; then
-    curl -OLs https://raw.githubusercontent.com/rpuntaie/rollarch/master/rollarchroot
-    chmod a+x ./rollarchroot
-  fi
-  mv ./rollarchroot $MNT_PNT
-
-  if [[ ! -e $MNT_PNT/usr/bin/bash ]]; then
-    exit 1
-  fi
 }
 
 
 function rollarch_chroot()
 {
+  if [[ ! -e rollarchroot ]]; then
+    curl -OLs https://raw.githubusercontent.com/rpuntaie/rollarch/master/rollarchroot
+    chmod a+x ./rollarchroot
+  fi
+  cp ./rollarchroot $MNT_PNT
+
+  if [[ ! -e $MNT_PNT/usr/bin/bash ]]; then
+    echo 'Fatal: pacstrap failed.' >&2
+    return 1
+  fi
+
   arch-chroot $MNT_PNT bash -c "
 DSK=$DSK
 USR=$USR
@@ -350,14 +349,19 @@ function rollarch_main()
 {
   if [[ $1 == "--help" ]] || [[ $1 == "-h" ]]; then
     rollarch_usage
+    exit 0
   fi
 
   rollarch_check_internet
+  [[ $? == 0 ]] || return 1
   rollarch_check_defines
+  [[ $? == 0 ]] || return 1
   rollarch_mirrorlist
   rollarch_partition
+  [[ $? == 0 ]] || return 1
   rollarch_packstrap
   rollarch_chroot
+  [[ $? == 0 ]] || return 1
   rollarch_bye
 }
 

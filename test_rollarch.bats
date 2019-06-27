@@ -162,7 +162,7 @@ teardown()
     DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on run ./rollarch
     #echo "#${lines[8]:0:4}" >&3
     [ "$status" -eq 0 ]
-    [ "${lines[11]:0:4}" = "DSK=" ]
-    [ "${lines[12]:0:4}" = "USR=" ]
+    [ "${lines[10]:0:4}" = "DSK=" ]
+    [ "${lines[11]:0:4}" = "USR=" ]
 }
 
