@@ -62,7 +62,7 @@ teardown()
 #1
 @test "show help" {
     run ./rollarchroot -h
-    [ "${lines[1]}" = "DSK USR PW HST LA_NG ZONE IP2 AIP2 BOOT SWAP ROOT UEFI KM" ]
+    [ "${lines[1]}" = "DSK USR PW HST ZONE IP2 AIP2 BOOT SWAP ROOT UEFI KM" ]
     [ "$status" -eq 0 ]
 }
 
@@ -83,8 +83,7 @@ teardown()
     UEFI=UEFI\
     KM=KM\
     run source rollarchroot
-    #echo "#${lines[1]}" >&3
-    [ "$status" -eq 1 ]
+    [ "${lines[0]}" = "DSK missing!" ]
 }
 
 #3
@@ -232,7 +231,7 @@ teardown()
     KM="US"
     run setup_escape
     #echo "#${lines[0]}" >&3
-    [ "${lines[0]}" = "us rollarchus.map.gz" ]
+    [ "${lines[0]}" = "us.map.gz rollarchus.map.gz" ]
     [ "${lines[4]}" = "rollarchus.map" ]
 }
 

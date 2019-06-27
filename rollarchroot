@@ -30,8 +30,7 @@ fi
 for req in DSK USR PW HST ZONE IP2 AIP2 BOOT SWAP ROOT UEFI KM
 do
   if [[ "${!req}" == "" ]]; then
-    echo "Fatal: ${req} missing!" >&2
-    exit 1
+    echo "${req} missing!" >&2
   fi
 done
 
@@ -311,7 +310,7 @@ function setup_all(){
   setup_boot
 
   if [[ -z "$PW" ]]; then
-    PW=$(dialog --stdout --passwordbox "Enter password for $USR and root" 0 0) || exit 1
+    PW=$(dialog --stdout --passwordbox "Enter password for $USR and root" 0 0)
   fi
   if [[ -n "$PW" ]]; then
     setup_user
