@@ -124,7 +124,6 @@ function rollarch_check_defines()
     UEFI="off"
   fi
 
-  MNT_PNT=${MNT_PNT:-/mnt}
   ROLLARCH_MIRRORLIST=${ROLLARCH_MIRRORLIST:-/etc/pacman.d/mirrorlist}
   USRPKGS="$@"
 }
@@ -167,6 +166,7 @@ function roll_find_partitions()
 
 function roll_mkfs()
 {
+  MNT_PNT=${MNT_PNT:-/mnt}
   if [[ "$SWAP" != "off" ]]; then
     yes y | mkswap $SWAP
   fi
@@ -183,6 +183,7 @@ function roll_mkfs()
 
 function roll_mount()
 {
+  MNT_PNT=${MNT_PNT:-/mnt}
   mount $ROOT $MNT_PNT
   mount $BOOT $MNT_PNT/boot
 }
@@ -247,6 +248,8 @@ EOF
 
 function rollarch_packstrap()
 {
+  MNT_PNT=${MNT_PNT:-/mnt}
+
   pacman -Sy
 
   if [[ "$USRPKGS" != "" ]]; then
@@ -269,6 +272,8 @@ EOF
 
 function rollarch_chroot()
 {
+  MNT_PNT=${MNT_PNT:-/mnt}
+
   if [[ ! -e rollarchroot ]]; then
     curl -OLs https://raw.githubusercontent.com/rpuntaie/rollarch/master/rollarchroot
     chmod a+x ./rollarchroot
@@ -278,6 +283,11 @@ function rollarch_chroot()
   if [[ ! -e $MNT_PNT/usr/bin/bash ]]; then
     echo 'Fatal: pacstrap failed.' >&2
     return 1
+  fi
+
+  DOTSINSTALL=""
+  if [[ ! "$DOTS" == "" ]]; then
+    DOTSINSTALL="$(curl -Ls $DOTS)"
   fi
 
   arch-chroot $MNT_PNT bash -c "
@@ -293,24 +303,11 @@ BOOT=$BOOT
 SWAP=$SWAP
 ROOT=$ROOT
 UEFI=$UEFI
-USRPKGS='$USRPKGS'
 KM='$KM'
-DOTS='$DOTS'
+USRPKGS='$USRPKGS'
+DOTSINSTALL='$DOTSINSTALL'
 . ./rollarchroot
 setup_all
-if [[ -n \$USRPKGS ]]; then
-  for m in \$USRPKGS; do
-    if [[ "\$m" =~ .*-meta ]]; then
-      #make explicit
-      pacman -D \$(LANG=C pacman -Si \$m |sed -n '/Depends\ On/,/:/p'|sed '\$d'|cut -d: -f2 |tr -d '>=[0-9]') --asexplicit
-      pacman -R --noconfirm \$m
-    fi
-  done
-fi
-if [[ -n \$DOTS ]]; then
-  cd /home/$USR
-  sudo -H -u $USR bash -c '$(curl -Ls $DOTS)'
-fi
 "
 
   ln -sf /run/systemd/resolve/stub-resolv.conf $MNT_PNT/etc/resolv.conf &>/dev/null
