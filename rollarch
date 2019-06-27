@@ -64,6 +64,32 @@ function rollarch_check_internet()
 }
 
 
+if [[ "$AIP2" == "" ]]; then
+  AIP2="no"
+elif [[ ! "$AIP2" =~ ^([0-9]+[.][0-9]+)$ ]] && [[ "$AIP2" != "no" ]]; then
+  AIP2="yes"
+fi
+if [[ "$SWAP" != "on" ]]; then
+  SWAP="off"
+fi
+if [[ "$KM" == "" ]]; then
+  KM="US"
+fi
+if [[ -e /sys/firmware/efi ]]; then
+  UEFI="on"
+else
+  UEFI="off"
+fi
+if [[ ! "$IP2" =~ ^([0-9]+[.][0-9]+)$ ]]; then
+  IP2="dhcp"
+fi
+DOTSINSTALL=""
+if [[ ! "$DOTS" == "" ]]; then
+  DOTSINSTALL="$(curl -Ls $DOTS)"
+fi
+USRPKGS="$@"
+ROLLARCH_MIRRORLIST=${ROLLARCH_MIRRORLIST:-/etc/pacman.d/mirrorlist}
+
 function rollarch_check_defines()
 {
   for req in DSK USR PW HST ZONE
@@ -89,17 +115,6 @@ function rollarch_check_defines()
     return 1
   fi
 
-  if [[ ! "$IP2" =~ ^([0-9]+[.][0-9]+)$ ]]; then
-    IP2="dhcp"
-  fi
-
-
-  if [[ "$AIP2" == "" ]]; then
-    AIP2="no"
-  elif [[ ! "$AIP2" =~ ^([0-9]+[.][0-9]+)$ ]] && [[ "$AIP2" != "no" ]]; then
-    AIP2="yes"
-  fi
-
   if [[ "$LA_NG" != "" ]]; then
     for la_ng in $LA_NG
     do
@@ -110,22 +125,6 @@ function rollarch_check_defines()
     done
   fi
 
-  if [[ "$SWAP" != "on" ]]; then
-    SWAP="off"
-  fi
-
-  if [[ "$KM" == "" ]]; then
-    KM="US"
-  fi
-
-  if [[ -e /sys/firmware/efi ]]; then
-    UEFI="on"
-  else
-    UEFI="off"
-  fi
-
-  ROLLARCH_MIRRORLIST=${ROLLARCH_MIRRORLIST:-/etc/pacman.d/mirrorlist}
-  USRPKGS="$@"
 }
 
 function roll_find_partitions()
@@ -280,13 +279,12 @@ function rollarch_chroot()
   cp ./rollarchroot $MNT_PNT
 
   if [[ ! -e $MNT_PNT/usr/bin/bash ]]; then
-    echo 'Fatal: pacstrap failed.' >&2
-    return 1
-  fi
-
-  DOTSINSTALL=""
-  if [[ ! "$DOTS" == "" ]]; then
-    DOTSINSTALL="$(curl -Ls $DOTS)"
+    roll_find_partitions
+    roll_mount
+    if [[ ! -e $MNT_PNT/usr/bin/bash ]]; then
+      echo 'Fatal: pacstrap failed.' >&2
+      return 1
+    fi
   fi
 
   arch-chroot $MNT_PNT bash -c "
@@ -306,7 +304,7 @@ KM='$KM'
 USRPKGS='$USRPKGS'
 DOTSINSTALL='$DOTSINSTALL'
 . ./rollarchroot
-setup_all
+$1
 "
 
   ln -sf /run/systemd/resolve/stub-resolv.conf $MNT_PNT/etc/resolv.conf &>/dev/null
@@ -356,7 +354,7 @@ function rollarch_main()
   rollarch_partition
   [[ $? == 0 ]] || return 1
   rollarch_packstrap
-  rollarch_chroot
+  rollarch_chroot "setup_all"
   [[ $? == 0 ]] || return 1
   rollarch_bye
 }
