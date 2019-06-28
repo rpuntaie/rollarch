@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# tests:
+# root@archiso: DSK=/dev/sda USR=u PW=p HST=up121 IP2=1.121 AIP2=1.108 KM=US LA_NG="de_DE es_ES fr_FR it_IT ru_RU" ZONE=Vienna DOTS=fjVcp bash installarch rpuntaie-meta yay
+
 ROLLARCH_VERSION='0.0.1'
 
 function rollarch_usage() 

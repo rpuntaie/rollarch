@@ -134,7 +134,7 @@ For this add a ``DOTS`` define.
 
 - ``DOTS`` specifies your 
   `possibly shortened <https://bit.do/list-of-url-shorteners.php>`__
-  URL to a script that is directly forwarded to bash and does all the installation
+  URL (default: ``https://git.io/SHORT``) to a script that is directly forwarded to bash and does all the installation
   including downloading/cloning.
   The script is executed from within ``arch-chroot``, after ``cd /home/$USR``.
 
