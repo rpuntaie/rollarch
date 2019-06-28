@@ -38,7 +38,7 @@ function rollarch_usage()
   echo "  AIP2 [e.g. 1.199 | yes, to create Arch Proxy] (none)"
   echo "  KM: (US) one of 'localectl list-keymaps'."
   echo "      If in upper case: ESCAPE->CAPS_LOCK and CAPS_LOCK->WIN"
-  echo "  DOTS: URL to a bash installation script for dot files"
+  echo "  DOTS: URL or https://git.io/SHORT to a bash installation script for dot files"
   echo
   echo "Desription:"
   echo "  - check parameters and access to internet"
@@ -85,7 +85,11 @@ if [[ ! "$IP2" =~ ^([0-9]+[.][0-9]+)$ ]]; then
 fi
 DOTSINSTALL=""
 if [[ ! "$DOTS" == "" ]]; then
-  DOTSINSTALL="$(curl -Ls $DOTS)"
+  if [[ "$DOTS" =~ ^https?:// ]] || [[ "$DOTS" =~ ^file:/// ]]; then
+    DOTSINSTALL="$(curl -Ls $DOTS)"
+  else
+    DOTSINSTALL="$(curl -Ls https://git.io/$DOTS)"
+  fi
 fi
 USRPKGS="$@"
 ROLLARCH_MIRRORLIST=${ROLLARCH_MIRRORLIST:-/etc/pacman.d/mirrorlist}
