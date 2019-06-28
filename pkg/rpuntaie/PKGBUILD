@@ -40,7 +40,7 @@ package_rpuntaie-meta() {
     depends+=(cmake meson cscope ctags llvm clang gdb lldb boost eigen)
 
     # zsh (to configure via dotfiles, or install grm-zsh-config afterwards)
-    depends+=(acpi powerline powerline-fonts awesome-terminal-fonts
+    depends+=(acpi powerline powerline-fonts awesome-terminal-fonts jshon
     zsh zsh-syntax-highlighting zsh-autosuggestions zsh-completions zsh-history-substring-search)
 
     # editor nvim vor CLI and gvim for GUI (see below)

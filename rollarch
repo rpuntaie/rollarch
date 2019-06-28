@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# tests:
-# root@archiso: DSK=/dev/sda USR=u PW=p HST=up121 IP2=1.121 AIP2=1.108 KM=US LA_NG="de_DE es_ES fr_FR it_IT ru_RU" ZONE=Vienna DOTS=fjVcp bash installarch rpuntaie-meta yay
+# tests: sed -n -e "s/^.*testX: //p" rollarch | bash
+# test1: DSK=/dev/sda USR=u PW=p HST=up121 IP2=1.121 AIP2=1.108 KM=US LA_NG="de_DE es_ES fr_FR it_IT ru_RU" ZONE=Vienna DOTS=fjVcp ./rollarch rpuntaie-meta yay
 
 ROLLARCH_VERSION='0.0.1'
 
@@ -94,7 +94,6 @@ if [[ ! "$DOTS" == "" ]]; then
     DOTSINSTALL="$(curl -Ls https://git.io/$DOTS)"
   fi
 fi
-USRPKGS="$@"
 ROLLARCH_MIRRORLIST=${ROLLARCH_MIRRORLIST:-/etc/pacman.d/mirrorlist}
 
 function rollarch_check_defines()
@@ -257,8 +256,9 @@ function rollarch_packstrap()
 
   pacman -Sy
 
-  if [[ "$USRPKGS" != "" ]]; then
-    pacstrap $MNT_PNT "$GRUB $USRPKGS"
+  if [[ "$@" != "" ]]; then
+    USRPKGS=$@
+    pacstrap $MNT_PNT $GRUB $USRPKGS
   else
     pacstrap $MNT_PNT $GRUB arch-install-scripts base base-devel devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim zsh
   fi
@@ -275,6 +275,9 @@ EOF
 }
 
 
+#DSK=/dev/sda
+#roll_find_partitions
+#roll_mount
 function rollarch_chroot()
 {
   MNT_PNT=${MNT_PNT:-/mnt}
@@ -286,12 +289,8 @@ function rollarch_chroot()
   cp ./rollarchroot $MNT_PNT
 
   if [[ ! -e $MNT_PNT/usr/bin/bash ]]; then
-    roll_find_partitions
-    roll_mount
-    if [[ ! -e $MNT_PNT/usr/bin/bash ]]; then
-      echo 'Fatal: pacstrap failed.' >&2
-      return 1
-    fi
+    echo 'Fatal: pacstrap failed.' >&2
+    return 1
   fi
 
   arch-chroot $MNT_PNT bash -c "
@@ -299,7 +298,6 @@ DSK=$DSK
 USR=$USR
 PW='$PW'
 HST=$HST
-LA_NG="$LA_NG"
 ZONE=$ZONE
 IP2=$IP2
 AIP2=$AIP2
@@ -308,10 +306,11 @@ SWAP=$SWAP
 ROOT=$ROOT
 UEFI=$UEFI
 KM='$KM'
+LA_NG='$LA_NG'
 USRPKGS='$USRPKGS'
 DOTSINSTALL='$DOTSINSTALL'
 . ./rollarchroot
-$1
+setup_all
 "
 
   ln -sf /run/systemd/resolve/stub-resolv.conf $MNT_PNT/etc/resolv.conf &>/dev/null
@@ -329,7 +328,9 @@ function rollarch_bye()
 {
   roll_umount
   echo -e "\033[0;32m
-Arch Linux is ready. '/rollarchroot' is still there.
+Arch Linux was installed with
+${USRPKGS:-rollarch defaults}.
+'/rollarchroot' is still on $ROOT.
 
 'poweroff', remove media, boot
 
@@ -360,15 +361,15 @@ function rollarch_main()
   rollarch_mirrorlist
   rollarch_partition
   [[ $? == 0 ]] || return 1
-  rollarch_packstrap
-  rollarch_chroot "setup_all"
+  rollarch_packstrap $@
+  rollarch_chroot
   [[ $? == 0 ]] || return 1
   rollarch_bye
 }
 
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    rollarch_main
+    rollarch_main $@
     if [[ $? -gt 0 ]]; then
       exit 1
     fi
