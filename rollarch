@@ -273,7 +273,7 @@ function rollarch_repos()
   for arepo in $USRREPOS; do
     if [[ ! $arepo =~ ^http ]]; then #name from Unofficial_user_repositories
       #arepoconf=$(curl -Ls https://wiki.archlinux.org/index.php/Unofficial_user_repositories | sed -n -e "/<pre>\[$arepo\]/{N;s/<pre>//p}")
-      arepoconf=$(curl -Ls https://git.io/installarch | sed -n -e "/^# *\[$arepo\]/{N;s/<pre>//p}")
+      arepoconf=$(curl -Ls https://git.io/installarch | sed -n -e "/^# *\[$arepo\]/{N;s/# *//p}")
       areposrv=${arepoconf/\[$arepo\]/}
       areposrv=${areposrv//[[:space:]]/} #Server = https:...
     else
