@@ -45,7 +45,9 @@ Optional:
        The x.y of another arch linux machin (the local proxy)
 :DOTS: Full URL or ``https://git.io/SHORT`` to a bash installation script for dot files
 :KM: (US) one of ``localectl list-keymaps``.
-     If in upper case: ESCAPE->CAPS_LOCK and CAPS_LOCK->WIN
+     If in upper case: ESCAPE->CAPS_LOCK and CAPS_LOCK->WIN.
+     For X use ``xmodmap -e "keycode 133 = Caps_Lock`` in your ``xinitrc``.
+     Use ``xev`` to check ``keycode 133`` equal ``keysym Super_L`` in case of problems.
 
 Alternatively you can clone to another LAN box (e.g. 1.108) and add the path to NFS
 

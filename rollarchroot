@@ -35,8 +35,8 @@ function setup_arch_proxy()
 
 function setup_time()
 {
-  LOCALTIMECONF=${LOCALTIMECONF:-/etc/localtime}
-  SYSTEMTIMECONF=${SYSTEMTIMECONF:-/etc/systemd/timesyncd.conf}
+  ${LOCALTIMECONF:=/etc/localtime}
+  ${SYSTEMTIMECONF:=/etc/systemd/timesyncd.conf}
   for z in $(find /usr/share/zoneinfo/ -iname "*$ZONE"); do
     if [[ ! $z =~ ^.*/right/.*$ ]] && [[ ! $z =~ ^.*/posix/.*$ ]]; then
       rm -rf $LOCALTIMECONF
@@ -58,8 +58,8 @@ EOF
 
 function setup_locale()
 {
-  LOCALEGEN=${LOCALEGEN:-/etc/locale.gen}
-  LOCALECONF=${LOCALECONF:-/etc/locale.conf}
+  ${LOCALEGEN:=/etc/locale.gen}
+  ${LOCALECONF:=/etc/locale.conf}
   local X=$LA_NG
   X+=" en_US"
   for x in $X
@@ -74,8 +74,9 @@ function setup_escape()
 {
   local KBD=$(find /usr/share/kbd/keymaps/i386 -iname "$KM.map*")
   if [[ $(echo $KM | tr '[:upper:]' '[:lower:]') != $KM ]]; then
-    # add: keycode  125 (WIN) = Caps_Lock 
     # change: keycode  58 (Caps_Lock) = Escape 
+    # add: keycode  125 (WIN) = Caps_Lock.
+    # For X use `xmodmap -e "keycode 133 = Caps_Lock' found by 'xev'
     cd "${KBD%/*}"
     KBD=${KBD##*/}
     KBD=${KBD%%.*}
@@ -88,21 +89,21 @@ function setup_escape()
     KBD=${KBD##*/}
   fi
   loadkeys rollarch$KBD
-  localectl set-keymap keymap
+  localectl set-keymap rollarch$KBD
 }
 
 #for VirtualBox use bridged to have access to LAN
 function setup_network()
 {
-  LOADMODULECIFS=${LOADMODULECIFS:-/etc/modules-load.d/cifs.conf}
-  VARLIBSAMBAUSERSHARES=${VARLIBSAMBAUSERSHARES:-/var/lib/samba/usershares}
-  ETCSAMBASMB=${ETCSAMBASMB:-/etc/samba/smb.conf}
-  ETCSYSTEMDNETWORKWIRED=${ETCSYSTEMDNETWORKWIRED:-/etc/systemd/network/20-wired.network}
-  ETCSYSTEMDNETWORKWIRELESS=${ETCSYSTEMDNETWORKWIRELESS:-/etc/systemd/network/25-wireless.network}
-  ETCSYSTEMDSYSTEMNETWORKSERVICE=${ETCSYSTEMDSYSTEMNETWORKSERVICE:-/etc/systemd/system/network.service}
-  ETCSYSTEMDRESOLVEDCONF=${ETCSYSTEMDRESOLVEDCONF:-/etc/systemd/resolved.conf}
-  ETCHOSTS=${ETCHOSTS:-/etc/hosts}
-  ETCHOSTNAME=${ETCHOSTNAME:-/etc/hostname}
+  ${LOADMODULECIFS:=/etc/modules-load.d/cifs.conf}
+  ${VARLIBSAMBAUSERSHARES:=/var/lib/samba/usershares}
+  ${ETCSAMBASMB:=/etc/samba/smb.conf}
+  ${ETCSYSTEMDNETWORKWIRED:=/etc/systemd/network/20-wired.network}
+  ${ETCSYSTEMDNETWORKWIRELESS:=/etc/systemd/network/25-wireless.network}
+  ${ETCSYSTEMDSYSTEMNETWORKSERVICE:=/etc/systemd/system/network.service}
+  ${ETCSYSTEMDRESOLVEDCONF:=/etc/systemd/resolved.conf}
+  ${ETCHOSTS:=/etc/hosts}
+  ${ETCHOSTNAME:=/etc/hostname}
   echo $HST > $ETCHOSTNAME
   cat > $ETCHOSTS <<EOF
 127.0.0.1     localhost
@@ -232,7 +233,7 @@ EOF
 
 function setup_boot()
 {
-  ARCHLOADERCONF=${ARCHLOADERCONF:-/boot/loader/entries/arch.conf}
+  ${ARCHLOADERCONF:=/boot/loader/entries/arch.conf}
   UCODE=''
   UCODE_STRING=''
   if [[ "$(cat /proc/cpuinfo | grep GenuineIntel)" != "" ]]; then
