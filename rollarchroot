@@ -16,7 +16,7 @@ function rollarchrootusage()
   echo "- setup_boot: EFI boot if /sys/firmware/efi, else BIOS using grub"
   echo "- setup_user: using \$USR and \$PW, the latter also for root"
   echo "- setup_arch_proxy if AIP2=yes"
-  echo "- setup_dots executes the \$DOTSINSTALL script"
+  echo "- setup_dots installs user dotfiles with the script \$DOTSINSTALL"
   echo "- setup_clean_meta makes \$USRPKGS '-meta' package dependencies 'asexplicit'"
   echo "- setup_all does all of the above"
   echo ""
@@ -30,7 +30,7 @@ function setup_arch_proxy()
   ln -s /var/lib/pacman/sync/*.db /var/cache/pacman/pkg
   cd /usr/lib/systemd/system/
   cat darkhttpd.service | sed -e "s/Webserver/ArchProxy/g" -e "s,/srv/http.*$,/var/cache/pacman/pkg --no-server-id --port 8080,g" > ArchProxy.service
-  systemctl enable ArchProxy &>/dev/null
+  systemctl enable --now ArchProxy &>/dev/null
 }
 
 function setup_time()
@@ -206,10 +206,10 @@ EOF
       fi
     fi
   done
-  systemctl enable systemd-networkd &>/dev/null
-  systemctl enable systemd-resolved &>/dev/null
+  systemctl enable --now systemd-networkd &>/dev/null
+  systemctl enable --now systemd-resolved &>/dev/null
   #edit /etc/exports to nfs export folders
-  systemctl enable nfs-server.service &>/dev/null
+  systemctl enable --now nfs-server.service &>/dev/null
   ## samba
   cat > $ETCSAMBASMB <<EOF
 [global]
@@ -225,8 +225,8 @@ EOF
   groupadd -rf sambashare
   chown root:sambashare $VARLIBSAMBAUSERSHARES
   chmod 1770 $VARLIBSAMBAUSERSHARES
-  systemctl enable smb nmb &>/dev/null
-  systemctl enable sshd &>/dev/null
+  systemctl enable --now smb nmb &>/dev/null
+  systemctl enable --now sshd &>/dev/null
   echo "cifs" > $LOADMODULECIFS
 }
 
@@ -280,9 +280,9 @@ $PW" | smbpasswd -a $USR
 
 function setup_dots()
 {
-  if [[ -n "$DOTSINSTALL" ]]; then
+  if [[ -e $DOTSINSTALL ]]; then
     cd "/home/$USR"
-    sudo -H -u $USR bash -c "$DOTSINSTALL"
+    sudo -H -u $USR bash $DOTSINSTALL
   fi
 }
 
@@ -319,7 +319,7 @@ function setup_all()
   fi
 
   if [[ -z $(grep -q "^flags.*\ hypervisor\ " /proc/cpuinfo) ]]; then
-    systemctl enable vboxservice
+    systemctl enable --now vboxservice
     #in .xinitrc: VBoxClient-all && exec xmonad
   fi
 

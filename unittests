@@ -1,4 +1,5 @@
 echo "test rollarch"
 bats --tap test_rollarch.bats
+bats --tap test_dotfile.bats
 echo "test rollarchroot"
 bats --tap test_rollarchroot.bats

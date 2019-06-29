@@ -14,7 +14,7 @@ run_only_test() {
 
 setup()
 {
-    #run_only_test 12
+    #run_only_test 11
     #mock
     function curl() { return 0; }
     export -f curl
@@ -151,10 +151,10 @@ teardown()
 #11
 @test "SWAP on" {
     DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on run ./rollarch
-    #echo "#${lines[2]}" >&3
-    [ "${lines[2]}" = "  boot: /dev/null1" ]
-    [ "${lines[3]}" = "  swap: /dev/null2" ]
-    [ "${lines[4]}" = "  root: /dev/null3" ]
+    #echo "#${lines[1]}" >&3
+    [ "${lines[1]}" = "  boot: /dev/null1" ]
+    [ "${lines[2]}" = "  swap: /dev/null2" ]
+    [ "${lines[3]}" = "  root: /dev/null3" ]
 }
 
 #12

@@ -13,9 +13,7 @@ Automates Arch Linux installation by
 All parameters are provided at call time,
 as an automation should not bombard you with questions.
 
-Look into `rollarch`__ to see what is done during installation.
-
-__ https://github.com/rpuntaie/rollarch/blob/master/rollarch
+Look into `rollarch`_ to see what is done during installation.
 
 Usage
 =====
@@ -25,7 +23,7 @@ After booting the installation medium in the ``archiso`` prompt do
 .. code:: sh
 
     curl -OLs https://git.io/installarch #inspect, modify
-    DSK=/dev/sda USR=A PW=B HST=C IP2=1.106 ZONE=Berlin bash installarch
+    DSK=/dev/sda USR=u PW=p HST=u106 IP2=1.106 ZONE=Berlin bash installarch
 
 ``https://git.io/installarch`` is short for 
 ``https://raw.githubusercontent.com/rpuntaie/rollarch/master/rollarch``.
@@ -63,7 +61,7 @@ Then in the ``archiso`` prompt:
     mkdir rollarch
     mount -t nfs 192.168.1.108:</path/to/rollarch> rollarch
     cd rollarch
-    DSK=/dev/sda USR=A PW=B HST=C IP2=1.106 ZONE=Berlin bash rollarch
+    DSK=/dev/sda USR=u PW=p HST=u106 IP2=1.106 ZONE=Berlin bash rollarch
 
 
 Status
@@ -109,7 +107,7 @@ How `local proxy`_ and `custom packages`_ is used:
 
   .. code:: sh
 
-      DSK=/dev/sda USR=A PW=B HST=C IP2=1.106 AIP2=1.108 ZONE=Vienna bash installarch <your-packages>
+      DSK=/dev/sda USR=u PW=p HST=u106 IP2=1.106 AIP2=1.108 ZONE=Vienna bash installarch <your-packages>
 
   The optional ``your-packages`` are either provided by the ArchLinux repos or by a `local proxy`_ (AIP2) of yours.
   The optional ``AIP2=x.y``, e.g. ``1.199``, uses ``192.168.1.199`` as `local proxy`_.
@@ -139,14 +137,19 @@ For this add a ``DOTS`` define.
   The script is executed from within ``arch-chroot``, after ``cd /home/$USR``.
 
 
-As an example, my complete ArchLinux install with dotfiles:
+The ``#PKG:`` and ``#REPO:`` lines in my 
+`dotfiles install script <https://github.com/rpuntaie/dotfiles/blob/desktop/install>`__
+are used by `rollarch`_.
+``#REPO:`` lines work with server addresses that 
+`don't need a Key-ID <https://wiki.archlinux.org/index.php/Unofficial_user_repositories>`__.
+They are copied to the `rollarch`_ file and used from there.
+
+With a github short like https://git.io/fjVcp, the following installs with ``dotfiles`` and packages wanted by it
 
 .. code:: sh
 
-    #replace all the defines
-    curl -OLs https://git.io/installarch
-    DSK=/dev/sda USR=u PW=p HST=up121 ZONE=Vienna IP2=1.121 AIP2=1.108 DOTS=https://git.io/fjVcp bash installarch rpuntaie-meta yay
-
+    curl -OLs https://git.io/installarch #inspect, modify
+    DSK=/dev/sda USR=u PW=p HST=u106 IP2=1.106 AIP2=1.108 ZONE=Vienna DOTS=fjVcp bash installarch
 
 Thanks
 ======
@@ -159,3 +162,8 @@ Inspired by `mdaffin`_ and
 .. _`local proxy`: https://wiki.archlinux.org/index.php/Pacman/Tips_and_tricks#Network_shared_pacman_cache
 .. _`custom packages`: https://wiki.archlinux.org/index.php/Pacman/Tips_and_tricks#Custom_local_repository
 .. _`dotfiles`: https://wiki.archlinux.org/index.php/Dotfiles
+.. _`rollarch`: https://github.com/rpuntaie/rollarch/blob/master/rollarch
+
+
+
+

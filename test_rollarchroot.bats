@@ -15,25 +15,6 @@ run_only_test() {
 #setup()
 #{
 #    #run_only_test 1
-#    #mock
-#    function find() { echo "$*"; }
-#    export -f find
-#    function rm() { echo "$*"; }
-#    export -f rm
-#    function ln() { echo "$*"; }
-#    export -f ln
-#    function pacman() { echo "$*"; }
-#    export -f pacman
-#    function mv() { echo "$*"; }
-#    export -f mv
-#    function cd() { echo "$*"; }
-#    export -f cd
-#    function cat() { echo "$*"; }
-#    export -f cat
-#    function chmod() { echo "$*"; }
-#    export -f chmod
-#    function systemctl() { echo "$*"; }
-#    export -f systemctl
 #}
 
 teardown()
@@ -66,25 +47,6 @@ teardown()
     [ "$status" -eq 0 ]
 }
 
-
-#2
-@test "missing define" {
-    #DSK=DSK\
-    USR=USR\
-    PW=PW\
-    HST=HST\
-    LA_NG=LA_NG\
-    ZONE=ZONE\
-    IP2=IP2\
-    AIP2=AIP2\
-    BOOT=BOOT\
-    SWAP=SWAP\
-    ROOT=ROOT\
-    UEFI=UEFI\
-    KM=KM\
-    run source rollarchroot
-    [ "${lines[0]}" = "DSK missing!" ]
-}
 
 #3
 @test "all define" {
