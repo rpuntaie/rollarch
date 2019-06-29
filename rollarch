@@ -220,31 +220,33 @@ function rollarch_partition()
   roll_mount
 }
 
-#additional repo names possible
-#  [arcanisrepo]
-#  Server = https://repo.arcanis.me/repo/$arch
-#  [dvzrv]
-#  Server = https://pkgbuild.com/~dvzrv/repo/$arch
-#  [eschwartz]
-#  Server = https://pkgbuild.com/~eschwartz/repo/$arch
-#  [herecura]
-#  Server = https://repo.herecura.be/$repo/$arch
-#  [quarry]
-#  Server = https://pkgbuild.com/~anatolik/quarry/x86_64/
-#  [blackeagle-pre-community]
-#  Server = https://repo.herecura.be/$repo/$arch
-#  [city]
-#  Server = https://pkgbuild.com/~bgyorgy/$repo/os/$arch
-#  [ffy00]
-#  Server = https://pkgbuild.com/~ffy00/repo
-#  [maximbaz]
-#  Server = https://pkgbuild.com/~maximbaz/repo/
-#  [seblu]
-#  Server = https://al.seblu.net/$repo/$arch
-#  [sergej-repo]
-#  Server = http://repo.p5n.pp.ru/$repo/os/$arch
-#  [xyne-x86_64]
-#  Server = http://xyne.archlinux.ca/bin/repo.php?file=
+#"key-ID: No" from https://wiki.archlinux.org/index.php/Unofficial_user_repositories
+rollarch_additional_repo_names_possible="
+[arcanisrepo]
+Server = https://repo.arcanis.me/repo/$arch
+[dvzrv]
+Server = https://pkgbuild.com/~dvzrv/repo/$arch
+[eschwartz]
+Server = https://pkgbuild.com/~eschwartz/repo/$arch
+[herecura]
+Server = https://repo.herecura.be/$repo/$arch
+[quarry]
+Server = https://pkgbuild.com/~anatolik/quarry/x86_64/
+[blackeagle-pre-community]
+Server = https://repo.herecura.be/$repo/$arch
+[city]
+Server = https://pkgbuild.com/~bgyorgy/$repo/os/$arch
+[ffy00]
+Server = https://pkgbuild.com/~ffy00/repo
+[maximbaz]
+Server = https://pkgbuild.com/~maximbaz/repo/
+[seblu]
+Server = https://al.seblu.net/$repo/$arch
+[sergej-repo]
+Server = http://repo.p5n.pp.ru/$repo/os/$arch
+[xyne-x86_64]
+Server = http://xyne.archlinux.ca/bin/repo.php?file=
+"
 
 
 function rollarch_repos()
@@ -273,7 +275,7 @@ function rollarch_repos()
   for arepo in $USRREPOS; do
     if [[ ! $arepo =~ ^http ]]; then #name from Unofficial_user_repositories
       #arepoconf=$(curl -Ls https://wiki.archlinux.org/index.php/Unofficial_user_repositories | sed -n -e "/<pre>\[$arepo\]/{N;s/<pre>//p}")
-      arepoconf=$(curl -Ls https://git.io/installarch | sed -n -e "/^# *\[$arepo\]/{N;s/# *//p}")
+      arepoconf=$(echo "$rollarch_additional_repo_names_possible" | sed -n -e "/^\[$arepo\]/{N;p}")
       areposrv=${arepoconf/\[$arepo\]/}
       areposrv=${areposrv//[[:space:]]/} #Server = https:...
     else
