@@ -24,15 +24,16 @@
     [ -e $MNT_PNT/$localdots ]
     OUT+="$(cat $MNT_PNT/$localdots)
 "
+    #echo "$OUT" >&3
     rm -rf $MNT_PNT
 
     [[ "$OUT" == "Server=https://pkgbuild.com/~ffy00/repo
-Server=https://pkgbuild.com/~dvzrv/repo/
+Server=https://pkgbuild.com/~dvzrv/repo/\$arch
 Server = http://192.168.1.108:8080
 [ffy00]
 Server = https://pkgbuild.com/~ffy00/repo
 [dvzrv]
-Server = https://pkgbuild.com/~dvzrv/repo/
+Server = https://pkgbuild.com/~dvzrv/repo/\$arch
 [custom]
 SigLevel = Optional TrustAll
 Server = http://192.168.1.108:8080
