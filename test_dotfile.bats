@@ -27,9 +27,7 @@
     #echo "$OUT" >&3
     rm -rf $MNT_PNT
 
-    [[ "$OUT" == "Server=https://pkgbuild.com/~ffy00/repo
-Server=https://pkgbuild.com/~dvzrv/repo/\$arch
-Server = http://192.168.1.108:8080
+    [[ "$OUT" == "Server = http://192.168.1.108:8080
 [ffy00]
 Server = https://pkgbuild.com/~ffy00/repo
 [dvzrv]
@@ -43,3 +41,4 @@ Server = http://192.168.1.108:8080
 #REPO: dvzrv
 " ]]
 }
+

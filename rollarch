@@ -276,20 +276,21 @@ function rollarch_repos()
     if [[ ! $arepo =~ ^http ]]; then #name from Unofficial_user_repositories
       #arepoconf=$(curl -Ls https://wiki.archlinux.org/index.php/Unofficial_user_repositories | sed -n -e "/<pre>\[$arepo\]/{N;s/<pre>//p}")
       arepoconf=$(echo "$rollarch_additional_repo_names_possible" | sed -n -e "/^\[$arepo\]/{N;p}")
-      areposrv=${arepoconf/\[$arepo\]/}
-      areposrv=${areposrv//[[:space:]]/} #Server = https:...
+      #no areposrv, because not wanted in mirrorlist
+      #areposrv=${arepoconf/\[$arepo\]/}
+      #areposrv=${areposrv//[[:space:]]/} #Server = https:...
     else
       areposrv="Server = $arepo"
       if [[ -n $(curl -s "$arepo" | grep "custom\.db") ]]; then
         arepoconf="[custom]
 SigLevel = Optional TrustAll
-Server = $arepo"
+$areposrv"
       fi
     fi
-    if  ! $(head $ROLLARCH_MIRRORLIST.org | grep "$areposrv"); then
+    if  [[ -n $areposrv ]] && ! $(head $ROLLARCH_MIRRORLIST.org | grep "$areposrv"); then
       echo "$areposrv" >> $ROLLARCH_MIRRORLIST
     fi
-    if [[ -n $arepoconf ]] && ! $(tail $PACMANCONF | grep "$areposrv"); then
+    if [[ -n $arepoconf ]] && ! $(tail $PACMANCONF | grep "$arepo"); then
          echo "$arepoconf" >> $PACMANCONF
     fi
   done
