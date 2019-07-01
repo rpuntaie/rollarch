@@ -21,7 +21,7 @@ package_rpuntaie-meta() {
     python devtools dialog wpa_supplicant ntp openssh)
 
     # extra general packages (ag=the_silver_searcher)
-    depends+=(stow ripgrep fd bc tmux wget fzf unzip pacman-contrib bat ncdu 
+    depends+=(stow ripgrep fd bc tmux wget fzf udisks2 unzip pacman-contrib bat ncdu 
     the_silver_searcher rtorrent tree p7zip ranger)
 
     depends+=(keybase kbfs keybase-gui qrencode pass) #pulls gnupg (gpg)
@@ -93,11 +93,11 @@ package_rpuntaie-meta() {
     xorg-xgamma xorg-xhost xorg-xinput xorg-xkbcomp xorg-xkbevd xorg-xkbutils
     xorg-xlsatoms xorg-xlsclients xorg-xmodmap xorg-xpr xorg-xprop
     xorg-xrandr xorg-xrdb xorg-xrefresh xorg-xset xorg-xvinfo
-    xorg-xwd xorg-xwininfo xorg-xwud xorg-server openssh-askpass)
+    xorg-xwd xorg-xwininfo xorg-xwud xorg-server xdg-user-dirs openssh-askpass)
 
     # window manager
-    depends+=(xmonad xmonad-contrib i3-wm openbox
-    xterm alacritty rxvt-unicode xorg-xinit dmenu gmrun scrot slock
+    depends+=(xdotool xmonad xmonad-contrib i3-wm openbox
+    xterm alacritty rxvt-unicode urxvt-perls xorg-xinit dmenu gmrun scrot slock
     libnotify dunst xsel xclip dex)
 
     # fonts
@@ -137,7 +137,7 @@ package_rpuntaie-meta() {
     depends+=(vlc ffmpeg)
 
     # browsers
-    depends+=(firefox chromium links qutebrowser w3m)
+    depends+=(firefox chromium links qutebrowser w3m browserpass browserpass-firefox browserpass-chromium)
 
     # viewers
     depends+=(eom feh links evince thunar ghostscript mupdf zathura)
@@ -157,6 +157,10 @@ package_rpuntaie-meta() {
 
     # organize, finance
     depends+=(task ledger)
+
+    # AUR packages in here
+    # TODO: add all those in dotfiles
+    depends+=(yay)
 }
 
 
