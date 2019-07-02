@@ -63,7 +63,7 @@ package_rpuntaie-meta() {
     depends+=(sqlite mariadb)
 
     # Java/JS
-    depends+=(jdk-openjdk yarn npm nodejs prettier scala sbt gradle clojure groovy ant maven)
+    depends+=(jdk-openjdk yarn npm nodejs asar prettier scala sbt gradle clojure groovy ant maven)
 
     # Other Languages
     depends+=(go mono dotnet-sdk skia-sharp ghc pandoc cabal-install git-annex lua rust julia 
@@ -158,9 +158,14 @@ package_rpuntaie-meta() {
     # organize, finance
     depends+=(task ledger)
 
-    # AUR packages in here
-    # TODO: add all those in dotfiles
-    depends+=(yay)
+    # AUR packages that are submodules of rollarch
+    depends+=(yay mimeo plantuml 
+    rstudio-desktop-bin #rstudio-bin
+    texlive-localmanager-git #tllocalmgr
+    waf-git #waf
+    wordnet-cli #wn
+    discord
+    )
 }
 
 
