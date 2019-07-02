@@ -2,35 +2,35 @@
 	path = pkg/yay
 	url = https://aur.archlinux.org/yay
 	ignore = dirty
-
 [submodule "pkg/plantuml"]
 	path = pkg/plantuml
 	url = https://aur.archlinux.org/plantuml
 	ignore = dirty
-
 [submodule "pkg/wordnet"]
 	path = pkg/wordnet
 	url = https://aur.archlinux.org/wordnet
 	ignore = dirty
-
 [submodule "pkg/waf-git"]
 	path = pkg/waf-git
 	url = https://aur.archlinux.org/waf-git
 	ignore = dirty
-
 [submodule "pkg/rstudio-desktop-bin"]
 	path = pkg/rstudio-desktop-bin
 	url = https://aur.archlinux.org/rstudio-desktop-bin
 	ignore = dirty
-
 [submodule "pkg/texlive-localmanager-git"]
 	path = pkg/texlive-localmanager-git
 	url = https://aur.archlinux.org/texlive-localmanager-git
 	ignore = dirty
-
 [submodule "pkg/mimeo"]
 	path = pkg/mimeo
 	url = https://aur.archlinux.org/mimeo
 	ignore = dirty
-
-
+[submodule "pkg/discord"]
+	path = pkg/discord
+	url = https://aur.archlinux.org/discord
+	ignore = dirty
+[submodule "pkg/perl-term-shellui"]
+	path = pkg/perl-term-shellui
+	url = https://aur.archlinux.org/perl-term-shellui.git
+	ignore = dirty

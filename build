@@ -1,9 +1,7 @@
 #!/bin/bash
 
-find root -exec rm -rf {} +
 rm -rf "root"
 
-#clone aur packages into ``pkg`` folder
 git pull --recurse-submodules
 
 set -uo pipefail
@@ -18,22 +16,20 @@ CHROOT="$PWD/root"
 mkdir -p "$LOCAL_PATH"
 mkdir -p "$CHROOT"
 
-[[ -d "$CHROOT/root" ]] || mkarchroot -C /etc/pacman.conf "$CHROOT/root" base base-devel
+[[ -d "$CHROOT/root" ]] || mkarchroot -C /etc/pacman.conf "$CHROOT/root" base base-devel git unzip
 
 for package in $PACKAGES; do
     cd "$package"
-    rm -f *.pkg.tar.xz
     makechrootpkg -cur $CHROOT
+    pkgs=*.pkg.tar.xz
+    for pkg in $pkgs
+    do
+        mv $PWD/$pkg $LOCAL_PATH
+        repo-add "$LOCAL_PATH/$REPO_NAME.db.tar.gz" $LOCAL_PATH/$pkg
+    done
     cd -
 done
 
 ln -sf "$REPO_NAME.db.tar.gz" "$LOCAL_PATH/$REPO_NAME.db"
 ln -sf "$REPO_NAME.files.tar.gz" "$LOCAL_PATH/$REPO_NAME.files"
-
-pkgs="${PACKAGES[@]}/"*.pkg.tar.xz
-for pkg in $pkgs
-do
-    repo-add "$LOCAL_PATH/$REPO_NAME.db.tar.gz" $pkg
-    ln -sf $PWD/$pkg /var/cache/pacman/pkg
-done
 
