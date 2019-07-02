@@ -43,12 +43,13 @@ teardown()
 #1
 @test "show help" {
     run ./rollarchroot -h
+    #echo "#${lines[1]}" >&3
     [ "${lines[1]}" = "DSK USR PW HST ZONE IP2 AIP2 BOOT SWAP ROOT UEFI KM" ]
     [ "$status" -eq 0 ]
 }
 
 
-#3
+#2
 @test "all define" {
     DSK=DSK\
     USR=USR\
@@ -68,7 +69,7 @@ teardown()
     [ "$status" -eq 0 ]
 }
 
-#4
+#3
 @test "setup arch proxy" {
     function cd() { echo "$*"; }
     export -f cd
@@ -97,7 +98,7 @@ teardown()
     [ -e ArchProxy.service ]
 }
 
-#5
+#4
 @test "setup time" {
     function timedatectl() { echo "$*"; }
     export -f timedatectl
@@ -126,7 +127,7 @@ teardown()
 }
 
 
-#6
+#5
 @test "setup locale" {
     function sed() { echo "$*"; }
     export -f sed
@@ -157,12 +158,12 @@ teardown()
     [[ "${lines[0]}" =~ "it_IT" ]]
     [[ "${lines[1]}" =~ "de_DE" ]]
     [[ "${lines[2]}" =~ "en_US" ]]
-    [ -e mocklocalegen ]
-    [ -e mocklocaleconf ]
+    [[ -f mocklocalegen ]]
+    [[ -f mocklocaleconf ]]
 }
 
 
-#7
+#6
 @test "setup escape" {
     function sed() { echo "$*"; }
     export -f sed
@@ -194,10 +195,10 @@ teardown()
     run setup_escape
     #echo "#${lines[0]}" >&3
     [ "${lines[0]}" = "us.map.gz rollarchus.map.gz" ]
-    [ "${lines[4]}" = "rollarchus.map" ]
+    [ "${lines[1]}" = "rollarchus" ]
 }
 
-#8
+#7
 @test "setup network IP" {
     function ip() { return 0; }
     export -f ip
@@ -252,6 +253,7 @@ teardown()
     [ -e loadmodulecifs ]
 }
 
+#8
 @test "setup network DHCP" {
     function ip() { return 0; }
     export -f ip
@@ -306,6 +308,7 @@ teardown()
     [ -e loadmodulecifs ]
 }
 
+#9
 @test "setup boot BIOS" {
     function grep() { echo GenuineIntel; }
     export -f grep
@@ -336,6 +339,7 @@ teardown()
     [ "${lines[0]}" = "-p linux" ]
 }
 
+#10
 @test "setup boot UEFI" {
     function grep() { echo AuthenticAMD; }
     export -f grep

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 # manual tests to perform on virtualbox: sed -n -e "s/^.*testX: //p" rollarch | bash
-# test1: DSK=/dev/sda USR=u PW=p HST=up121 IP2=1.121 AIP2=1.108 ZONE=Vienna ./rollarch
-# test2: DSK=/dev/sda USR=u PW=p HST=up121 IP2=1.121 AIP2=1.108 KM=US LA_NG="de_DE es_ES fr_FR it_IT ru_RU" ZONE=Vienna DOTS=fjVcp ./rollarch rpuntaie-meta yay
-# test3: DSK=/dev/sda USR=u PW=p HST=up121 IP2=1.121 AIP2=1.108 KM=US LA_NG="de_DE es_ES fr_FR it_IT ru_RU" ZONE=Vienna DOTS=fjVcp ./rollarch
+# test1: DSK=/dev/sda USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna ./rollarch
+# TODO test2: DSK=/dev/sda USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 KM=us CL=99 LA_NG="de_DE es_ES fr_FR it_IT ru_RU" ZONE=Vienna DOTS=fjVcp ./rollarch rpuntaie-meta yay
+# test3: DSK=/dev/sda USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 KM=us CL=99 LA_NG="de_DE es_ES fr_FR it_IT ru_RU" ZONE=Vienna DOTS=fjVcp ./rollarch
 
 ROLLARCH_VERSION='0.0.1'
 
@@ -33,7 +33,7 @@ function rollarch_usage()
   echo "# DSK=/dev/sda"
   echo "# USR=u"
   echo "# PW=p"
-  echo "# HST=up121"
+  echo "# HST=u121"
   echo "# ZONE=Vienna"
   echo
   echo "Optional:"
@@ -179,7 +179,7 @@ function roll_mkfs()
 
 function roll_mount()
 {
-  ${MNT_PNT:=/mnt}
+  MNT_PNT=${MNT_PNT:-/mnt}
   mount $ROOT $MNT_PNT
   mkdir -p $MNT_PNT/boot
   mount $BOOT $MNT_PNT/boot
@@ -251,22 +251,21 @@ Server = http://xyne.archlinux.ca/bin/repo.php?file=
 
 function rollarch_repos()
 { #custom AIP2 and unofficial repo names from Unofficial_user_repositories to pacman.conf and mirrorlist
-  ${PACMANCONF:=/etc/pacman.conf}
+  PACMANCONF=${PACMANCONF:-/etc/pacman.conf}
   if [[ "$DOTS" != "" ]]; then
+    DOTSINSTALL="$MNT_PNT/${DOTS##*/}"
     if [[ "$DOTS" =~ ^https:// ]] || [[ "$DOTS" =~ ^file:/// ]]; then
-      curl -OLs $DOTS
+      curl -Ls $DOTS > $DOTSINSTALL
     else
-      curl -OLs https://git.io/$DOTS
+      curl -Ls https://git.io/$DOTS > $DOTSINSTALL
     fi
-    DOTSINSTALL=${DOTS##*/}
-    if [[ -e "$DOTSINSTALL" ]]; then
+    if [[ -f "$DOTSINSTALL" ]]; then
       USRPKGS=$(sed -n -e "s/^#PKG: *//p" $DOTSINSTALL)
       USRREPOS=$(sed -n -e "s/^#REPO: *//p" $DOTSINSTALL)
-      mv $DOTSINSTALL $MNT_PNT
     fi
   fi
 
-  ${ROLLARCH_MIRRORLIST:=/etc/pacman.d/mirrorlist}
+  ROLLARCH_MIRRORLIST=${ROLLARCH_MIRRORLIST:-/etc/pacman.d/mirrorlist}
   mv $ROLLARCH_MIRRORLIST $ROLLARCH_MIRRORLIST.org
   touch $ROLLARCH_MIRRORLIST
   if [[ "$AIP2" != "no" ]] && [[ "$AIP2" != "yes" ]]; then
@@ -300,7 +299,7 @@ $areposrv"
 
 function rollarch_packstrap()
 {
-  ${PACMANCONF:=/etc/pacman.conf}
+  PACMANCONF=${PACMANCONF:-/etc/pacman.conf}
   pacman -Sy
 
   if [[ "$@" != "" ]]; then
@@ -347,7 +346,7 @@ UEFI=$UEFI
 KM='$KM'
 LA_NG='$LA_NG'
 USRPKGS='$USRPKGS'
-DOTSINSTALL='/$DOTSINSTALL'
+DOTSINSTALL='/${DOTS##*/}'
 . ./rollarchroot
 setup_all
 "

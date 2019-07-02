@@ -151,7 +151,6 @@ teardown()
 #11
 @test "SWAP on" {
     DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on run ./rollarch
-    #echo "#${lines[1]}" >&3
     [ "${lines[1]}" = "  boot: /dev/null1" ]
     [ "${lines[2]}" = "  swap: /dev/null2" ]
     [ "${lines[3]}" = "  root: /dev/null3" ]
@@ -160,7 +159,7 @@ teardown()
 #12
 @test "CHROOT preparation" {
     DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on run ./rollarch
-    #echo "#${lines[8]:0:4}" >&3
+    #echo "#${lines[8]}" >&3
     [ "$status" -eq 0 ]
     [ "${lines[10]:0:4}" = "DSK=" ]
     [ "${lines[11]:0:4}" = "USR=" ]

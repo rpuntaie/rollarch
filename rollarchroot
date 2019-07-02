@@ -5,7 +5,7 @@ function rollarchrootusage()
   echo "Required defines:"
   echo "DSK USR PW HST ZONE IP2 AIP2 BOOT SWAP ROOT UEFI KM"
   echo "Optional:"
-  echo "LA_NG USRPKGS DOTSINSTALL"
+  echo "CL LA_NG USRPKGS DOTSINSTALL"
   echo ""
   echo "Functions for after arch-chroot"
   echo ""
@@ -35,8 +35,8 @@ function setup_arch_proxy()
 
 function setup_time()
 {
-  ${LOCALTIMECONF:=/etc/localtime}
-  ${SYSTEMTIMECONF:=/etc/systemd/timesyncd.conf}
+  LOCALTIMECONF=${LOCALTIMECONF:-/etc/localtime}
+  SYSTEMTIMECONF=${SYSTEMTIMECONF:-/etc/systemd/timesyncd.conf}
   for z in $(find /usr/share/zoneinfo/ -iname "*$ZONE"); do
     if [[ ! $z =~ ^.*/right/.*$ ]] && [[ ! $z =~ ^.*/posix/.*$ ]]; then
       rm -rf $LOCALTIMECONF
@@ -58,8 +58,8 @@ EOF
 
 function setup_locale()
 {
-  ${LOCALEGEN:=/etc/locale.gen}
-  ${LOCALECONF:=/etc/locale.conf}
+  LOCALEGEN=${LOCALEGEN:-/etc/locale.gen}
+  LOCALECONF=${LOCALECONF:-/etc/locale.conf}
   local X=$LA_NG
   X+=" en_US"
   for x in $X
@@ -72,38 +72,40 @@ function setup_locale()
 
 function setup_escape()
 {
+  VCONSOLECONF=${VCONSOLECONF:-/etc/vconsole.conf}
   local KBD=$(find /usr/share/kbd/keymaps/i386 -iname "$KM.map*")
-  if [[ $(echo $KM | tr '[:upper:]' '[:lower:]') != $KM ]]; then
-    # change: keycode  58 (Caps_Lock) = Escape 
-    # add: keycode  125 (WIN) = Caps_Lock.
-    # For X use `xmodmap -e "keycode 133 = Caps_Lock' found by 'xev'
-    cd "${KBD%/*}"
-    KBD=${KBD##*/}
-    KBD=${KBD%%.*}
-    cp $KBD.map.gz rollarch$KBD.map.gz
+  cd "${KBD%/*}"
+  KBD=${KBD##*/}
+  KBD=${KBD%%.*}
+  cp $KBD.map.gz rollarch$KBD.map.gz
+  if [[ -n $CL ]]; then
+    #Win: 125 on VConsole, for X: `xmodmap -e "keysym Super_L = Caps_Lock"
+    #Print: 99 on VConsole, for X: `xmodmap -e "keysym Print = Caps_Lock"
     gunzip rollarch$KBD.map.gz
     sed -ie "s/keycode *58 *= *Caps_Lock/keycode 58 = Escape/g" rollarch$KBD.map
-    echo "keycode 125 = Caps_Lock" >> rollarch$KBD.map
+    echo "keycode $CL = Caps_Lock" >> rollarch$KBD.map
+    echo "# modified: 58 = Escape and $CL = Caps_Lock" >> rollarch$KBD.map
     gzip rollarch$KBD.map
-  else
-    KBD=${KBD##*/}
   fi
   loadkeys rollarch$KBD
   localectl set-keymap rollarch$KBD
+  if [[ ! -f "$VCONSOLECONF" ]]; then
+    echo "KEYMAP=rollarch$KBD" > $VCONSOLECONF
+  fi
 }
 
 #for VirtualBox use bridged to have access to LAN
 function setup_network()
 {
-  ${LOADMODULECIFS:=/etc/modules-load.d/cifs.conf}
-  ${VARLIBSAMBAUSERSHARES:=/var/lib/samba/usershares}
-  ${ETCSAMBASMB:=/etc/samba/smb.conf}
-  ${ETCSYSTEMDNETWORKWIRED:=/etc/systemd/network/20-wired.network}
-  ${ETCSYSTEMDNETWORKWIRELESS:=/etc/systemd/network/25-wireless.network}
-  ${ETCSYSTEMDSYSTEMNETWORKSERVICE:=/etc/systemd/system/network.service}
-  ${ETCSYSTEMDRESOLVEDCONF:=/etc/systemd/resolved.conf}
-  ${ETCHOSTS:=/etc/hosts}
-  ${ETCHOSTNAME:=/etc/hostname}
+  LOADMODULECIFS=${LOADMODULECIFS:-/etc/modules-load.d/cifs.conf}
+  VARLIBSAMBAUSERSHARES=${VARLIBSAMBAUSERSHARES:-/var/lib/samba/usershares}
+  ETCSAMBASMB=${ETCSAMBASMB:-/etc/samba/smb.conf}
+  ETCSYSTEMDNETWORKWIRED=${ETCSYSTEMDNETWORKWIRED:-/etc/systemd/network/20-wired.network}
+  ETCSYSTEMDNETWORKWIRELESS=${ETCSYSTEMDNETWORKWIRELESS:-/etc/systemd/network/25-wireless.network}
+  ETCSYSTEMDSYSTEMNETWORKSERVICE=${ETCSYSTEMDSYSTEMNETWORKSERVICE:-/etc/systemd/system/network.service}
+  ETCSYSTEMDRESOLVEDCONF=${ETCSYSTEMDRESOLVEDCONF:-/etc/systemd/resolved.conf}
+  ETCHOSTS=${ETCHOSTS:-/etc/hosts}
+  ETCHOSTNAME=${ETCHOSTNAME:-/etc/hostname}
   echo $HST > $ETCHOSTNAME
   cat > $ETCHOSTS <<EOF
 127.0.0.1     localhost
@@ -233,7 +235,7 @@ EOF
 
 function setup_boot()
 {
-  ${ARCHLOADERCONF:=/boot/loader/entries/arch.conf}
+  ARCHLOADERCONF=${ARCHLOADERCONF:-/boot/loader/entries/arch.conf}
   UCODE=''
   UCODE_STRING=''
   if [[ "$(cat /proc/cpuinfo | grep GenuineIntel)" != "" ]]; then

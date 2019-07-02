@@ -44,10 +44,10 @@ Optional:
 :AIP2: [e.g. 1.199 | yes, to create Arch Proxy].
        The x.y of another arch linux machin (the local proxy)
 :DOTS: Full URL or ``https://git.io/SHORT`` to a bash installation script for dot files
-:KM: (US) one of ``localectl list-keymaps``.
-     If in upper case: ESCAPE->CAPS_LOCK and CAPS_LOCK->WIN.
-     For X use ``xmodmap -e "keycode 133 = Caps_Lock`` in your ``xinitrc``.
-     Use ``xev`` to check ``keycode 133`` equal ``keysym Super_L`` in case of problems.
+:KM: (us) one of ``localectl list-keymaps``.
+:CL: If given, Escape is mapped to Caps_Lock and Caps_Lock to this key for VConsole.
+     For X instead use dotfiles, e.g.: xmodmap -e "keysym Print = Caps_Lock
+     99 is [Print], 125 is [Win] aka Super_L.
 
 Alternatively you can clone to another LAN box (e.g. 1.108) and add the path to NFS
 
