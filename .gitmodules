@@ -37,6 +37,8 @@
 [submodule "pkg/urxvt-vim-scrollback-git"]
 	path = pkg/urxvt-vim-scrollback-git
 	url = https://aur.archlinux.org/urxvt-vim-scrollback-git.git
+	ignore = dirty
 [submodule "pkg/powerline-console-fonts"]
 	path = pkg/powerline-console-fonts
 	url = https://aur.archlinux.org/powerline-console-fonts.git
+	ignore = dirty
