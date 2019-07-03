@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm -rf "root"
+#rm -rf "root"
 
 git pull --recurse-submodules
 
