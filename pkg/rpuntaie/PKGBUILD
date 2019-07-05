@@ -46,8 +46,6 @@ package_rpuntaie-meta() {
     # editor nvim vor CLI and gvim for GUI (see below)
     depends+=(neovim python-neovim gvim pluma powerline-vim)
 
-    ln -sf /usr/share/vim/vimfiles/plugin/fzf.vim "${pkgdir}/usr/share/nvim/runtime/plugin/fzf.vim"
-
     # Python
     depends+=(python-gobject python-pyqt5 python-scipy python-sympy
     python-sip python-cffi python-cairocffi python-h5py python-beautifulsoup4
