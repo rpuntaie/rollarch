@@ -22,7 +22,7 @@ package_rpuntaie-meta() {
 
     # extra general packages (ag=the_silver_searcher)
     depends+=(stow ripgrep fd bc tmux wget fzf udisks2 unzip pacman-contrib bat ncdu 
-    the_silver_searcher rtorrent tree p7zip ranger)
+    the_silver_searcher rtorrent tree p7zip ranger mlocate)
 
     depends+=(keybase kbfs keybase-gui qrencode pass) #pulls gnupg (gpg)
 
@@ -37,7 +37,7 @@ package_rpuntaie-meta() {
     groff libtool m4 make patch pkgconf systemd)
 
     # C/C++
-    depends+=(cmake meson cscope ctags llvm clang gdb lldb boost eigen)
+    depends+=(cmake ninja meson cscope ctags llvm clang gdb lldb boost eigen)
 
     # zsh (to configure via dotfiles, or install grm-zsh-config afterwards)
     depends+=(acpi powerline powerline-fonts awesome-terminal-fonts jshon
@@ -45,6 +45,8 @@ package_rpuntaie-meta() {
 
     # editor nvim vor CLI and gvim for GUI (see below)
     depends+=(neovim python-neovim gvim pluma powerline-vim)
+
+    ln -sf /usr/share/vim/vimfiles/plugin/fzf.vim "${pkgdir}/usr/share/nvim/runtime/plugin/fzf.vim"
 
     # Python
     depends+=(python-gobject python-pyqt5 python-scipy python-sympy
@@ -56,7 +58,7 @@ package_rpuntaie-meta() {
     python-setuptools python-wheel python-snowballstemmer python-virtualenv python-yaml
     python-django python-tornado python-tox python-pandas python-cvxopt python-webtest
     python-sphinx python-lxml python-pyx python-urllib3 python-dateutil
-    python-decorator python-pyparsing python-nltk 
+    python-decorator python-pyparsing python-nltk python-mpi4py
     ipython python-ipykernel jupyter cython)
 
     # DB
@@ -73,7 +75,7 @@ package_rpuntaie-meta() {
     depends+=(atom eclipse-cpp intellij-idea-community-edition lazarus)
 
     # PHP/Mediawiki
-    depends+=(php nginx mediawiki)
+    depends+=(uwsgi nginx php mediawiki)
 
     # bluetooth
     depends+=(bluez bluez-utils)
@@ -119,15 +121,18 @@ package_rpuntaie-meta() {
 
     # graphics
     depends+=(graphviz vtk mayavi opencascade
-    opencv opencv-samples
+    opencv opencv-samples povray
     librecad blender gimp krita inkscape
     sk1 fontforge imagemagick imagemagick-doc processing openscad)
 
     # office
-    depends+=(libreoffice-fresh)
+    depends+=(libreoffice-fresh
+    tesseract #ocr
+    tesseract-data-eng
+    )
 
     # tex
-    depends+=(texlive-core mathjax
+    depends+=(texlive-core mathjax lyx qtikz texmacs
     texlive-bibtexextra texlive-fontsextra
     texlive-formatsextra texlive-games texlive-humanities texlive-langcyrillic
     texlive-latexextra texlive-music texlive-pictures
@@ -140,7 +145,7 @@ package_rpuntaie-meta() {
     depends+=(firefox chromium links qutebrowser w3m browserpass browserpass-firefox browserpass-chromium)
 
     # viewers
-    depends+=(eom feh links evince thunar ghostscript mupdf zathura)
+    depends+=(eom feh links evince thunar meld ghostscript mupdf zathura)
 
     # mail, IRC
     depends+=(thunderbird mutt offlineimap msmtp weechat)
@@ -167,6 +172,8 @@ package_rpuntaie-meta() {
     urxvt-vim-scrollback-git #C-v in urxvt
     powerline-console-fonts #for text console
     discord
+    tor-browser
+    dropbox dropbox-cli aws-cli
     )
 
     # #need multilib
