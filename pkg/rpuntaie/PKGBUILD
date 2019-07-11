@@ -67,7 +67,7 @@ package_rpuntaie-meta() {
 
     # Other Languages
     depends+=(go mono dotnet-sdk skia-sharp ghc pandoc cabal-install git-annex lua rust julia 
-    openblas gcc-fortran gcc-objc tk ruby fpc)
+    openblas gcc-fortran gcc-objc tk ruby roby-irb fpc ocaml elixir typescript ts-node)
 
     # IDE's
     depends+=(atom eclipse-cpp intellij-idea-community-edition lazarus)
@@ -172,6 +172,9 @@ package_rpuntaie-meta() {
     discord
     tor-browser
     dropbox dropbox-cli aws-cli
+    psysh
+    planck-git
+    cling-nightly
     )
 
     # #need multilib

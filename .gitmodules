@@ -54,3 +54,15 @@
 	path = pkg/dropbox-cli
 	url = https://aur.archlinux.org/dropbox-cli.git
 	ignore = dirty
+[submodule "pkg/psysh"]
+	path = pkg/psysh
+	url = https://aur.archlinux.org/psysh.git
+	ignore = dirty
+[submodule "pkg/cling-nightly"]
+	path = pkg/cling-nightly
+	url = https://aur.archlinux.org/cling-nightly.git
+	ignore = dirty
+[submodule "pkg/planck-git"]
+	path = pkg/planck-git
+	url = https://aur.archlinux.org/planck-git.git
+	ignore = dirty
