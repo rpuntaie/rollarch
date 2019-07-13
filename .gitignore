@@ -1,4 +1,4 @@
-root
+tmp
 *.log
 *.gz
 *.xz

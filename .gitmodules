@@ -66,3 +66,7 @@
 	path = pkg/planck-git
 	url = https://aur.archlinux.org/planck-git.git
 	ignore = dirty
+[submodule "pkg/leiningen"]
+	path = pkg/leiningen
+	url = https://aur.archlinux.org/leiningen.git
+	ignore = dirty

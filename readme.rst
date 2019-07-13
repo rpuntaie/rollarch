@@ -25,7 +25,7 @@ After booting the installation medium in the ``archiso`` prompt, do
     curl -OLs https://git.io/installarch #inspect, modify
     DSK=/dev/sda USR=u PW=p HST=u106 IP2=1.106 ZONE=Berlin bash installarch
 
-``https://git.io/installarch`` is short for 
+``https://git.io/installarch`` is short for
 ``https://raw.githubusercontent.com/rpuntaie/rollarch/master/rollarch``.
 
 :DSK: disk on which to install (not partition)
@@ -98,19 +98,21 @@ How `local proxy`_ and `custom packages`_ is used by `rollarch`_:
     cd rollarch
     sudo ./build
 
-  Before doing so, 
+  Before doing so,
   you can add some packages from AUR into the ``pkg`` subfolder, e.g.
 
   .. code:: sh
 
      git submodule add https://aur.archlinux.org/discord pkg/discord
 
-  The ``build`` script 
+  The ``build`` script
 
   - updates the submodules from AUR
   - builds all packages
   - adds to, and merges your ``custom`` repo and `custom packages`_
     with the rest of the packages of the `local proxy`_.
+
+  .. note:: ``build`` may need additional packages in its chroot environment for building certain AUR packages.
 
 - Make a new install with on another machine with
 
@@ -123,7 +125,7 @@ How `local proxy`_ and `custom packages`_ is used by `rollarch`_:
   ``mirrorlist`` gets a ``Server = 191.168.1.108`` at the top.
   If the install script finds a repo there named ``custom``, ``pacman.conf`` is changed to use it.
 
-- For packages ending in ``-meta``, at the end of installation, 
+- For packages ending in ``-meta``, at the end of installation,
   the dependencies are made ``--asexplicit`` and the resulting orphaned ``your-meta`` package is removed.
   To make this work, meta packages must not depend on each other.
 
@@ -147,7 +149,7 @@ This install script can be communicated to rollarch with a ``DOTS`` define.
     For other `shorteners <https://bit.do/list-of-url-shorteners.php>`__ use ``http://...``.
 
 The installation script is forwarded to bash within ``arch-chroot``, after ``cd /home/$USR``.
-It 
+It
 
 - downloads/clones the dotfiles
 - installs them
@@ -155,7 +157,7 @@ It
 
 
 The ``#PKG:`` and ``#REPO:`` comments are used by `rollarch`_.
-As an example see my 
+As an example see my
 `dotfiles install script <https://github.com/rpuntaie/dotfiles/blob/desktop/install>`__.
 In my example I use only ``rpuntaie-meta`` served from a LAN machine prepared with ``sudo ./build``,
 which also builds the AUR submodules that are part of `rollarch`_, e.g. ``yay``.
@@ -168,7 +170,7 @@ You can just list all the official packages directly in your install script::
         #PKG: coreutils
         #...
 
-``#REPO:`` lines work with server addresses that 
+``#REPO:`` lines work with server addresses that
 `don't need a Key-ID <https://wiki.archlinux.org/index.php/Unofficial_user_repositories>`__.
 E.g. to also install ``yay`` you could have these two lines::
 

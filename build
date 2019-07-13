@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#rm -rf "root"
+#rm -rf "tmp"
 
 git pull --recurse-submodules
 
@@ -11,15 +11,16 @@ LOCAL_PATH=/var/cache/pacman/pkg
 REPO_NAME=custom
 
 PACKAGES=${@:-pkg/*}
-CHROOT="$PWD/root"
+CHROOT="$PWD/tmp"
 
 mkdir -p "$LOCAL_PATH"
 mkdir -p "$CHROOT"
 
-[[ -d "$CHROOT/root" ]] || mkarchroot -C /etc/pacman.conf "$CHROOT/root" base base-devel git unzip
+[[ -d "$CHROOT/root" ]] || mkarchroot -C /etc/pacman.conf "$CHROOT/root" base base-devel git unzip meson cmake clojure
 
 for package in $PACKAGES; do
     cd "$package"
+    echo $(pwd) && ls PKGBUILD
     makechrootpkg -cur $CHROOT
     pkgs=*.pkg.tar.xz
     for pkg in $pkgs
