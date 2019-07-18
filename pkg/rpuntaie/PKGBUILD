@@ -1189,13 +1189,13 @@ package_rpuntaie-meta() {
 
     # Other Languages
     depends+=(go mono dotnet-sdk skia-sharp ghc pandoc cabal-install stack git-annex lua rust julia 
-    openblas gcc-fortran gcc-objc tk ruby roby-irb fpc ocaml elixir typescript ts-node)
+    openblas gcc-fortran gcc-objc tcl tk ruby roby-irb fpc ocaml elixir typescript ts-node)
 
     # IDE's
     depends+=(atom eclipse-cpp intellij-idea-community-edition lazarus)
 
     # PHP/Mediawiki
-    depends+=(uwsgi nginx php mediawiki)
+    depends+=(uwsgi nginx php xdebug mediawiki)
 
     # bluetooth
     depends+=(bluez bluez-utils)
@@ -1218,7 +1218,7 @@ package_rpuntaie-meta() {
     xorg-xwd xorg-xwininfo xorg-xwud xorg-server xdg-user-dirs openssh-askpass)
 
     # window manager
-    depends+=(xdotool xmonad xmonad-contrib i3-wm openbox
+    depends+=(xdotool wmctrl xmonad xmonad-contrib i3-wm openbox
     xterm alacritty rxvt-unicode urxvt-perls xorg-xinit dmenu gmrun scrot slock
     libnotify dunst xsel xclip dex)
 
