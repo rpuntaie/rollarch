@@ -96,7 +96,7 @@ How `local proxy`_ and `custom packages`_ is used by `rollarch`_:
   .. code:: sh
 
     cd rollarch
-    sudo ./build
+    sudo bash ./build
 
   Before doing so,
   you can add some packages from AUR into the ``pkg`` subfolder, e.g.
@@ -162,7 +162,7 @@ As an example see my
 In my example I use only ``rpuntaie-meta`` served from a LAN machine prepared with ``sudo ./build``,
 which also builds the AUR submodules that are part of `rollarch`_, e.g. ``yay``.
 
-You don't need to clone `rollarch`_ and run ``sudo ./build`` and use ``AIP2``.
+You don't need to clone `rollarch`_ and run ``sudo bash ./build`` and use ``AIP2``.
 You can just list all the official packages directly in your install script::
 
         #PKG: bash

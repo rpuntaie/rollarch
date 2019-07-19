@@ -22,7 +22,7 @@ package_rpuntaie-meta() {
 
     # extra general packages (ag=the_silver_searcher)
     depends+=(stow ripgrep fd bc tmux wget fzf udisks2 unzip pacman-contrib bat ncdu 
-    the_silver_searcher rtorrent tree p7zip ranger mlocate)
+    the_silver_searcher rtorrent tree p7zip ranger mlocate rmlint)
 
     depends+=(mtpfs android-file-transfer)
 
@@ -1292,11 +1292,12 @@ package_rpuntaie-meta() {
     wordnet-cli #wn
     urxvt-vim-scrollback-git #C-v in urxvt
     powerline-console-fonts #for text console
-    discord
+    discord #skype alternative
     tor-browser
-    dropbox dropbox-cli aws-cli
+    dropbox
+    dropbox-cli
     psysh #PHP REPL
-    leiningen #build automation for clojure
+    leiningen #clojure build automation
     planck-git #clojure REPL
     cling-nightly #C interpreter
     )
