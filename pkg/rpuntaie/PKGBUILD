@@ -1292,14 +1292,14 @@ package_rpuntaie-meta() {
     wordnet-cli #wn
     urxvt-vim-scrollback-git #C-v in urxvt
     powerline-console-fonts #for text console
-    discord #skype alternative
+    #discord #skype alternative
     tor-browser
     dropbox
     dropbox-cli
     psysh #PHP REPL
     leiningen #clojure build automation
     planck-git #clojure REPL
-    cling-nightly #C interpreter
+    cling-git #C interpreter
     )
 
     # #need multilib
