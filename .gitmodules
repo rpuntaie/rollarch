@@ -26,10 +26,6 @@
 	path = pkg/mimeo
 	url = https://aur.archlinux.org/mimeo
 	ignore = dirty
-[submodule "pkg/discord"]
-	path = pkg/discord
-	url = https://aur.archlinux.org/discord
-	ignore = dirty
 [submodule "pkg/perl-term-shellui"]
 	path = pkg/perl-term-shellui
 	url = https://aur.archlinux.org/perl-term-shellui.git
