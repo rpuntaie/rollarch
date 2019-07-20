@@ -1,5 +1,8 @@
-echo "test rollarch"
+#!/usr/bin/bash
+
+#bash ./unittests
+
+bats --tap test_user_repos.bats
 bats --tap test_rollarch.bats
 bats --tap test_dotfile.bats
-echo "test rollarchroot"
 bats --tap test_rollarchroot.bats

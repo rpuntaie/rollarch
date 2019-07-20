@@ -2,8 +2,6 @@
 
 #rm -rf "tmp"
 
-git pull --recurse-submodules
-
 set -uo pipefail
 trap 's=$?; echo "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
 
@@ -11,6 +9,17 @@ LOCAL_PATH=/var/cache/pacman/pkg
 REPO_NAME=custom
 
 PACKAGES=${@:-pkg/*}
+
+for package in $PACKAGES; do
+    if [[ ! -f "$package/PKGBUILD" ]]; then
+        echo "$package/PKGBUILD missing.
+Make sure submodules are there:
+    git submodule update --init --recursive
+    git submodule foreach git pull origin master" >&2
+        exit 1
+    fi
+done
+
 CHROOT="$PWD/tmp"
 
 mkdir -p "$LOCAL_PATH"

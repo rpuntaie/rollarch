@@ -95,6 +95,8 @@ How `local proxy`_ and `custom packages`_ is used by `rollarch`_:
 
   .. code:: sh
 
+    #git clone --recurse-submodules https://github.com/rpuntaie/rollarch
+    #git submodule foreach git pull origin master
     cd rollarch
     sudo bash ./build
 

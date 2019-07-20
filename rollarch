@@ -243,10 +243,28 @@ Server = https://pkgbuild.com/~maximbaz/repo/
 [seblu]
 Server = https://al.seblu.net/\$repo/\$arch
 [sergej-repo]
-Server = http://repo.p5n.pp.ru/\$repo/os/\$arch
+Server = http://www.p5n.pp.ru/\$repo/os/\$arch
 [xyne-x86_64]
-Server = http://xyne.archlinux.ca/bin/repo.php?file=
+Server = https://xyne.archlinux.ca/repos/xyne
 "
+
+##repos tested in test_rollarch.bats
+##here using py
+#srvrs= {'arcanisrepo':'https://repo.arcanis.me/repo/x86_64',
+#'dvzrv':'https://pkgbuild.com/~dvzrv/repo/x86_64',
+#'eschwartz':'https://pkgbuild.com/~eschwartz/repo/x86_64',
+#'herecura':'https://repo.herecura.be/herecura/x86_64',
+#'quarry':'https://pkgbuild.com/~anatolik/quarry/x86_64/',
+#'blackeagle-pre-community':'https://repo.herecura.be/blackeagle-pre-community/x86_64',
+#'city':'https://pkgbuild.com/~bgyorgy/city/os/x86_64',
+#'ffy00':'https://pkgbuild.com/~ffy00/repo',
+#'maximbaz':'https://pkgbuild.com/~maximbaz/repo/',
+#'seblu':'https://al.seblu.net/seblu/x86_64',
+#'sergej-repo':'http://www.p5n.pp.ru/sergej-repo/os/x86_64',
+#'xyne':'https://xyne.archlinux.ca/repos/xyne'}
+#import urllib
+#for nm,srv in srvrs.items():
+#  assert b"pkg.tar.xz" in urllib.request.urlopen(srv).read(), nm+' failed'
 
 
 function rollarch_repos()

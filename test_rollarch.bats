@@ -14,7 +14,7 @@ run_only_test() {
 
 setup()
 {
-    #run_only_test 11
+    #run_only_test 13
     #mock
     function curl() { return 0; }
     export -f curl
@@ -80,77 +80,77 @@ teardown()
 @test "no internet" {
     function ping() { return 1; }
     export -f ping
-    run ./rollarch
+    run bash ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): Internet.*/\1/g") = "Fatal" ]
 }
 
 #2
 @test "no DSK" {
-    run ./rollarch
+    run bash ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): DSK.*/\1/g") = "Fatal" ]
 }
 
 #3
 @test "no USR" {
-    DSK=x run ./rollarch
+    DSK=x run bash ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): USR.*/\1/g") = "Fatal" ]
 }
 
 #4
 @test "no PW" {
-    DSK=x USR=y run ./rollarch
+    DSK=x USR=y run bash ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): PW.*/\1/g") = "Fatal" ]
 }
 
 #5
 @test "no HST" {
-    DSK=x USR=y PW=z run ./rollarch
+    DSK=x USR=y PW=z run bash ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): HST.*/\1/g") = "Fatal" ]
 }
 
 #6
 @test "no ZONE" {
-    DSK=x USR=y PW=z HST=u run ./rollarch
+    DSK=x USR=y PW=z HST=u run bash ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): ZONE.*/\1/g") = "Fatal" ]
 }
 
 #7
 @test "DSK wrong" {
-    DSK=x USR=y PW=z HST=u ZONE=v IP2=w run ./rollarch
+    DSK=x USR=y PW=z HST=u ZONE=v IP2=w run bash ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): DSK wrong/\1/g") = "Fatal" ]
 }
 
 #8
 @test "USR wrong" {
-    DSK=/dev/null USR='x y' PW=z HST=u ZONE=v IP2=w run ./rollarch
+    DSK=/dev/null USR='x y' PW=z HST=u ZONE=v IP2=w run bash ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): USR wrong/\1/g") = "Fatal" ]
 }
 
 #9
 @test "ZONE wrong" {
-    DSK=/dev/null USR=y PW=z HST=u ZONE=sdfhsv IP2=w run ./rollarch
+    DSK=/dev/null USR=y PW=z HST=u ZONE=sdfhsv IP2=w run bash ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): ZONE wrong/\1/g") = "Fatal" ]
 }
 
 #10
 @test "LA_NG wrong" {
-    DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 LA_NG=ru run ./rollarch
+    DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 LA_NG=ru run bash ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/.*LA_NG \(wrong\)/\1/g") = "wrong" ]
 }
 
 #11
 @test "SWAP on" {
-    DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on run ./rollarch
+    DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on run bash ./rollarch
     [ "${lines[1]}" = "  boot: /dev/null1" ]
     [ "${lines[2]}" = "  swap: /dev/null2" ]
     [ "${lines[3]}" = "  root: /dev/null3" ]
@@ -158,10 +158,11 @@ teardown()
 
 #12
 @test "CHROOT preparation" {
-    DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on run ./rollarch
+    DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on run bash ./rollarch
     #echo "#${lines[8]}" >&3
     [ "$status" -eq 0 ]
     [ "${lines[10]:0:4}" = "DSK=" ]
     [ "${lines[11]:0:4}" = "USR=" ]
 }
+
 

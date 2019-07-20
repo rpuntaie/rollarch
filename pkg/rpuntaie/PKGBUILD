@@ -1292,7 +1292,6 @@ package_rpuntaie-meta() {
     wordnet-cli #wn
     urxvt-vim-scrollback-git #C-v in urxvt
     powerline-console-fonts #for text console
-    #discord #skype alternative
     tor-browser
     dropbox
     dropbox-cli

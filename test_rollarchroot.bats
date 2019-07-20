@@ -42,7 +42,7 @@ teardown()
 
 #1
 @test "show help" {
-    run ./rollarchroot -h
+    run bash ./rollarchroot -h
     #echo "#${lines[1]}" >&3
     [ "${lines[1]}" = "DSK USR PW HST ZONE IP2 AIP2 BOOT SWAP ROOT UEFI KM" ]
     [ "$status" -eq 0 ]
