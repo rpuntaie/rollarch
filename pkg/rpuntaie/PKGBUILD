@@ -1225,7 +1225,7 @@ package_rpuntaie-meta() {
     # fonts
     depends+=(noto-fonts noto-fonts-cjk noto-fonts-emoji noto-fonts-extra ttf-liberation
     ttf-bitstream-vera ttf-fira-mono ttf-fira-code ttf-anonymous-pro ttf-fantasque-sans-mono
-    ttf-dejavu ttf-freefont xorg-fonts-misc ttf-inconsolata ttf-roboto bdf-unifont)
+    ttf-dejavu gnu-free-fonts xorg-fonts-misc ttf-inconsolata ttf-roboto bdf-unifont)
 
     # virtualisation
     depends+=(virtualbox-guest-modules-arch virtualbox-guest-utils virtualbox-host-modules-arch virtualbox vagrant)
