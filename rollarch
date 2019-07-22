@@ -2,7 +2,7 @@
 
 # manual tests to perform on virtualbox: sed -n -e "s/^.*testX: //p" rollarch | bash
 # test1: DSK=/dev/sda USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna ./rollarch
-# TODO test2: DSK=/dev/sda USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 KM=us CL=99 LA_NG="de_DE es_ES fr_FR it_IT ru_RU" ZONE=Vienna DOTS=fjVcp ./rollarch rpuntaie-meta yay
+# test2: DSK=/dev/sda USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 KM=us CL=99 LA_NG="de_DE es_ES fr_FR it_IT ru_RU" ZONE=Vienna ./rollarch mdaffin-meta yay
 # test3: DSK=/dev/sda USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 KM=us CL=99 LA_NG="de_DE es_ES fr_FR it_IT ru_RU" ZONE=Vienna DOTS=fjVcp ./rollarch
 
 ROLLARCH_VERSION='0.0.1'

@@ -157,8 +157,10 @@ It
 - installs them
 - does some additional setup
 
-
 The ``#PKG:`` and ``#REPO:`` comments are used by `rollarch`_.
+The packages provided as arguments to ``rollarch``
+are combined with ``#PKG:`` comments in the ``DOTS`` file.
+
 As an example see my
 `dotfiles install script <https://github.com/rpuntaie/dotfiles/blob/desktop/install>`__.
 In my example I use only ``rpuntaie-meta`` served from a LAN machine prepared with ``sudo ./build``,
