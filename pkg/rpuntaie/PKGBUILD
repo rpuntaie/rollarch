@@ -46,12 +46,12 @@ package_rpuntaie-meta() {
     zsh zsh-syntax-highlighting zsh-autosuggestions zsh-completions zsh-history-substring-search)
 
     # editor nvim vor CLI and gvim for GUI (see below)
-    depends+=(neovim gvim pluma powerline-vim astyle arch-wiki-lite)
+    depends+=(neovim gvim pluma astyle arch-wiki-lite)
 
     # Python
     depends+=(pypy3 ipython jupyter cython twine wammu xonsh yapf python-ipykernel ansible
     python-gobject python-pyqt5 python-numpy python-numpydoc python-scipy
-    python-sympy python-h5py-openmpi python-sip python-cffi python-cairocffi
+    python-sympy python-h5py python-sip python-cffi python-cairocffi
     python-beautifulsoup4 python-html5lib python-bleach python-pytz python-docker
     python-docutils python-gmpy2 python-jinja python-matplotlib python-pillow
     python-pip python-pygal python-pygments python-pylint python-whoosh
@@ -70,7 +70,18 @@ package_rpuntaie-meta() {
     python-pycurl python-requests python-twisted python-urllib3 python-urllib3-doc
     python-bottle python-cairosvg python-click python-click-log python-click-repl
     python-click-threading python-colorama python-doit python-fuse python-qrencode
-    python-wikipedia)
+    python-wikipedia python-doit python-bottle python-flask
+    python-flask-appconfig python-flask-autoindex python-flask-babel
+    python-flask-babelex python-flask-bootstrap python-flask-caching
+    python-flask-dance python-flask-debug python-flask-gravatar
+    python-flask-htmlmin python-flask-jwt python-flask-login python-flask-mail
+    python-flask-marshmallow python-flask-migrate python-flask-nav
+    python-flask-oldsessions python-flask-paranoid python-flask-principal
+    python-flask-restful python-flask-script python-flask-security
+    python-flask-silk python-flask-socketio python-flask-sphinx-themes
+    python-flask-sqlalchemy python-flask-talisman python-flask-wtf python-black
+    python-pybtex python-pybtex-docutils python-nltk 
+    python-aws-sam-translator python-aws-xray-sdk)
 
     # DB
     depends+=(sqlite mariadb)
@@ -79,7 +90,7 @@ package_rpuntaie-meta() {
     depends+=(jdk-openjdk yarn npm nodejs coffeescript asar prettier scala sbt gradle kotlin clojure groovy ant maven)
 
     # html/xml
-    depends+=(docbook-xml docbook-xsl docbook-mathml tidy)
+    depends+=(expat docbook-xml docbook-xsl docbook-mathml tidy)
 
     # Other Languages
     depends+=(go mono dotnet-sdk skia-sharp ghc pandoc cabal-install stack git-annex lua rust julia 
@@ -174,7 +185,7 @@ package_rpuntaie-meta() {
     depends+=(octave sagemath r geogebra root gnuplot)
 
     # science
-    depends+=(hdf5 pymol)
+    depends+=(hdf5 cfitsio pymol wcslib)
 
     # organize, finance
     depends+=(task ledger)
