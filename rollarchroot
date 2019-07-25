@@ -5,14 +5,14 @@ function rollarchrootusage()
   echo "Required defines:"
   echo "DSK USR PW HST ZONE IP2 AIP2 BOOT SWAP ROOT UEFI KM"
   echo "Optional:"
-  echo "CL LA_NG USRPKGS DOTSINSTALL"
+  echo "CL LA_NG USRPKGS DOTSINSTALL ESSID PSK"
   echo ""
   echo "Functions for after arch-chroot"
   echo ""
   echo "- setup_time: using \$ZONE"
   echo "- setup_locale: using \$LA_NG"
   echo "- setup_escape: Caps_Lock becomes Escape"
-  echo "- setup_network: with \$IP2 and \$HST; uses systemd-networkd"
+  echo "- setup_network: with \$IP2 \$HST \$ESSID \$PSK; uses systemd-networkd"
   echo "- setup_boot: EFI boot if /sys/firmware/efi, else BIOS using grub"
   echo "- setup_user: using \$USR and \$PW, the latter also for root"
   echo "- setup_arch_proxy if AIP2=yes"
@@ -95,23 +95,17 @@ function setup_escape()
 }
 
 #for VirtualBox use bridged to have access to LAN
-function setup_network()
+#netctl is configured but not started
+function setup_ip()
 {
-  LOADMODULECIFS=${LOADMODULECIFS:-/etc/modules-load.d/cifs.conf}
-  VARLIBSAMBAUSERSHARES=${VARLIBSAMBAUSERSHARES:-/var/lib/samba/usershares}
-  ETCSAMBASMB=${ETCSAMBASMB:-/etc/samba/smb.conf}
+  ETCNETCTLSE=${ETCNETCTLSE:-/etc/netctl/se}
+  ETCNETCTLDE=${ETCNETCTLDE:-/etc/netctl/de}
+  ETCNETCTLSW=${ETCNETCTLSW:-/etc/netctl/sw}
+  ETCNETCTLDW=${ETCNETCTLDW:-/etc/netctl/dw}
   ETCSYSTEMDNETWORKWIRED=${ETCSYSTEMDNETWORKWIRED:-/etc/systemd/network/20-wired.network}
   ETCSYSTEMDNETWORKWIRELESS=${ETCSYSTEMDNETWORKWIRELESS:-/etc/systemd/network/25-wireless.network}
   ETCSYSTEMDSYSTEMNETWORKSERVICE=${ETCSYSTEMDSYSTEMNETWORKSERVICE:-/etc/systemd/system/network.service}
   ETCSYSTEMDRESOLVEDCONF=${ETCSYSTEMDRESOLVEDCONF:-/etc/systemd/resolved.conf}
-  ETCHOSTS=${ETCHOSTS:-/etc/hosts}
-  ETCHOSTNAME=${ETCHOSTNAME:-/etc/hostname}
-  echo $HST > $ETCHOSTNAME
-  cat > $ETCHOSTS <<EOF
-127.0.0.1     localhost
-::1           localhost
-127.0.0.1     $HST.localdomain  $HST
-EOF
   if [[ "$IP2" != "dhcp" ]]; then
     #IP2="1.100"
     local IPE=${IP2##*.} #100
@@ -126,8 +120,17 @@ EOF
   local had_w=""
   for NIC in $(ip link show|grep " UP \| DOWN "|sed "s/^[^:]: \([^:]\+\).*/\1/g"); do
     if [[ ${NIC:0:1} == "e" ]] && [[ "$had_e" == "" ]]; then
-      had_e="yes"
+      had_e=$NIC
       if [[ "$IP2" != "dhcp" ]]; then
+        cat > $ETCNETCTLSE <<EOF
+Description='static ethernet'
+Interface=$NIC
+Connection=ethernet
+IP=static
+Address=('$CIDR')
+Gateway=('$NS')
+DNS=('$NS')
+EOF
         cat > $ETCSYSTEMDSYSTEMNETWORKSERVICE <<EOF
 [Unit]
 Description=Network Connectivity
@@ -163,6 +166,12 @@ MulticastDNS=yes
 Metric=10
 EOF
       else
+        cat > $ETCNETCTLDE <<EOF
+Description='dhcp ethernet'
+Interface=$NIC
+Connection=ethernet
+IP=dhcp
+EOF
         cat > $ETCSYSTEMDNETWORKWIRED <<EOF
 [Match]
 Name=$NIC
@@ -177,8 +186,20 @@ RouteMetric=10
 EOF
       fi
     elif [[ ${NIC:0:1} == "w" ]] && [[ "$had_w" == "" ]]; then
-      had_w="yes"
+      had_w=$NIC
       if [[ "$IP2" != "dhcp" ]]; then
+        cat > $ETCNETCTLSW <<EOF
+Description='static wireless'
+Interface=$NIC
+Connection=wireless
+Security=wpa
+ESSID='$ESSID'
+Key='$PSK'
+IP=static
+Address=('$CIDR')
+Gateway=('$NS')
+DNS=('$NS')
+EOF
         cat > $ETCSYSTEMDNETWORKWIRELESS <<EOF
 [Match]
 Name=$NIC
@@ -194,6 +215,15 @@ MulticastDNS=yes
 Metric=20
 EOF
       else
+        cat > $ETCNETCTLDW <<EOF
+Description='dhcp wireless'
+Interface=$NIC
+Connection=wireless
+Security=wpa
+IP=dhcp
+ESSID='$ESSID'
+Key='$PSK'
+EOF
         cat > $ETCSYSTEMDNETWORKWIRELESS <<EOF
 [Match]
 Name=$NIC
@@ -206,14 +236,69 @@ MulticastDNS=yes
 [DHCP]
 RouteMetric=20
 EOF
+    ##systemd-networkd needs wpa_supplicant to connect to access point
+    #wpa_cli>scan>scan_results
+    #>add_network 0
+    #>set_network 0 ssid <SSID>
+    #>set_network 0 psk <passphrase>
+    #>enable_network 0
+    #>save_config>quit
+    cat > etc/wpa_supplicant/wpa_supplicant-$had_w.conf <<EOF
+ctrl_interface=/run/wpa_supplicant
+update_config=1
+#repeat for every MYSSID:
+#wpa_passphrase MYSSID passphrase
+#to produce ...
+network={
+    ssid='$ESSID'
+    psk='$PSK'
+}
+EOF
       fi
     fi
   done
+  if [[ $had_w != "" ]] && [[ $had_e != "" ]]; then
+    cat > /etc/modules-load.d/bonding.conf <<EOF
+bonding
+EOF
+    cat > /etc/modprobe.d/bonding.conf <<EOF
+options bonding mode=active-backup miimon=100 primary=$had_e max_bonds=0
+EOF
+    cat > /etc/netctl/failover <<EOF
+Description='A wired connection with failover to wireless'
+Interface='failover'
+Connection=bond
+BindsToInterfaces=('$had_e' '$had_w')
+IP='dhcp'
+EOF
+    cat > /etc/systemd/system/wpa_supplicant@$had_w.service.d/customdependency.conf <<EOF
+[Unit]
+After=netctl@failover.service
+EOF
+  fi
   systemctl enable --now systemd-networkd &>/dev/null
   systemctl enable --now systemd-resolved &>/dev/null
-  #edit /etc/exports to nfs export folders
-  systemctl enable --now nfs-server.service &>/dev/null
-  ## samba
+  ## FOR NETCTL
+  ## #systemctl disable systemd-networkd
+  ## #systemctl --type=service #to ensure no other network service is running
+  ## systemctl enable --now wpa_supplicant@$had_w # OR
+  ## nectl start failover #FOR EN AND WL
+  ## #cat /proc/net/bonding/failover # to check status # OR
+  ## if [[ "$IP2" = "dhcp" ]]; then
+  ##   netctl start dw #<wifi-menu-gnerated> # OR
+  ##   netctl start de # ... FOR EN ONLY
+  ## else
+  ##   netctl start sw # see above # OR
+  ##   netctl start se # ... FOR EN
+  ## fi
+}
+
+function setup_smb_ssh_nfs()
+{
+  ETCSAMBASMB=${ETCSAMBASMB:-/etc/samba/smb.conf}
+  VARLIBSAMBAUSERSHARES=${VARLIBSAMBAUSERSHARES:-/var/lib/samba/usershares}
+  LOADMODULECIFS=${LOADMODULECIFS:-/etc/modules-load.d/cifs.conf}
+  echo "cifs" > $LOADMODULECIFS
   cat > $ETCSAMBASMB <<EOF
 [global]
    usershare path = /var/lib/samba/usershares
@@ -230,7 +315,22 @@ EOF
   chmod 1770 $VARLIBSAMBAUSERSHARES
   systemctl enable --now smb nmb &>/dev/null
   systemctl enable --now sshd &>/dev/null
-  echo "cifs" > $LOADMODULECIFS
+  #edit /etc/exports to nfs export folders
+  systemctl enable --now nfs-server.service &>/dev/null
+}
+
+function setup_network()
+{
+  ETCHOSTS=${ETCHOSTS:-/etc/hosts}
+  ETCHOSTNAME=${ETCHOSTNAME:-/etc/hostname}
+  echo $HST > $ETCHOSTNAME
+  cat > $ETCHOSTS <<EOF
+127.0.0.1     localhost
+::1           localhost
+127.0.0.1     $HST.localdomain  $HST
+EOF
+  setup_ip
+  setup_smb_ssh_nfs
 }
 
 function setup_boot()

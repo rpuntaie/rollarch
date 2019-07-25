@@ -48,6 +48,8 @@ Optional:
 :AIP2: [e.g. 1.199 | yes, to create Arch Proxy].
        The x.y of another arch linux machin (the local proxy)
 :DOTS: Full URL or ``https://git.io/SHORT`` to a bash installation script for dot files
+:ESSID: name of WLAN access point, if any
+:PSK: passphrase of WLAN access point, if any
 
 The ``AIP2`` and ``DOTS`` defines are very useful and will be addressed below.
 

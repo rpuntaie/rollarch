@@ -13,12 +13,12 @@ package_rpuntaie-meta() {
     depends=(bash bzip2 coreutils cryptsetup device-mapper dhcpcd diffutils e2fsprogs file
     filesystem findutils gawk gcc-libs gettext glibc grep gzip inetutils iproute2
     iputils less licenses linux linux-firmware logrotate man-db jfsutils lvm2 reiserfsprogs xfsprogs
-    man-pages mdadm pacman pciutils perl procps-ng psmisc s-nail sed nano vi hwinfo
+    man-pages mdadm pacman pciutils perl procps-ng psmisc s-nail sed nano netctl vi hwinfo
     shadow sysfsutils systemd-sysvcompat tar texinfo usbutils util-linux which)
 
     # partly needed by rollarchroot
     depends+=(nfs-utils samba sudo git mercurial subversion
-    python devtools dialog wpa_supplicant ntp openssh)
+    python devtools dialog wpa_supplicant ifenslave ifplugd iw ppp ntp openssh)
 
     # extra general packages (ag=the_silver_searcher)
     depends+=(stow ripgrep fd bc tmux wget fzf udisks2 unzip pacman-contrib bat ncdu 
