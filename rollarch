@@ -38,7 +38,7 @@ function rollarch_usage()
   echo
   echo "Optional:"
   echo "  SWAP [on|off] (off), set to 'on' for non-SSD"
-  echo "  IP2 [e.g. 1.106] for 192.168.1.106, else 'dhcp'"
+  echo "  IP2 [e.g. 1.106] for 192.168.1.106, else 'dhcp'. For en+wl, wl gets ip2+1"
   echo "  LA_NG in addition to en_US [e.g. de_DE] (none)"
   echo "  AIP2 [e.g. 1.199 | yes, to create Arch Proxy] (none)"
   echo "  KM: (US) one of 'localectl list-keymaps'."
@@ -397,7 +397,7 @@ cifs share and mount:
 $ net usershare add cifs_share /home/$USR/path_to_cifs_share
 $ mount -t cifs //196.168.$IP2/cifs_share cifs_share -o username=$USR,vers=2.0
 
-nfs mount:
+nfs mount for computers in /etc/exports:
 
 $ mount -t nfs 192.168.$IP2:/home/$USR/path_to_nfs_share nfs_share
 

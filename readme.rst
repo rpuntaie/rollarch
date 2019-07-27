@@ -36,7 +36,7 @@ After booting the installation medium in the ``archiso`` prompt, do
 
 Optional:
 
-:IP2: (192.168.)x.y, [e.g. 1.106], else DHCP is set up
+:IP2: (192.168.)x.y, [e.g. 1.106], else dhcp; for en+wl, wl gets ip2+1
 :SWAP: [on|off] (off), set to ``on`` for non-SSD
 :IP2:  For 192.168.1.106, else 'dhcp'
 :LA_NG: Space separated list of xx_YY used in addition to en_US [e.g. "de_DE ru_RU"]
