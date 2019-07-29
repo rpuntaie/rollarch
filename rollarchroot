@@ -11,7 +11,7 @@ function rollarchrootusage() {
   echo "- setup_time: using \$ZONE"
   echo "- setup_locale: using \$LA_NG"
   echo "- setup_escape: Caps_Lock becomes Escape"
-  echo "- setup_network: with \$IP2 \$HST \$SSID \$PSK; uses systemd-networkd"
+  echo "- setup_network: with \$IP2 \$HST \$SSID \$PSK; enables systemd-networkd, but netctl files are created, too"
   echo "- setup_boot: EFI boot if /sys/firmware/efi, else BIOS using grub"
   echo "- setup_user: using \$USR and \$PW, the latter also for root"
   echo "- setup_arch_proxy if AIP2=yes"
@@ -120,15 +120,6 @@ LinkLocalAddressing=no
 [Route]
 Metric=10
 EOF
-  cat > $ETCNETCTLSE <<EOF
-Description='static ethernet'
-Interface=$NIC_EN
-Connection=ethernet
-IP=static
-Address=('$IP_CIDR_EN')
-Gateway=('$IP_DNS')
-DNS=('$IP_DNS')
-EOF
 }
 
 function _nic_wl_ip() {
@@ -147,18 +138,6 @@ LinkLocalAddressing=no
 [Route]
 Metric=20
 EOF
-  cat > $ETCNETCTLSW <<EOF
-Description='static wireless'
-Interface=$NIC_WL
-Connection=wireless
-Security=wpa
-ESSID='$SSID'
-Key='$PSK'
-IP=static
-Address=('$IP_CIDR_WL')
-Gateway=('$IP_DNS')
-DNS=('$IP_DNS')
-EOF
 }
 
 function _nic_en_dhcp() {
@@ -173,12 +152,6 @@ MulticastDNS=yes
 
 [Route]
 RouteMetric=10
-EOF
-  cat > $ETCNETCTLDE <<EOF
-Description='dhcp ethernet'
-Interface=$NIC_EN
-Connection=ethernet
-IP=dhcp
 EOF
 }
 
@@ -195,15 +168,6 @@ MulticastDNS=yes
 [Route]
 RouteMetric=20
 EOF
-  cat > $ETCNETCTLDW <<EOF
-Description='dhcp wireless'
-Interface=$NIC_WL
-Connection=wireless
-Security=wpa
-IP=dhcp
-ESSID='$SSID'
-Key='$PSK'
-EOF
 }
 
 ##systemd-networkd needs wpa_supplicant to connect to access point
@@ -218,8 +182,8 @@ function _nic_supplicant() {
   SUPPLICANT_CONF=${SUPPLICANT_CONF:-/etc/wpa_supplicant/wpa_supplicant-$NIC_WL.conf}
   cat > $SUPPLICANT_CONF <<EOF
 ctrl_interface=/var/run/wpa_supplicant
-ctrl_interface_group=wheel
 update_config=1
+eapol_version=1
 fast_reauth=1
 ap_scan=1
 #network={
@@ -265,16 +229,6 @@ Name=$NIC_WL
 [Network]
 Bond=sbond
 EOF
-  cat > $ETCNETCTLSBOND <<EOF
-Description='static bond'
-Interface=sbond
-Connection=bond
-BindsToInterfaces=('$NIC_EN' '$NIC_WL')
-IP=static
-Address=('$IP_CIDR_EN')
-Gateway=('$IP_DNS')
-DNS=('$IP_DNS')
-EOF
 }
 
 function _nic_bonding_dhcp() {
@@ -306,6 +260,61 @@ Name=$NIC_WL
 
 [Network]
 Bond=dbond
+EOF
+}
+
+function _netctl_en() {
+  cat > $ETCNETCTLSE <<EOF
+Description='static ethernet'
+Interface=$NIC_EN
+Connection=ethernet
+IP=static
+Address=('$IP_CIDR_EN')
+Gateway='$IP_DNS'
+DNS=('$IP_DNS')
+EOF
+  cat > $ETCNETCTLDE <<EOF
+Description='dhcp ethernet'
+Interface=$NIC_EN
+Connection=ethernet
+IP=dhcp
+EOF
+}
+
+function _netctl_wl() {
+  cat > $ETCNETCTLSW <<EOF
+Description='static wireless'
+Interface=$NIC_WL
+Connection=wireless
+Security=wpa
+ESSID='$SSID'
+Key='$PSK'
+IP=static
+Address=('$IP_CIDR_EN')
+Gateway='$IP_DNS'
+DNS=('$IP_DNS')
+EOF
+  cat > $ETCNETCTLDW <<EOF
+Description='dhcp wireless'
+Interface=$NIC_WL
+Connection=wireless
+Security=wpa
+IP=dhcp
+ESSID='$SSID'
+Key='$PSK'
+EOF
+}
+
+function _netctl_bond() {
+  cat > $ETCNETCTLSBOND <<EOF
+Description='static bond'
+Interface=sbond
+Connection=bond
+BindsToInterfaces=('$NIC_EN' '$NIC_WL')
+IP=static
+Address=('$IP_CIDR_EN')
+Gateway='$IP_DNS'
+DNS=('$IP_DNS')
 EOF
   cat > $ETCNETCTLDBOND <<EOF
 Description='dynamic bond'
@@ -352,16 +361,6 @@ function setup_ip() {
   rm -rf /etc/systemd/network
   mkdir /etc/systemd/network
   _nic_en_wl
-  if [[ "$NIC_EN" != "" ]] && [[ "$NIC_WL" != "" ]]; then
-    cat > $BONDINGMODULE <<EOF
-bonding
-EOF
-    # https://kerlilow.me/blog/setting-up-systemd-networkd-with-bonding/
-    # not necessary for systemd-networkd according % but for netctl yes
-    cat > $BONDINGCONF <<EOF
-options bonding mode=active-backup miimon=100 primary=$NIC_EN max_bonds=0
-EOF
-  fi
   if [[ "$IP2" != "dhcp" ]]; then
     local IP_2=${IP2##*.}
     local IP_1=${IP2%$IP_2}
@@ -373,7 +372,6 @@ EOF
       _nic_wl_ip
     else
       IP_CIDR_WL=$IP_CIDR_EN
-      [[ "$NIC_EN" != "" ]] && IP_CIDR_WL="192.168.$IP1$(( $IP_2+1 ))/24"
       if [[ "$NIC_EN" != "" ]] && [[ "$NIC_WL" != "" ]]; then
         _nic_bonding_ip
       elif [[ "$NIC_EN" != "" ]]; then
@@ -398,9 +396,22 @@ Name=${NIC_WL:-$NIC_EN}
 [Network]
 DHCP=yes
 EOF
+  netctl stop-all
+  if [[ "$NIC_EN" != "" ]] && [[ "$NIC_WL" != "" ]]; then
+    cat > $BONDINGMODULE <<EOF
+bonding
+EOF
+    # https://kerlilow.me/blog/setting-up-systemd-networkd-with-bonding/
+    # not necessary for systemd-networkd according % but for netctl yes
+    cat > $BONDINGCONF <<EOF
+options bonding mode=active-backup miimon=100 primary=$NIC_EN max_bonds=0
+EOF
+  _netctl_bond
+  fi
+  [[ -n $NIC_NE ]] && _netctl_en
+  [[ -n $NIC_WL ]] && _netctl_wl
   sed -i -e "s/#DNS=.*$/DNS=$IP_DNS/g" -e "s/#FallbackDNS/FallbackDNS/g" -e "s/#LLMNR/LLMNR/g" -e "s/#Multi/Multi/g" $ETCSYSTEMDRESOLVEDCONF
   [[ "$NIC_WL" != "" ]] && _nic_supplicant
-  netctl stop-all
   systemctl enable --now systemd-networkd
   systemctl enable --now systemd-resolved
 }
