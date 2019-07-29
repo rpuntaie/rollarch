@@ -95,9 +95,9 @@ fi
 function rollarch_check_defines()
 {
   if [[ -z $PW ]]; then
-    read -s PW
+    read -s -p "Passport:" PW
     echo
-    read -s PW1
+    read -s -p "Repeat passport:" PW1
     echo
     if [[ "$PW1" != "$PW" ]]; then
       echo "PWs don't fit" >&2
