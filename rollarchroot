@@ -104,7 +104,7 @@ function _nic_en_wl() {
   done
 }
 
-function _setup_nic_en_ip() {
+function _nic_en_ip() {
   cat > $ETCSYSTEMDNETWORKWIRED <<EOF
 [Match]
 Name=$NIC_EN
@@ -131,7 +131,7 @@ DNS=('$IP_DNS')
 EOF
 }
 
-function _setup_nic_wl_ip() {
+function _nic_wl_ip() {
   cat > $ETCSYSTEMDNETWORKWIRELESS <<EOF
 [Match]
 Name=$NIC_WL
@@ -161,7 +161,7 @@ DNS=('$IP_DNS')
 EOF
 }
 
-function _setup_nic_en_dhcp() {
+function _nic_en_dhcp() {
   cat > $ETCSYSTEMDNETWORKWIRED <<EOF
 [Match]
 Name=$NIC_EN
@@ -182,7 +182,7 @@ IP=dhcp
 EOF
 }
 
-function _setup_nic_wl_dhcp() {
+function _nic_wl_dhcp() {
   cat > $ETCSYSTEMDNETWORKWIRELESS <<EOF
 [Match]
 Name=$NIC_WL
@@ -214,7 +214,7 @@ EOF
 #>enable_network 0
 #>save_config>quit
 ## repeat the wpa_passphrase line manually for other access points
-function _setup_supplicant() {
+function _nic_supplicant() {
   SUPPLICANT_CONF=${SUPPLICANT_CONF:-/etc/wpa_supplicant/wpa_supplicant-$NIC_WL.conf}
   cat > $SUPPLICANT_CONF <<EOF
 ctrl_interface=/var/run/wpa_supplicant
@@ -222,17 +222,20 @@ ctrl_interface_group=wheel
 update_config=1
 fast_reauth=1
 ap_scan=1
+#network={
+#    ssid="$ESSID"
+#    psk="$PSK"
+#    }
 EOF
-  wpa_passphrase $ESSID $PSK >> $SUPPLICANT_CONF
+  if [[ "$ESSID" != "" ]] && [[ "$PSK" != "" ]]; then
+    wpa_passphrase $ESSID $PSK >> $SUPPLICANT_CONF
+    wpa_passphrase TP-LINK_C25554 52122040 >> /etc/wpa_supplicant/wpa_supplicant-$NIC_WL.conf
+    wpa_passphrase NETGEAR rolandgabilauralili >> /etc/wpa_supplicant/wpa_supplicant-$NIC_WL.conf
+  fi
   systemctl enable --now wpa_supplicant@$NIC_WL
 }
 
-##https://kerlilow.me/blog/setting-up-systemd-networkd-with-bonding/
-# BONDINGCONF=${BONDINGCONF:-/etc/modprobe.d/bonding.conf}
-#    cat > $BONDINGCONF <<EOF
-#options bonding mode=active-backup miimon=100 primary=$NIC_EN max_bonds=0
-#EOF
-function _setup_nic_bonding_ip() {
+function _nic_bonding_ip() {
   cat > $ETCSYSTEMNETEORK_SBONDDEV <<EOF
 [NetDev]
 Name=sbond
@@ -277,13 +280,14 @@ Description='static bond'
 Interface=sbond
 Connection=bond
 BindsToInterfaces=('$NIC_EN' '$NIC_WL')
+IP=static
 Address=('$IP_CIDR_EN')
 Gateway=('$IP_DNS')
 DNS=('$IP_DNS')
 EOF
 }
 
-function _setup_nic_bonding_dhcp() {
+function _nic_bonding_dhcp() {
   cat > $ETCSYSTEMNETEORK_DBONDDEV <<EOF
 [NetDev]
 Name=dbond
@@ -353,6 +357,7 @@ function setup_ip() {
   ETCSYSTEMDRESOLVEDCONF=${ETCSYSTEMDRESOLVEDCONF:-/etc/systemd/resolved.conf}
   ETCSYSTEMDFALLBACK=${ETCSYSTEMDFALLBACK:-/etc/systemd/network/99-dhcp.network}
   BONDINGMODULE=${BONDINGMODULE:-/etc/modules-load.d/bonding.conf}
+  BONDINGCONF=${BONDINGCONF:-/etc/modprobe.d/bonding.conf}
   ETCSYSTEMNETEORK_SBONDDEV=${ETCSYSTEMNETEORK_SBONDDEV:-/etc/systemd/network/10-sbond.netdev}
   ETCSYSTEMNETEORK_SBOND=${ETCSYSTEMNETEORK_SBOND:-/etc/systemd/network/10-sbond.network}
   ETCSYSTEMNETEORK_DBONDDEV=${ETCSYSTEMNETEORK_DBONDDEV:-/etc/systemd/network/10-dbond.netdev}
@@ -368,6 +373,11 @@ function setup_ip() {
     cat > $BONDINGMODULE <<EOF
 bonding
 EOF
+    # https://kerlilow.me/blog/setting-up-systemd-networkd-with-bonding/
+    # not necessary for systemd-networkd according % but for netctl yes
+    cat > $BONDINGCONF <<EOF
+options bonding mode=active-backup miimon=100 primary=$NIC_EN max_bonds=0
+EOF
   fi
   if [[ "$IP2" != "dhcp" ]]; then
     local IP_2=${IP2##*.}
@@ -377,20 +387,20 @@ EOF
     IP_CIDR_WL=$IP_CIDR_EN
     [[ "$NIC_EN" != "" ]] && IP_CIDR_WL="192.168.$IP1$(( $IP_2+1 ))/24"
     if [[ "$NIC_EN" != "" ]] && [[ "$NIC_WL" != "" ]]; then
-      _setup_nic_bonding_ip
+      _nic_bonding_ip
     elif [[ "$NIC_EN" != "" ]]; then
-      _setup_nic_en_ip
+      _nic_en_ip
     elif [[ "$NIC_WL" != "" ]]; then
-      _setup_nic_wl_ip
+      _nic_wl_ip
     fi
   else
     IP_DNS=$(ip route show default | sed -ne "s/default via \([0-9.]*\).*/\1/p")
     if [[ "$NIC_EN" != "" ]] && [[ "$NIC_WL" != "" ]]; then
-      _setup_nic_bonding_dhcp
+      _nic_bonding_dhcp
     elif [[ "$NIC_EN" != "" ]]; then
-      _setup_nic_en_dhcp
+      _nic_en_dhcp
     elif [[ "$NIC_WL" != "" ]]; then
-      _setup_nic_wl_dhcp
+      _nic_wl_dhcp
     fi
   fi
   [[ "$NIC_EN" != "" ]] && cat > $ETCSYSTEMDFALLBACK <<EOF
@@ -401,10 +411,10 @@ DHCP=yes
 LinkLocalAddressing=no
 EOF
   sed -i -e "s/#DNS=.*$/DNS=$IP_DNS/g" -e "s/#FallbackDNS/FallbackDNS/g" -e "s/#LLMNR/LLMNR/g" -e "s/#Multi/Multi/g" $ETCSYSTEMDRESOLVEDCONF
-  [[ "$NIC_WL" != "" ]] && _setup_supplicant
+  [[ "$NIC_WL" != "" ]] && _nic_supplicant
   netctl stop-all
-  systemctl enable --now systemd-networkd &>/dev/null
-  systemctl enable --now systemd-resolved &>/dev/null
+  systemctl enable --now systemd-networkd
+  systemctl enable --now systemd-resolved
 }
 
 # samba: add user share:
