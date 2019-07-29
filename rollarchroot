@@ -4,14 +4,14 @@ function rollarchrootusage() {
   echo "Required defines:"
   echo "DSK USR PW HST ZONE IP2 AIP2 BOOT SWAP ROOT UEFI KM"
   echo "Optional:"
-  echo "CL LA_NG USRPKGS DOTSINSTALL ESSID PSK"
+  echo "CL LA_NG USRPKGS DOTSINSTALL WLIP2 SSID PSK"
   echo ""
   echo "Functions for after arch-chroot"
   echo ""
   echo "- setup_time: using \$ZONE"
   echo "- setup_locale: using \$LA_NG"
   echo "- setup_escape: Caps_Lock becomes Escape"
-  echo "- setup_network: with \$IP2 \$HST \$ESSID \$PSK; uses systemd-networkd"
+  echo "- setup_network: with \$IP2 \$HST \$SSID \$PSK; uses systemd-networkd"
   echo "- setup_boot: EFI boot if /sys/firmware/efi, else BIOS using grub"
   echo "- setup_user: using \$USR and \$PW, the latter also for root"
   echo "- setup_arch_proxy if AIP2=yes"
@@ -92,7 +92,7 @@ function setup_escape() {
 function _nic_en_wl() {
   NIC_EN=""
   NIC_WL=""
-  for NIC in $(ip link show|grep " UP \| DOWN "|sed "s/^[^:]: \([^:]\+\).*/\1/g"); do
+  for NIC in $(ip link show|grep " UP \| DOWN \| DORMANT"|sed "s/^[^:]: \([^:]\+\).*/\1/g"); do
     if [[ ${NIC:0:1} == "e" ]] && [[ "$NIC_EN" == "" ]]; then
       NIC_EN=$NIC
     elif [[ ${NIC:0:1} == "w" ]] && [[ "$NIC_WL" == "" ]]; then
@@ -152,7 +152,7 @@ Description='static wireless'
 Interface=$NIC_WL
 Connection=wireless
 Security=wpa
-ESSID='$ESSID'
+ESSID='$SSID'
 Key='$PSK'
 IP=static
 Address=('$IP_CIDR_WL')
@@ -201,7 +201,7 @@ Interface=$NIC_WL
 Connection=wireless
 Security=wpa
 IP=dhcp
-ESSID='$ESSID'
+ESSID='$SSID'
 Key='$PSK'
 EOF
 }
@@ -223,14 +223,12 @@ update_config=1
 fast_reauth=1
 ap_scan=1
 #network={
-#    ssid="$ESSID"
+#    ssid="$SSID"
 #    psk="$PSK"
 #    }
 EOF
-  if [[ "$ESSID" != "" ]] && [[ "$PSK" != "" ]]; then
-    wpa_passphrase $ESSID $PSK >> $SUPPLICANT_CONF
-    wpa_passphrase TP-LINK_C25554 52122040 >> /etc/wpa_supplicant/wpa_supplicant-$NIC_WL.conf
-    wpa_passphrase NETGEAR rolandgabilauralili >> /etc/wpa_supplicant/wpa_supplicant-$NIC_WL.conf
+  if [[ "$SSID" != "" ]] && [[ "$PSK" != "" ]]; then
+    wpa_passphrase $SSID $PSK >> $SUPPLICANT_CONF
   fi
   systemctl enable --now wpa_supplicant@$NIC_WL
 }
@@ -240,13 +238,6 @@ function _nic_bonding_ip() {
 [NetDev]
 Name=sbond
 Kind=bond
-
-[Bond]
-Mode=active-backup
-PrimaryReselectPolicy=always
-TransmitHashPolicy=layer3+4
-MIIMonitorSec=1s
-LACPTransmitRate=fast
 EOF
   cat > $ETCSYSTEMNETEORK_SBOND << EOF
 [Match]
@@ -266,7 +257,6 @@ Name=$NIC_EN
 
 [Network]
 Bond=sbond
-PrimarySlave=true
 EOF
   cat > $ETCSYSTEMDNETWORKWIRELESS <<EOF
 [Match]
@@ -292,13 +282,6 @@ function _nic_bonding_dhcp() {
 [NetDev]
 Name=dbond
 Kind=bond
-
-[Bond]
-Mode=active-backup
-PrimaryReselectPolicy=always
-TransmitHashPolicy=layer3+4
-MIIMonitorSec=1s
-LACPTransmitRate=fast
 EOF
   cat > $ETCSYSTEMNETEORK_DBOND << EOF
 [Match]
@@ -316,7 +299,6 @@ Name=$NIC_EN
 
 [Network]
 Bond=dbond
-PrimarySlave=true
 EOF
   cat > $ETCSYSTEMDNETWORKWIRELESS <<EOF
 [Match]
@@ -332,7 +314,6 @@ Connection=bond
 BindsToInterfaces=('$NIC_EN' '$NIC_WL')
 IP=dhcp
 EOF
-  fi
 }
 
 # for VirtualBox use bridged to have access to LAN
@@ -368,6 +349,8 @@ function setup_ip() {
   ETCNETCTLDW=${ETCNETCTLDW:-/etc/netctl/dw}
   ETCNETCTLSBOND=${ETCNETCTLSBOND:-/etc/netctl/sbond}
   ETCNETCTLDBOND=${ETCNETCTLDBOND:-/etc/netctl/dbond}
+  rm -rf /etc/systemd/network
+  mkdir /etc/systemd/network
   _nic_en_wl
   if [[ "$NIC_EN" != "" ]] && [[ "$NIC_WL" != "" ]]; then
     cat > $BONDINGMODULE <<EOF
@@ -384,14 +367,20 @@ EOF
     local IP_1=${IP2%$IP_2}
     IP_DNS=192.168.${IP_1}1
     IP_CIDR_EN="192.168.$IP2/24"
-    IP_CIDR_WL=$IP_CIDR_EN
-    [[ "$NIC_EN" != "" ]] && IP_CIDR_WL="192.168.$IP1$(( $IP_2+1 ))/24"
-    if [[ "$NIC_EN" != "" ]] && [[ "$NIC_WL" != "" ]]; then
-      _nic_bonding_ip
-    elif [[ "$NIC_EN" != "" ]]; then
+    if [[ -n $WLIP2 ]]; then
+      IP_CIDR_WL="192.168.$WLIP2/24"
       _nic_en_ip
-    elif [[ "$NIC_WL" != "" ]]; then
       _nic_wl_ip
+    else
+      IP_CIDR_WL=$IP_CIDR_EN
+      [[ "$NIC_EN" != "" ]] && IP_CIDR_WL="192.168.$IP1$(( $IP_2+1 ))/24"
+      if [[ "$NIC_EN" != "" ]] && [[ "$NIC_WL" != "" ]]; then
+        _nic_bonding_ip
+      elif [[ "$NIC_EN" != "" ]]; then
+        _nic_en_ip
+      elif [[ "$NIC_WL" != "" ]]; then
+        _nic_wl_ip
+      fi
     fi
   else
     IP_DNS=$(ip route show default | sed -ne "s/default via \([0-9.]*\).*/\1/p")
@@ -444,6 +433,7 @@ EOF
   systemctl enable --now nfs-server.service &>/dev/null
 }
 
+#IP2=1.107 WLIP2=1.117 SSID="YOURSSID" PSK="YOURPASSPHRASE"
 function setup_network() {
   ETCHOSTS=${ETCHOSTS:-/etc/hosts}
   ETCHOSTNAME=${ETCHOSTNAME:-/etc/hostname}

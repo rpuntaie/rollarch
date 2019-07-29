@@ -44,7 +44,8 @@ function rollarch_usage()
   echo "  KM: (US) one of 'localectl list-keymaps'."
   echo "      If in upper case: ESCAPE->CAPS_LOCK and CAPS_LOCK->WIN"
   echo "  DOTS: URL or https://git.io/SHORT to a bash installation script for dot files"
-  echo "  ESSID: wlan access point, if any"
+  echo "  WLIP2: for static IP2 and separate wl NIC, else bonding en+wl with IP2"
+  echo "  SSID: wlan access point, if any"
   echo "  PSK: passphrase for wlan, if any"
   echo
   echo "Desription:"
@@ -366,6 +367,9 @@ UEFI=$UEFI
 KM='$KM'
 LA_NG='$LA_NG'
 USRPKGS='$USRPKGS'
+WLIP2=$WLIP2
+SSID=$SSID
+PSK=$PSK
 DOTSINSTALL='/${DOTS##*/}'
 . ./rollarchroot
 setup_all
