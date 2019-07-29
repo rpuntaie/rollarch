@@ -392,12 +392,11 @@ EOF
       _nic_wl_dhcp
     fi
   fi
-  [[ "$NIC_EN" != "" ]] && cat > $ETCSYSTEMDFALLBACK <<EOF
+  cat > $ETCSYSTEMDFALLBACK <<EOF
 [Match]
-Name=en*
+Name=${NIC_WL:-$NIC_EN}
 [Network]
 DHCP=yes
-LinkLocalAddressing=no
 EOF
   sed -i -e "s/#DNS=.*$/DNS=$IP_DNS/g" -e "s/#FallbackDNS/FallbackDNS/g" -e "s/#LLMNR/LLMNR/g" -e "s/#Multi/Multi/g" $ETCSYSTEMDRESOLVEDCONF
   [[ "$NIC_WL" != "" ]] && _nic_supplicant
