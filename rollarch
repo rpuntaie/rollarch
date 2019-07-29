@@ -94,6 +94,9 @@ fi
 
 function rollarch_check_defines()
 {
+  if [[ -z $PW ]]; then
+    read -s -p "Password:" PW
+  fi
   for req in DSK USR PW HST ZONE
   do
     if [[ "${!req}" == "" ]]; then

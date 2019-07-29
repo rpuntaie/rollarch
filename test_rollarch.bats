@@ -80,75 +80,69 @@ teardown()
 @test "no internet" {
     function ping() { return 1; }
     export -f ping
-    run bash ./rollarch
+    PW=p run bash ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): Internet.*/\1/g") = "Fatal" ]
 }
 
 #2
 @test "no DSK" {
-    run bash ./rollarch
+    PW=p run bash ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): DSK.*/\1/g") = "Fatal" ]
 }
 
 #3
 @test "no USR" {
-    DSK=x run bash ./rollarch
+    PW=p DSK=x run bash ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): USR.*/\1/g") = "Fatal" ]
 }
 
-#4
-@test "no PW" {
-    DSK=x USR=y run bash ./rollarch
-    [ "$status" -eq 1 ]
-    [ $(echo "$output" | sed "s/\(Fatal\): PW.*/\1/g") = "Fatal" ]
-}
 
-#5
+#4
 @test "no HST" {
     DSK=x USR=y PW=z run bash ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): HST.*/\1/g") = "Fatal" ]
 }
 
-#6
+#5
 @test "no ZONE" {
     DSK=x USR=y PW=z HST=u run bash ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): ZONE.*/\1/g") = "Fatal" ]
 }
 
-#7
+#6
 @test "DSK wrong" {
     DSK=x USR=y PW=z HST=u ZONE=v IP2=w run bash ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): DSK wrong/\1/g") = "Fatal" ]
 }
 
-#8
+#7
 @test "USR wrong" {
     DSK=/dev/null USR='x y' PW=z HST=u ZONE=v IP2=w run bash ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): USR wrong/\1/g") = "Fatal" ]
 }
 
-#9
+#8
 @test "ZONE wrong" {
     DSK=/dev/null USR=y PW=z HST=u ZONE=sdfhsv IP2=w run bash ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/\(Fatal\): ZONE wrong/\1/g") = "Fatal" ]
 }
 
-#10
+#9
 @test "LA_NG wrong" {
     DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 LA_NG=ru run bash ./rollarch
     [ "$status" -eq 1 ]
     [ $(echo "$output" | sed "s/.*LA_NG \(wrong\)/\1/g") = "wrong" ]
 }
 
-#11
+#10
 @test "SWAP on" {
     DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on run bash ./rollarch
     [ "${lines[1]}" = "  boot: /dev/null1" ]
@@ -156,7 +150,7 @@ teardown()
     [ "${lines[3]}" = "  root: /dev/null3" ]
 }
 
-#12
+#11
 @test "CHROOT preparation" {
     DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on run bash ./rollarch
     #echo "#${lines[8]}" >&3
