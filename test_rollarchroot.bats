@@ -31,7 +31,6 @@ teardown()
         rm -f etcsambasmb
         rm -f etcsystemdnetworkwired
         rm -f etcsystemdnetworkwireless
-        rm -f etcsystemdsystemnetworkservice
         rm -f etcsystemdresolvedconf
         rm -f etchosts
         rm -f etchostname
@@ -237,7 +236,6 @@ teardown()
     ETCSAMBASMB="etcsambasmb"
     ETCSYSTEMDNETWORKWIRED="etcsystemdnetworkwired"
     ETCSYSTEMDNETWORKWIRELESS="etcsystemdnetworkwireless"
-    ETCSYSTEMDSYSTEMNETWORKSERVICE="etcsystemdsystemnetworkservice"
     ETCSYSTEMDRESOLVEDCONF="etcsystemdresolvedconf"
     ETCHOSTS="etchosts"
     ETCHOSTNAME="etchostname"
@@ -246,7 +244,6 @@ teardown()
     run setup_network
     [ -e etchostname ]
     [ -e etchosts ]
-    [ -e etcsystemdsystemnetworkservice ]
     [ -e etcsystemdnetworkwired ]
     [ -e etcsystemdnetworkwireless ]
     [ -e etcsambasmb ]
@@ -292,7 +289,6 @@ teardown()
     ETCSAMBASMB="etcsambasmb"
     ETCSYSTEMDNETWORKWIRED="etcsystemdnetworkwired"
     ETCSYSTEMDNETWORKWIRELESS="etcsystemdnetworkwireless"
-    ETCSYSTEMDSYSTEMNETWORKSERVICE="etcsystemdsystemnetworkservice"
     ETCSYSTEMDRESOLVEDCONF="etcsystemdresolvedconf"
     ETCHOSTS="etchosts"
     ETCHOSTNAME="etchostname"
