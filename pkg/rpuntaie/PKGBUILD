@@ -10,10 +10,10 @@ license=(MIT)
 
 package_rpuntaie-meta() {
     # Base group:
-    depends=(bash bzip2 coreutils cryptsetup device-mapper dhcpcd diffutils e2fsprogs file
+    depends=(gpm bash bzip2 coreutils cryptsetup device-mapper dhcpcd diffutils e2fsprogs file
     filesystem findutils gawk gcc-libs gettext glibc grep gzip inetutils iproute2
     iputils less licenses linux linux-firmware logrotate man-db jfsutils lvm2 reiserfsprogs xfsprogs
-    man-pages mdadm pacman pciutils perl procps-ng psmisc s-nail sed nano netctl vi hwinfo
+    man-pages mdadm pacman pciutils perl procps-ng psmisc s-nail sed nano netctl hwinfo
     shadow sysfsutils systemd-sysvcompat tar texinfo usbutils util-linux which)
 
     # partly needed by rollarchroot
@@ -26,7 +26,7 @@ package_rpuntaie-meta() {
 
     depends+=(mtpfs android-file-transfer)
 
-    depends+=(keybase kbfs keybase-gui qrencode pass) #pulls gnupg (gpg)
+    depends+=(keybase kbfs keybase-gui qrencode gnupg pass)
 
     # debugging tools
     depends+=(lsof bind-tools mtr socat htop iotop openbsd-netcat strace)
@@ -51,7 +51,7 @@ package_rpuntaie-meta() {
     # Python
     depends+=(pypy3 ipython jupyter cython twine wammu xonsh yapf python-ipykernel ansible
     python-gobject python-pyqt5 python-numpy python-numpydoc python-scipy
-    python-sympy python-h5py python-sip python-cffi python-cairocffi
+    python-sympy python-tensorflow python-h5py python-sip python-cffi python-cairocffi
     python-beautifulsoup4 python-html5lib python-bleach python-pytz python-docker
     python-docutils python-gmpy2 python-jinja python-matplotlib python-pillow
     python-pip python-pygal python-pygments python-pylint python-whoosh
@@ -68,8 +68,8 @@ package_rpuntaie-meta() {
     python-sphinxcontrib-websupport python-lxml python-lxml-docs python-pyx
     python-dateutil python-decorator python-pyparsing python-nltk python-pycparser
     python-pycurl python-requests python-twisted python-urllib3 python-urllib3-doc
-    python-bottle python-cairosvg python-click python-click-log python-click-repl
-    python-click-threading python-colorama python-doit python-fuse python-qrencode
+    python-cairosvg python-click python-click-log python-click-repl
+    python-click-threading python-colorama python-fuse python-qrencode
     python-wikipedia python-doit python-bottle python-flask
     python-flask-appconfig python-flask-autoindex python-flask-babel
     python-flask-babelex python-flask-bootstrap python-flask-caching
@@ -80,7 +80,7 @@ package_rpuntaie-meta() {
     python-flask-restful python-flask-script python-flask-security
     python-flask-silk python-flask-socketio python-flask-sphinx-themes
     python-flask-sqlalchemy python-flask-talisman python-flask-wtf python-black
-    python-pybtex python-pybtex-docutils python-nltk 
+    python-pybtex python-pybtex-docutils
     python-aws-sam-translator python-aws-xray-sdk)
 
     # DB
@@ -109,8 +109,7 @@ package_rpuntaie-meta() {
     depends+=(alsa-utils pulseaudio pulseaudio-alsa pulseaudio-bluetooth pavucontrol paprefs)
 
     # drivers and utilities
-    depends+=(xf86-input-libinput xf86-input-synaptics
-    xf86-video-intel xf86-video-vesa nvidia nvidia-utils)
+    depends+=(xf86-input-libinput xf86-video-intel nvidia nvidia-utils)
 
     # Xorg packages and utilities
     depends+=(xorg-xsetroot xorg-xkill xorg-xbacklight xorg-bdftopcf
@@ -172,7 +171,7 @@ package_rpuntaie-meta() {
     depends+=(firefox chromium links qutebrowser w3m browserpass browserpass-firefox browserpass-chromium)
 
     # viewers
-    depends+=(eom feh links evince thunar meld ghostscript mupdf zathura zathura-djvu zathura-pdf-mupdf zathura-ps zathura-cb)
+    depends+=(eom feh evince thunar meld ghostscript mupdf zathura zathura-djvu zathura-pdf-mupdf zathura-ps zathura-cb)
 
     # mail, IRC
     depends+=(thunderbird mutt offlineimap msmtp weechat)

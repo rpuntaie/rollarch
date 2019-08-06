@@ -287,6 +287,8 @@ function rollarch_repos()
     DOTSINSTALL="$MNT_PNT/${DOTS##*/}"
     if [[ "$DOTS" =~ ^https:// ]] || [[ "$DOTS" =~ ^file:/// ]]; then
       curl -Ls $DOTS > $DOTSINSTALL
+    elif [[ -f $DOTS ]]; then
+      cp $DOTS $DOTSINSTALL
     else
       curl -Ls https://git.io/$DOTS > $DOTSINSTALL
     fi
