@@ -143,17 +143,30 @@ function rollarch_check_defines()
 
 function roll_find_partitions()
 {
-  BOOT=$(fdisk -l $DSK | sed -ne "s/ *\*  .*//p")
-  SWAP=$(fdisk -l $DSK | sed -ne "s/ [0-9\. GMT]* 82 .*//p")
-  if [[ $SWAP == "" ]]; then
-    SWAP=off
+  if [[ "$DSK" == "" ]]; then
+    echo 'DSK not defined' >&2
+    return 1
   fi
-  ROOT=$(fdisk -l $DSK | sed -ne "s/ [0-9\. GMT]* 83 .*//p")
-  if [[ "$ROOT" == "" ]]; then
-    if [[ -e /dev/vg0/lv0 ]]; then
-      ROOT=/dev/vg0/lv0
+  BOOT=
+  ROOT=
+  SWP=
+  for diskpart in $(ls ${DSK}*); do
+    if [[ "$diskpart" =~ ^([a-z/]+([0-9]n)?[0-9]p|[a-z/]+)[0-9]$ ]]; then
+      if [[ "$BOOT" == "" ]]; then
+        BOOT=$diskpart
+      elif [[ "$SWP" == "" ]]; then
+        if [[ "$SWAP" == "off" ]]; then
+          ROOT=$diskpart
+          SWP=off
+        else
+          SWP=$diskpart
+        fi
+      elif [[ "$ROOT" == "" ]]; then
+        ROOT=$diskpart
+      fi
     fi
-  fi
+  done
+  SWAP=$SWP
   if [[ "$ROOT" == "" ]]; then
     echo 'unable to find ROOT the partition' >&2
     return 1
@@ -161,6 +174,9 @@ function roll_find_partitions()
   if [[ "$BOOT" == "" ]]; then
     echo 'unable to find BOOT the partition' >&2
     return 1
+  fi
+  if [[ -e /dev/vg0/lv0 ]]; then
+    ROOT=/dev/vg0/lv0
   fi
   echo "  boot: $BOOT"
   echo "  swap: $SWAP"
@@ -248,6 +264,8 @@ function rollarch_partition()
     ROOT=/dev/vg0/lv0
   fi
   roll_find_partitions
+  [[ $?==0 ]] || return 1
+
   roll_mkfs &>/dev/null
   roll_mount
 }
