@@ -459,19 +459,19 @@ EOF
 
 function setup_boot() {
   ARCHLOADERCONF=${ARCHLOADERCONF:-/boot/loader/entries/arch.conf}
+  #microcode used by systemd-boot as well as grub (automatically)
   UCODE=''
-  UCODE_STRING=''
   if [[ "$(cat /proc/cpuinfo | grep GenuineIntel)" != "" ]]; then
     UCODE='intel-ucode'
   elif [[ "$(cat /proc/cpuinfo | grep AuthenticAMD)" != "" ]]; then
     UCODE='amd-ucode'
   fi
-  if [[ "$UCODE" != "" ]]; then
-    UCODE_STRING="initrd  /${UCODE}.img
-"
-    pacman -S --needed --noconfirm $UCODE &>/dev/null
-  fi
   if [[ "$UEFI" == "on" ]]; then
+    if [[ "$UCODE" != "" ]]; then
+      UCODE_STRING="initrd  /${UCODE}.img
+"
+      pacman -S --needed --noconfirm $UCODE &>/dev/null
+    fi
     pacman -S --needed --noconfirm efibootmgr efitools &>/dev/null
     bootctl --path=/boot install
     PARTUUID="$(blkid -s PARTUUID -o value $ROOT)"
@@ -481,10 +481,13 @@ linux   /vmlinuz-linux
 ${UCODE_STRING}initrd  /initramfs-linux.img
 ${APPEND}" > $ARCHLOADERCONF
   else
-    mkinitcpio -p linux
     grub-install --target=i386-pc --recheck $DSK &>/dev/null
     grub-mkconfig -o "/boot/grub/grub.cfg" &>/dev/null
   fi
+  if [[ "$LVM" != "" ]]; then
+    sed -i -e "s/block filesystems/block lvm2 filesystems/g" /etc/mkinitcpio.conf
+  fi
+  mkinitcpio -p linux
 }
 
 function setup_user() {

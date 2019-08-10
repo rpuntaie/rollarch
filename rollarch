@@ -4,6 +4,7 @@
 # test1: DSK=/dev/sda USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna ./rollarch
 # test2: DSK=/dev/sda USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 KM=us CL=99 LA_NG="de_DE es_ES fr_FR it_IT ru_RU" ZONE=Vienna ./rollarch mdaffin-meta yay
 # test3: DSK=/dev/sda USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 KM=us CL=99 LA_NG="de_DE es_ES fr_FR it_IT ru_RU" ZONE=Vienna DOTS=fjVcp ./rollarch
+# test4: DSK=/dev/sda LVM=/dev/sdb USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna ./rollarch
 
 ROLLARCH_VERSION='0.0.1'
 
@@ -37,7 +38,8 @@ function rollarch_usage()
   echo "# ZONE=Vienna"
   echo
   echo "Optional:"
-  echo "  SWAP [on|off] (off), set to 'on' for non-SSD"
+  echo "  SWAP [on|off] (on), set to 'off' e.g. for SSD and if you don't need swap"
+  echo "  LVM [e.g. /dev/sdb], disks additional to $ROOT to form new LVM $ROOT /dev/vg0/lv0"
   echo "  IP2 [e.g. 1.106] for 192.168.1.106, else 'dhcp'"
   echo "  LA_NG in addition to en_US [e.g. de_DE] (none)"
   echo "  AIP2 [e.g. 1.199 | yes, to create Arch Proxy] (none)"
@@ -65,7 +67,7 @@ function rollarch_check_internet()
     return 1
   fi
 
-  if [[ "$(which ntpdate 2> /dev/null)" != "" ]]; then
+  if [[ "$(which ntpdate &> /dev/null)" != "" ]]; then
     ntpdate pool.ntp.org &>/dev/null
     timedatectl set-local-rtc 1 &>/dev/null
   fi
@@ -77,8 +79,8 @@ if [[ "$AIP2" == "" ]]; then
 elif [[ ! "$AIP2" =~ ^([0-9]+[.][0-9]+)$ ]] && [[ "$AIP2" != "no" ]]; then
   AIP2="yes"
 fi
-if [[ "$SWAP" != "on" ]]; then
-  SWAP="off"
+if [[ "$SWAP" != "off" ]]; then
+  SWAP="on"
 fi
 if [[ "$KM" == "" ]]; then
   KM="US"
@@ -141,29 +143,17 @@ function rollarch_check_defines()
 
 function roll_find_partitions()
 {
-  BOOT=
-  ROOT=
-  for diskpart in $(ls ${DSK}*); do
-    if [[ "$diskpart" =~ ^([a-z/]+([0-9]n)?[0-9]p|[a-z/]+)[0-9]$ ]]; then
-      if [[ "$diskpart" != "$DSK" ]]; then
-        if [[ "$BOOT" == "" ]]; then
-          BOOT=$diskpart
-          echo "  boot: $BOOT"
-        elif [[ "$SWAP" == "off" ]]; then
-          ROOT=$diskpart
-          echo "  root: $ROOT"
-        elif [[ "$SWAP" != "off" ]]; then
-          if  [[ "$SWAP" == "on" ]]; then
-            SWAP=$diskpart
-            echo "  swap: $SWAP"
-          else
-            ROOT=$diskpart
-            echo "  root: $ROOT"
-          fi
-        fi
-      fi
+  BOOT=$(fdisk -l $DSK | sed -ne "s/ *\*  .*//p")
+  SWAP=$(fdisk -l $DSK | sed -ne "s/ [0-9\. GMT]* 82 .*//p")
+  if [[ $SWAP == "" ]]; then
+    SWAP=off
+  fi
+  ROOT=$(fdisk -l $DSK | sed -ne "s/ [0-9\. GMT]* 83 .*//p")
+  if [[ "$ROOT" == "" ]]; then
+    if [[ -e /dev/vg0/lv0 ]]; then
+      ROOT=/dev/vg0/lv0
     fi
-  done
+  fi
   if [[ "$ROOT" == "" ]]; then
     echo 'unable to find ROOT the partition' >&2
     return 1
@@ -172,20 +162,24 @@ function roll_find_partitions()
     echo 'unable to find BOOT the partition' >&2
     return 1
   fi
+  echo "  boot: $BOOT"
+  echo "  swap: $SWAP"
+  echo "  root: $ROOT"
 }
-
 
 function roll_mkfs()
 {
-  if [[ "$SWAP" != "off" ]]; then
+  if [[ "$SWAP" != "off" ]] && [[ "$SWAP" != "on" ]] && [[ "$SWAP" != "" ]];
+  then
     yes y | mkswap $SWAP
+    swapon $SWAP
   fi
-  mkfs -t ext4 -F $ROOT &>/dev/null
-  yes y | tune2fs -U $(cat /proc/sys/kernel/random/uuid) $ROOT &>/dev/null
+  mkfs -t ext4 -F $ROOT
+  yes y | tune2fs -U $(cat /proc/sys/kernel/random/uuid) $ROOT
   if [[ "$UEFI" == "off" ]]; then
-    mkfs -t ext2 -F $BOOT &>/dev/null
+    mkfs -t ext2 -F $BOOT
   else
-    mkfs -t vfat $BOOT &>/dev/null
+    mkfs -t vfat $BOOT
   fi
 }
 
@@ -201,35 +195,60 @@ function roll_mount()
 
 function rollarch_partition()
 {
-  umount ${DSK}* 2> /dev/null
+  if [[ "$LVM" != "" ]]; then
+    umount /dev/vg0/lv0 &>/dev/null
+    lvremove --yes vg0 lv0 &>/dev/null
+    vgremove vg0 &>/dev/null
+    for apv in $(pvscan -s | grep /dev/ | sed -ne "s/ //gp"); do
+      pvremove $apv &>/dev/null
+    done
+  fi
+  SWP=$(fdisk -l $DSK | sed -ne "s/ [0-9\. GMT]* 82 .*//p")
+  swapoff $SWP &> /dev/null
+  umount ${DSK}* &> /dev/null
   diskstart=2048s
   diskpart=
   dd if=/dev/zero of=$DSK bs=1 count=2048 &>/dev/null
-  #dd if=/dev/zero of=$DSK bs=1 count=2048
   if [[ "$UEFI" == "off" ]]; then
-    parted --script $DSK mklabel msdos &>/dev/null
+    parted --script $DSK mklabel msdos
   else
-    parted --script $DSK mklabel gpt &>/dev/null
+    parted --script $DSK mklabel gpt
   fi
-  parted --script --align optimal $DSK mkpart primary fat16 $diskstart 192MiB &>/dev/null
-  parted $DSK set 1 boot on &>/dev/null
+  parted --script --align optimal $DSK mkpart primary fat16 $diskstart 192MiB
+  parted $DSK set 1 boot on
   diskstart=192MiB
   if [[ "$UEFI" == "off" ]]; then
     GRUB="grub"
   fi
   if [[ "$SWAP" == "off" ]]; then
-    parted --script --align optimal $DSK mkpart primary ext4 $diskstart 100% &>/dev/null
+    parted --script --align optimal $DSK mkpart primary ext4 $diskstart 100%
     swapsize=0
   else
     swapsize=$(cat /proc/meminfo | grep MemTotal | sed "s/[^:]*: *\(.*\) kB/\1000/g")
     ((swapsize=swapsize+2**30))
     swapsize=$(numfmt --to=si $swapsize)
-    parted --script --align optimal $DSK mkpart primary linux-swap $diskstart $swapsize &>/dev/null
-    parted --script --align optimal $DSK mkpart primary ext4 $swapsize 100% &>/dev/null
+    parted --script --align optimal $DSK mkpart primary linux-swap $diskstart $swapsize
+    parted --script --align optimal $DSK mkpart primary ext4 $swapsize 100%
   fi
   roll_find_partitions
   [[ $?==0 ]] || return 1
-  roll_mkfs
+
+  if [[ "$LVM" != "" ]]; then
+    parted $DSK set ${ROOT#$DSK} lvm on &>/dev/null
+    pvcreate $ROOT &>/dev/null
+    for apv in $LVM; do
+      dd if=/dev/zero of=$apv bs=1 count=2048 &>/dev/null
+      parted --script --align optimal $apv mklabel msdos mkpart primary ext4 0% 100% &>/dev/null
+      parted $apv set 1 lvm on &>/dev/null
+      pvcreate ${apv}1 &>/dev/null
+    done
+    lvmpvs=$(pvdisplay | sed -ne "s/ *PV Name *//p")
+    vgcreate vg0 $lvmpvs &>/dev/null
+    lvcreate --yes -l 100%VG vg0 -n lv0 &>/dev/null
+    ROOT=/dev/vg0/lv0
+  fi
+  roll_find_partitions
+  roll_mkfs &>/dev/null
   roll_mount
 }
 
@@ -353,7 +372,7 @@ function rollarch_packstrap()
 #roll_mount
 function rollarch_chroot()
 {
-  if [[ ! -e rollarchroot ]]; then
+  if [[ ! -f rollarchroot ]]; then
     curl -OLs https://raw.githubusercontent.com/rpuntaie/rollarch/master/rollarchroot
     chmod a+x ./rollarchroot
   fi
@@ -366,6 +385,7 @@ function rollarch_chroot()
 
   arch-chroot $MNT_PNT bash -c "
 DSK=$DSK
+LVM=$LVM
 USR=$USR
 PW='$PW'
 HST=$HST
