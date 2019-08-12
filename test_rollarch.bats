@@ -144,19 +144,19 @@ teardown()
 
 #10
 @test "SWAP on" {
-    DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on run bash ./rollarch
-    [ "${lines[1]}" = "  boot: /dev/null1" ]
-    [ "${lines[2]}" = "  swap: /dev/null2" ]
-    [ "${lines[3]}" = "  root: /dev/null3" ]
+    DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on EFI=off run bash ./rollarch
+    [ "${lines[1]}" = "--script /dev/null mklabel msdos" ]
+    DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on EFI=on run bash ./rollarch
+    [ "${lines[1]}" = "--script /dev/null mklabel gpt" ]
 }
 
 #11
 @test "CHROOT preparation" {
-    DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on run bash ./rollarch
+    DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on EFI=off run bash ./rollarch
     #echo "#${lines[8]}" >&3
     [ "$status" -eq 0 ]
-    [ "${lines[10]:0:4}" = "DSK=" ]
-    [ "${lines[11]:0:4}" = "USR=" ]
+    [ "${lines[11]:0:4}" = "DSK=" ]
+    [ "${lines[12]:0:4}" = "USR=" ]
 }
 
 

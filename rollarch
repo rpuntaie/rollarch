@@ -85,11 +85,6 @@ fi
 if [[ "$KM" == "" ]]; then
   KM="US"
 fi
-if [[ -e /sys/firmware/efi ]]; then
-  UEFI="on"
-else
-  UEFI="off"
-fi
 if [[ ! "$IP2" =~ ^([0-9]+[.][0-9]+)$ ]]; then
   IP2="dhcp"
 fi
@@ -178,13 +173,11 @@ function roll_find_partitions()
   if [[ -e /dev/vg0/lv0 ]]; then
     ROOT=/dev/vg0/lv0
   fi
-  echo "  boot: $BOOT"
-  echo "  swap: $SWAP"
-  echo "  root: $ROOT"
 }
 
 function roll_mkfs()
 {
+  EFI=${EFI:-$(test -e /sys/firmware/efi && echo on || echo off)}
   if [[ "$SWAP" != "off" ]] && [[ "$SWAP" != "on" ]] && [[ "$SWAP" != "" ]];
   then
     yes y | mkswap $SWAP
@@ -192,7 +185,7 @@ function roll_mkfs()
   fi
   mkfs -t ext4 -F $ROOT
   yes y | tune2fs -U $(cat /proc/sys/kernel/random/uuid) $ROOT
-  if [[ "$UEFI" == "off" ]]; then
+  if [[ "$EFI" == "off" ]]; then
     mkfs -t ext2 -F $BOOT
   else
     mkfs -t vfat $BOOT
@@ -208,24 +201,31 @@ function roll_mount()
   mount $BOOT $MNT_PNT/boot
 }
 
+function roll_umount()
+{
+  MNT_PNT=${MNT_PNT:-/mnt}
+  umount $MNT_PNT/boot
+  umount $MNT_PNT
+}
+
 
 function rollarch_partition()
 {
-  if [[ "$LVM" != "" ]]; then
-    umount /dev/vg0/lv0 &>/dev/null
-    lvremove --yes vg0 lv0 &>/dev/null
-    vgremove vg0 &>/dev/null
-    for apv in $(pvscan -s | grep /dev/ | sed -ne "s/ //gp"); do
-      pvremove $apv &>/dev/null
-    done
-  fi
-  SWP=$(fdisk -l $DSK | sed -ne "s/ [0-9\. GMT]* 82 .*//p")
-  swapoff $SWP &> /dev/null
+  EFI=${EFI:-$(test -e /sys/firmware/efi && echo on || echo off)}
+  roll_umount &>/dev/null
+  swapoff $(fdisk -l $DSK 2> /dev/null | sed -ne "s/ [0-9\. GMT]* 82 .*//p") &>/dev/null
+  swapoff $(fdisk -l $DSK 2> /dev/null | sed -ne "s/ [0-9\. GMT]*.*wap//p") &>/dev/null
+  lvremove --yes vg0 lv0 &>/dev/null
+  vgremove --yes vg0 &>/dev/null
+  for apv in $(pvscan -s | grep /dev/ | sed -ne "s/ //gp"); do
+    pvremove --yes $apv &>/dev/null
+  done
   umount ${DSK}* &> /dev/null
+  dd if=/dev/zero of=$DSK bs=1 count=2048 &>/dev/null
   diskstart=2048s
   diskpart=
-  dd if=/dev/zero of=$DSK bs=1 count=2048 &>/dev/null
-  if [[ "$UEFI" == "off" ]]; then
+  if [[ "$EFI" == "off" ]]; then
+    GRUB="grub"
     parted --script $DSK mklabel msdos
   else
     parted --script $DSK mklabel gpt
@@ -233,9 +233,6 @@ function rollarch_partition()
   parted --script --align optimal $DSK mkpart primary fat16 $diskstart 192MiB
   parted $DSK set 1 boot on
   diskstart=192MiB
-  if [[ "$UEFI" == "off" ]]; then
-    GRUB="grub"
-  fi
   if [[ "$SWAP" == "off" ]]; then
     parted --script --align optimal $DSK mkpart primary ext4 $diskstart 100%
     swapsize=0
@@ -251,15 +248,15 @@ function rollarch_partition()
 
   if [[ "$LVM" != "" ]]; then
     parted $DSK set ${ROOT#$DSK} lvm on &>/dev/null
-    pvcreate $ROOT &>/dev/null
+    pvcreate --yes $ROOT &>/dev/null
     for apv in $LVM; do
       dd if=/dev/zero of=$apv bs=1 count=2048 &>/dev/null
       parted --script --align optimal $apv mklabel msdos mkpart primary ext4 0% 100% &>/dev/null
       parted $apv set 1 lvm on &>/dev/null
-      pvcreate ${apv}1 &>/dev/null
+      pvcreate --yes ${apv}1 &>/dev/null
     done
     lvmpvs=$(pvdisplay | sed -ne "s/ *PV Name *//p")
-    vgcreate vg0 $lvmpvs &>/dev/null
+    vgcreate --yes vg0 $lvmpvs &>/dev/null
     lvcreate --yes -l 100%VG vg0 -n lv0 &>/dev/null
     ROOT=/dev/vg0/lv0
   fi
@@ -403,7 +400,6 @@ function rollarch_chroot()
 
   arch-chroot $MNT_PNT bash -c "
 DSK=$DSK
-LVM=$LVM
 USR=$USR
 PW='$PW'
 HST=$HST
@@ -413,7 +409,6 @@ AIP2=$AIP2
 BOOT=$BOOT
 SWAP=$SWAP
 ROOT=$ROOT
-UEFI=$UEFI
 KM='$KM'
 LA_NG='$LA_NG'
 USRPKGS='$USRPKGS'
@@ -429,16 +424,12 @@ setup_all
 }
 
 
-function roll_umount()
-{
-  umount $BOOT &>/dev/null
-  umount $ROOT &>/dev/null
-}
-
-
 function rollarch_bye()
 {
-  roll_umount
+  echo "  boot: $BOOT"
+  echo "  swap: $SWAP"
+  echo "  root: $ROOT"
+  roll_umount &>/dev/null
   echo -e "\033[0;32m
 Arch Linux was installed with
 ${USRPKGS:-rollarch defaults}.

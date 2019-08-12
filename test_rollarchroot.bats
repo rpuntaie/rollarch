@@ -43,7 +43,7 @@ teardown()
 @test "show help" {
     run bash ./rollarchroot -h
     #echo "#${lines[1]}" >&3
-    [ "${lines[1]}" = "DSK USR PW HST ZONE IP2 AIP2 BOOT SWAP ROOT UEFI KM" ]
+    [ "${lines[1]}" = "DSK USR PW HST ZONE IP2 AIP2 BOOT SWAP ROOT KM" ]
     [ "$status" -eq 0 ]
 }
 
@@ -61,7 +61,6 @@ teardown()
     BOOT=BOOT\
     SWAP=SWAP\
     ROOT=ROOT\
-    UEFI=UEFI\
     KM=KM\
     run source rollarchroot
     #echo "#${lines[1]}" >&3
@@ -89,7 +88,6 @@ teardown()
     BOOT=BOOT\
     SWAP=SWAP\
     ROOT=ROOT\
-    UEFI=UEFI\
     KM=KM\
     source rollarchroot
     run setup_arch_proxy
@@ -103,6 +101,9 @@ teardown()
     export -f timedatectl
     function hwclock() { echo "$*"; }
     export -f hwclock
+    export ZONE=Vienna
+    export SYSTEMTIMECONF="mocktimesyncd"
+    export LOCALTIMECONF="mocklocaltime"
     DSK=DSK\
     USR=USR\
     PW=PW\
@@ -114,12 +115,8 @@ teardown()
     BOOT=BOOT\
     SWAP=SWAP\
     ROOT=ROOT\
-    UEFI=UEFI\
     KM=KM\
     source rollarchroot
-    ZONE=Vienna
-    SYSTEMTIMECONF="mocktimesyncd"
-    LOCALTIMECONF="mocklocaltime"
     run setup_time
     [ -e mocklocaltime ]
     [ -e mocktimesyncd ]
@@ -134,6 +131,11 @@ teardown()
     export -f locale-gen
     function locale() { echo "$*"; }
     export -f locale
+    export LOCALEGEN="mocklocalegen"
+    export LA_NG="it_IT de_DE"
+    export LOCALEGEN="mocklocalegen"
+    export LOCALECONF="mocklocaleconf"
+    touch $LOCALEGEN
     DSK=DSK\
     USR=USR\
     PW=PW\
@@ -145,13 +147,8 @@ teardown()
     BOOT=BOOT\
     SWAP=SWAP\
     ROOT=ROOT\
-    UEFI=UEFI\
     KM=KM\
     source rollarchroot
-    LA_NG="it_IT de_DE"
-    LOCALEGEN="mocklocalegen"
-    LOCALECONF="mocklocaleconf"
-    touch $LOCALEGEN
     run setup_locale
     #echo "#${lines[0]}" >&3
     [[ "${lines[0]}" =~ "it_IT" ]]
@@ -187,7 +184,6 @@ teardown()
     BOOT=BOOT\
     SWAP=SWAP\
     ROOT=ROOT\
-    UEFI=UEFI\
     KM=KM\
     source rollarchroot
     KM="US"
@@ -217,6 +213,16 @@ teardown()
     export -f chmod
     function mkdir() { echo "$*"; }
     export -f mkdir
+    export LOADMODULECIFS="loadmodulecifs"
+    export VARLIBSAMBAUSERSHARES="varlibsambausershares"
+    export ETCSAMBASMB="etcsambasmb"
+    export ETCSYSTEMDNETWORKWIRED="etcsystemdnetworkwired"
+    export ETCSYSTEMDNETWORKWIRELESS="etcsystemdnetworkwireless"
+    export ETCSYSTEMDRESOLVEDCONF="etcsystemdresolvedconf"
+    export ETCHOSTS="etchosts"
+    export ETCHOSTNAME="etchostname"
+    export HST="mockhst"
+    export IP2="1.108"
     DSK=DSK\
     USR=USR\
     PW=PW\
@@ -228,19 +234,8 @@ teardown()
     BOOT=BOOT\
     SWAP=SWAP\
     ROOT=ROOT\
-    UEFI=UEFI\
     KM=KM\
     source rollarchroot
-    LOADMODULECIFS="loadmodulecifs"
-    VARLIBSAMBAUSERSHARES="varlibsambausershares"
-    ETCSAMBASMB="etcsambasmb"
-    ETCSYSTEMDNETWORKWIRED="etcsystemdnetworkwired"
-    ETCSYSTEMDNETWORKWIRELESS="etcsystemdnetworkwireless"
-    ETCSYSTEMDRESOLVEDCONF="etcsystemdresolvedconf"
-    ETCHOSTS="etchosts"
-    ETCHOSTNAME="etchostname"
-    HST="mockhst"
-    IP2="1.108"
     run setup_network
     [ -e etchostname ]
     [ -e etchosts ]
@@ -270,6 +265,16 @@ teardown()
     export -f chmod
     function mkdir() { echo "$*"; }
     export -f mkdir
+    export LOADMODULECIFS="loadmodulecifs"
+    export VARLIBSAMBAUSERSHARES="varlibsambausershares"
+    export ETCSAMBASMB="etcsambasmb"
+    export ETCSYSTEMDNETWORKWIRED="etcsystemdnetworkwired"
+    export ETCSYSTEMDNETWORKWIRELESS="etcsystemdnetworkwireless"
+    export ETCSYSTEMDRESOLVEDCONF="etcsystemdresolvedconf"
+    export ETCHOSTS="etchosts"
+    export ETCHOSTNAME="etchostname"
+    export HST="mockhst"
+    export IP2="dhcp"
     DSK=DSK\
     USR=USR\
     PW=PW\
@@ -281,19 +286,8 @@ teardown()
     BOOT=BOOT\
     SWAP=SWAP\
     ROOT=ROOT\
-    UEFI=UEFI\
     KM=KM\
     source rollarchroot
-    LOADMODULECIFS="loadmodulecifs"
-    VARLIBSAMBAUSERSHARES="varlibsambausershares"
-    ETCSAMBASMB="etcsambasmb"
-    ETCSYSTEMDNETWORKWIRED="etcsystemdnetworkwired"
-    ETCSYSTEMDNETWORKWIRELESS="etcsystemdnetworkwireless"
-    ETCSYSTEMDRESOLVEDCONF="etcsystemdresolvedconf"
-    ETCHOSTS="etchosts"
-    ETCHOSTNAME="etchostname"
-    HST="mockhst"
-    IP2="dhcp"
     run setup_network
     [ -e etchostname ]
     [ -e etchosts ]
@@ -308,6 +302,8 @@ teardown()
 @test "setup boot BIOS" {
     function grep() { echo GenuineIntel; }
     export -f grep
+    function sed() { echo "$*"; }
+    export -f sed
     function pacman() { echo "$*"; }
     export -f pacman
     function mkinitcpio() { echo "$*"; }
@@ -327,24 +323,28 @@ teardown()
     BOOT=BOOT\
     SWAP=SWAP\
     ROOT=ROOT\
-    UEFI=UEFI\
     KM=KM\
     source rollarchroot
-    UEFI="off"
+    EFI=off
     run setup_boot
-    [ "${lines[0]}" = "-p linux" ]
+    [ "${lines[1]}" = "-p linux" ]
 }
 
 #10
-@test "setup boot UEFI" {
+@test "setup boot EFI" {
     function grep() { echo AuthenticAMD; }
     export -f grep
+    function sed() { echo "$*"; }
+    export -f sed
     function pacman() { echo "$*"; }
     export -f pacman
+    function mkinitcpio() { echo "$*"; }
+    export -f mkinitcpio
     function bootctl() { echo "$*"; }
     export -f bootctl
     function blkid() { echo "$*"; }
     export -f blkid
+    export ARCHLOADERCONF="archloaderconf"
     DSK=DSK\
     USR=USR\
     PW=PW\
@@ -356,13 +356,11 @@ teardown()
     BOOT=BOOT\
     SWAP=SWAP\
     ROOT=ROOT\
-    UEFI=UEFI\
     KM=KM\
     source rollarchroot
-    UEFI="on"
-    ARCHLOADERCONF="archloaderconf"
+    EFI=on
     run setup_boot
-    #echo "#${lines[0]}" >&3
-    [ "${lines[0]}" = "--path=/boot install" ]
+    #echo "#${lines[1]}" >&3
+    [ "${lines[1]}" = "install" ]
     [ -e archloaderconf ]
 }

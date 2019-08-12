@@ -2,7 +2,7 @@
 
 function rollarchrootusage() {
   echo "Required defines:"
-  echo "DSK USR PW HST ZONE IP2 AIP2 BOOT SWAP ROOT UEFI KM"
+  echo "DSK USR PW HST ZONE IP2 AIP2 BOOT SWAP ROOT KM"
   echo "Optional:"
   echo "CL LA_NG USRPKGS DOTSINSTALL WLIP2 SSID PSK"
   echo ""
@@ -11,7 +11,7 @@ function rollarchrootusage() {
   echo "- setup_time: using \$ZONE"
   echo "- setup_locale: using \$LA_NG"
   echo "- setup_escape: Caps_Lock becomes Escape"
-  echo "- setup_network: with \$IP2 \$HST \$SSID \$PSK; enables systemd-networkd, but netctl files are created, too"
+  echo "- setup_network: with \$IP2 \$HST \$SSID \$PSK. Enables systemd-networkd, but netctl files are created, too"
   echo "- setup_boot: EFI boot if /sys/firmware/efi, else BIOS using grub"
   echo "- setup_user: using \$USR and \$PW, the latter also for root"
   echo "- setup_arch_proxy if AIP2=yes"
@@ -458,6 +458,7 @@ EOF
 }
 
 function setup_boot() {
+  EFI=${EFI:-$(test -e /sys/firmware/efi && echo on || echo off)}
   ARCHLOADERCONF=${ARCHLOADERCONF:-/boot/loader/entries/arch.conf}
   #microcode used by systemd-boot as well as grub (automatically)
   UCODE=''
@@ -466,27 +467,28 @@ function setup_boot() {
   elif [[ "$(cat /proc/cpuinfo | grep AuthenticAMD)" != "" ]]; then
     UCODE='amd-ucode'
   fi
-  if [[ "$UEFI" == "on" ]]; then
-    if [[ "$UCODE" != "" ]]; then
-      UCODE_STRING="initrd  /${UCODE}.img
+  if [[ "$UCODE" != "" ]]; then
+    UCODE_STRING="initrd  /${UCODE}.img
 "
-      pacman -S --needed --noconfirm $UCODE &>/dev/null
-    fi
+    pacman -S --needed --noconfirm $UCODE &>/dev/null
+  fi
+  if [[ "$EFI" == "on" ]]; then
+    HOOKS='base systemd autodetect modconf block sd-lvm2 filesystems keyboard sd-vconsole fsck'
     pacman -S --needed --noconfirm efibootmgr efitools &>/dev/null
-    bootctl --path=/boot install
-    PARTUUID="$(blkid -s PARTUUID -o value $ROOT)"
-    APPEND="options root=PARTUUID=${PARTUUID} rw quiet splash loglevel=0 console=tty2"
-    echo "title   ${HST}
+    UUID="$(blkid -s UUID -o value $ROOT)"
+    APPEND="options root=UUID=${UUID} rw quiet splash loglevel=0 console=tty2"
+    echo "title   arch
 linux   /vmlinuz-linux
 ${UCODE_STRING}initrd  /initramfs-linux.img
 ${APPEND}" > $ARCHLOADERCONF
+    sed -i -e "s/default.*/default arch/g" /boot/loader/loader.conf
+    bootctl install
   else
+    HOOKS='base udev autodetect modconf block lvm2 filesystems keyboard fsck'
     grub-install --target=i386-pc --recheck $DSK &>/dev/null
     grub-mkconfig -o "/boot/grub/grub.cfg" &>/dev/null
   fi
-  if [[ "$LVM" != "" ]]; then
-    sed -i -e "s/block filesystems/block lvm2 filesystems/g" /etc/mkinitcpio.conf
-  fi
+  sed -i -e "s/^HOOKS=.*/HOOKS=($HOOKS)/g" /etc/mkinitcpio.conf
   mkinitcpio -p linux
 }
 
@@ -557,7 +559,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     rollarchrootusage
   fi
 
-  for req in DSK USR PW HST ZONE IP2 AIP2 BOOT SWAP ROOT UEFI KM
+  for req in DSK USR PW HST ZONE IP2 AIP2 BOOT SWAP ROOT KM
   do
     if [[ "${!req}" == "" ]]; then
       echo "${req} missing!" >&2
