@@ -34,7 +34,7 @@ teardown()
         rm -f etcsystemdresolvedconf
         rm -f etchosts
         rm -f etchostname
-        rm -f archloaderconf
+        rm -rf loader
         rm -f loadmodulecifs
     fi
 }
@@ -327,7 +327,8 @@ teardown()
     source rollarchroot
     EFI=off
     run setup_boot
-    [ "${lines[1]}" = "-p linux" ]
+    #echo "#${lines[1]}" >&3
+    [ "${lines[1]}" = "--target=i386-pc --recheck" ]
 }
 
 #10
@@ -344,7 +345,7 @@ teardown()
     export -f bootctl
     function blkid() { echo "$*"; }
     export -f blkid
-    export ARCHLOADERCONF="archloaderconf"
+    export LOADERENTRY="loader/entries/arch"
     DSK=DSK\
     USR=USR\
     PW=PW\
@@ -361,6 +362,6 @@ teardown()
     EFI=on
     run setup_boot
     #echo "#${lines[1]}" >&3
-    [ "${lines[1]}" = "install" ]
-    [ -e archloaderconf ]
+    [ "${lines[1]}" = "-S --needed --noconfirm efibootmgr efitools" ]
+    [ -e loader ]
 }

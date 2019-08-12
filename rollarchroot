@@ -24,11 +24,11 @@ function rollarchrootusage() {
 }
 
 function setup_arch_proxy() {
-  pacman -S --needed --noconfirm darkhttpd &>/dev/null
+  pacman -S --needed --noconfirm darkhttpd
   ln -s /var/lib/pacman/sync/*.db /var/cache/pacman/pkg
   cd /usr/lib/systemd/system/
   cat darkhttpd.service | sed -e "s/Webserver/ArchProxy/g" -e "s,/srv/http.*$,/var/cache/pacman/pkg --no-server-id --port 8080,g" > ArchProxy.service
-  systemctl enable --now ArchProxy &>/dev/null
+  systemctl enable --now ArchProxy
 }
 
 function setup_time() {
@@ -438,9 +438,9 @@ EOF
   groupadd -rf sambashare
   chown root:sambashare $VARLIBSAMBAUSERSHARES
   chmod 1770 $VARLIBSAMBAUSERSHARES
-  systemctl enable --now smb nmb &>/dev/null
-  systemctl enable --now sshd &>/dev/null
-  systemctl enable --now nfs-server.service &>/dev/null
+  systemctl enable --now smb nmb
+  systemctl enable --now sshd
+  systemctl enable --now nfs-server.service
 }
 
 #IP2=1.107 WLIP2=1.117 SSID="YOURSSID" PSK="YOURPASSPHRASE"
@@ -459,7 +459,7 @@ EOF
 
 function setup_boot() {
   EFI=${EFI:-$(test -e /sys/firmware/efi && echo on || echo off)}
-  ARCHLOADERCONF=${ARCHLOADERCONF:-/boot/loader/entries/arch.conf}
+  LOADERENTRY=${LOADERENTRY:-/boot/loader/entries/arch.conf}
   #microcode used by systemd-boot as well as grub (automatically)
   UCODE=''
   if [[ "$(cat /proc/cpuinfo | grep GenuineIntel)" != "" ]]; then
@@ -470,23 +470,32 @@ function setup_boot() {
   if [[ "$UCODE" != "" ]]; then
     UCODE_STRING="initrd  /${UCODE}.img
 "
-    pacman -S --needed --noconfirm $UCODE &>/dev/null
+    pacman -S --needed --noconfirm $UCODE
   fi
   if [[ "$EFI" == "on" ]]; then
     HOOKS='base systemd autodetect modconf block sd-lvm2 filesystems keyboard sd-vconsole fsck'
-    pacman -S --needed --noconfirm efibootmgr efitools &>/dev/null
+    pacman -S --needed --noconfirm efibootmgr efitools
     UUID="$(blkid -s UUID -o value $ROOT)"
     APPEND="options root=UUID=${UUID} rw quiet splash loglevel=0 console=tty2"
+    LOADERENTRYDIR=${LOADERENTRY%/*}
+    mkdir -p $LOADERENTRYDIR
     echo "title   arch
 linux   /vmlinuz-linux
 ${UCODE_STRING}initrd  /initramfs-linux.img
-${APPEND}" > $ARCHLOADERCONF
-    sed -i -e "s/default.*/default arch/g" /boot/loader/loader.conf
+${APPEND}" > $LOADERENTRY
+    echo "title   fallback arch
+linux   /vmlinuz-linux
+${UCODE_STRING}initrd  /initramfs-linux-fallback.img
+${APPEND}" > ${LOADERENTRY/arch/fallback}
+    cat > ${LOADERENTRYDIR%/*}/loader.conf <<EOF
+timeout 1
+default arch
+EOF
     bootctl install
   else
     HOOKS='base udev autodetect modconf block lvm2 filesystems keyboard fsck'
-    grub-install --target=i386-pc --recheck $DSK &>/dev/null
-    grub-mkconfig -o "/boot/grub/grub.cfg" &>/dev/null
+    grub-install --target=i386-pc --recheck $DSK
+    grub-mkconfig -o "/boot/grub/grub.cfg"
   fi
   sed -i -e "s/^HOOKS=.*/HOOKS=($HOOKS)/g" /etc/mkinitcpio.conf
   mkinitcpio -p linux

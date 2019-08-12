@@ -330,6 +330,9 @@ function rollarch_repos()
       USRPKGS=$(sed -n -e "s/^#PKG: *//p" $DOTSINSTALL)
       USRREPOS=$(sed -n -e "s/^#REPO: *//p" $DOTSINSTALL)
     fi
+    DOTSINSTALL='/${DOTS##*/}'
+  else
+    DOTSINSTALL=
   fi
 
   ROLLARCH_MIRRORLIST=${ROLLARCH_MIRRORLIST:-/etc/pacman.d/mirrorlist}
@@ -415,7 +418,7 @@ USRPKGS='$USRPKGS'
 WLIP2=$WLIP2
 SSID=$SSID
 PSK=$PSK
-DOTSINSTALL='/${DOTS##*/}'
+DOTSINSTALL=$DOTSINSTALL
 . ./rollarchroot
 setup_all
 "
