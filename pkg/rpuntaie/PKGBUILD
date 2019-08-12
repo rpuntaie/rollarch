@@ -89,7 +89,7 @@ package_rpuntaie-meta() {
     depends+=(xf86-input-libinput xf86-video-intel nvidia nvidia-utils)
 
     # Xorg and utilities
-    depends+=(xorg-server xorg-apps ibus-lbipinyin)
+    depends+=(xorg-server xorg-apps ibus-libpinyin)
     depends+=(xdg-user-dirs openssh-askpass glfw-x11)
 
     # window manager
@@ -131,7 +131,7 @@ package_rpuntaie-meta() {
     depends+=(kicad kicad-library kicad-library-3d geda-gaf pcb yosys ngspice)
 
     # processors
-    depends+=(risk-v avr-binutils avr-gcc avr-gdb avr-libc arduino arduino-docs arm-none-eabi-gcc)
+    depends+=(avr-binutils avr-gcc avr-gdb avr-libc arduino arduino-docs arm-none-eabi-gcc)
 
     # graphics
     depends+=(graphviz vtk mayavi opencascade
