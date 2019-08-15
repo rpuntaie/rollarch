@@ -8,16 +8,16 @@ function rollarchrootusage() {
   echo ""
   echo "Functions for after arch-chroot"
   echo ""
-  echo "- setup_time: using \$ZONE"
-  echo "- setup_locale: using \$LA_NG"
-  echo "- setup_escape: Caps_Lock becomes Escape"
+  echo "- setup_time: \$ZONE"
+  echo "- setup_locale: \$LA_NG"
+  echo "- setup_keyboard: \$KM (keymap) and new \$CL(Caps_Lock) to make room for Escape"
   echo "- setup_network: with \$IP2 \$HST \$SSID \$PSK. Enables systemd-networkd, but netctl files are created, too"
-  echo "- setup_boot: EFI boot if /sys/firmware/efi, else BIOS using grub"
+  echo "- setup_boot: \$ROOT, EFI boot if /sys/firmware/efi, else BIOS using grub"
   echo "- setup_user: using \$USR and \$PW, the latter also for root"
-  echo "- setup_arch_proxy if AIP2=yes"
-  echo "- setup_dots installs user dotfiles with the script \$DOTSINSTALL"
-  echo "- setup_clean_meta makes \$USRPKGS '-meta' package dependencies 'asexplicit'"
-  echo "- setup_all does all of the above"
+  echo "- setup_arch_proxy: if \$AIP2=yes"
+  echo "- setup_dots: installs user dotfiles with the script \$DOTSINSTALL"
+  echo "- setup_clean_meta: makes \$USRPKGS '-meta' package dependencies 'asexplicit'"
+  echo "- setup_all: does all of the above"
   echo ""
   echo "See https://github.com/rpuntaie/rollarch[root]"
   exit 0
@@ -56,17 +56,18 @@ EOF
 function setup_locale() {
   LOCALEGEN=${LOCALEGEN:-/etc/locale.gen}
   LOCALECONF=${LOCALECONF:-/etc/locale.conf}
+  sed -i -r -e "s/#*(.*)/#\1/g" $LOCALEGEN
   local X=$LA_NG
   X+=" en_US"
   for x in $X
   do
-    sed -i -r "s/^#($x.* UTF-8)/\1/" $LOCALEGEN
+    sed -i -r -e "s/^#+($x.* UTF-8)/\1/" $LOCALEGEN
   done
   locale-gen
   LC_ALL="en_US.UTF-8" locale > $LOCALECONF
 }
 
-function setup_escape() {
+function setup_keyboard() {
   VCONSOLECONF=${VCONSOLECONF:-/etc/vconsole.conf}
   local KBD=$(find /usr/share/kbd/keymaps/i386 -iname "$KM.map*")
   cd "${KBD%/*}"
@@ -539,12 +540,15 @@ function setup_clean_meta() {
 function setup_all() {
   setup_time
   setup_locale
-  setup_escape
+  setup_keyboard
   setup_network
   setup_boot
 
   if [[ -z "$PW" ]]; then
-    PW=$(dialog --stdout --passwordbox "Enter password for $USR and root" 0 0)
+    read -s -p "Passport:" PW
+    echo
+    read -s -p "Repeat passport:" PW1
+    echo
   fi
   if [[ -n "$PW" ]]; then
     setup_user

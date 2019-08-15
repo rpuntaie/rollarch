@@ -89,7 +89,7 @@ package_rpuntaie-meta() {
     depends+=(xf86-input-libinput xf86-video-intel nvidia nvidia-utils)
 
     # Xorg and utilities
-    depends+=(xorg-server xorg-apps ibus-libpinyin)
+    depends+=(xorg-server xorg-apps ibus-libpinyin ibus-m17n)
     depends+=(xdg-user-dirs openssh-askpass glfw-x11)
 
     # window manager

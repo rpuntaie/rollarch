@@ -26,12 +26,6 @@ setup()
     export -f timedatectl
     function pacman() { echo "$*"; }
     export -f pacman
-    function pacman-db-upgrade() { echo "$*"; }
-    export -f pacman-db-upgrade
-    function pacman-key() { echo "$*"; }
-    export -f pacman-key
-    function rankmirrors() { return 0; }
-    export -f rankmirrors
     function dd() { echo "$*"; }
     export -f dd
     function parted() { echo "$*"; }

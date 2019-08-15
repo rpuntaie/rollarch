@@ -56,29 +56,47 @@ Parameters
 ----------
 
 :DSK: disk on which to install (not partition)
+
 :USR: main user of the system
+
 :PW: password of main user
+
 :HST: host name of the system
+
 :ZONE: a city name ending that can be found in ``/usr/shar/zoneinfo``
 
 Optional:
 
-:IP2: (192.168.)x.y, [e.g. 1.106], else dhcp
 :SWAP: [on|off] (on), set to 'off' e.g. for SSD and if you don't need swap
+
 :LVM: [e.g. /dev/sdb], disks additional to $ROOT to form new LVM $ROOT /dev/vg0/lv0
       Use dummy if only the root partition of $DSK should become LVM.
-:IP2:  For 192.168.1.106, else 'dhcp'
-:LA_NG: Space separated list of xx_YY used in addition to en_US [e.g. "de_DE ru_RU"]
-        Don't include ``en_US``.
-:KM: (us) one of ``localectl list-keymaps``.
-:CL: If given, Escape is mapped to Caps_Lock and Caps_Lock to this key for VConsole.
-     For X instead use dotfiles, e.g.: xmodmap -e "keysym Print = Caps_Lock
-     99 is [Print], 125 is [Win] aka Super_L.
+
+:IP2: (192.168.)x.y, [e.g. 1.106], else dhcp
+
 :AIP2: [e.g. 1.199 | yes, to create Arch Proxy].
        The x.y of another arch linux machin (the local proxy)
-:DOTS: Full URL or ``https://git.io/SHORT`` to a bash installation script for dot files
+
+:DOTS: Full URL or ``https://git.io/SHORT`` to a bash installation script for dot files.
+       It can provide defines, packages and repos via ``#DFN: ``, ``#PKG: `` and ``#REPO: `` comments.
+
+:LA_NG: Space separated list of xx_YY used in addition to en_US [e.g. "de_DE ru_RU"]
+        Don't include ``en_US``.
+
+:KM: (us) one of ``localectl list-keymaps``.
+
+:CL: If given, Escape is mapped to Caps_Lock and Caps_Lock to this key for VConsole.
+     99 is [Print], 125 is [Win] aka Super_L.
+     For X, execute these either through ``~/.Xmodmap`` or directly with ``xmodmap -e``::
+
+        clear Lock
+        keycode 0x42 = Escape
+        keysym Print = Caps_Lock
+
 :WLIP2: for static IP2 and separate wl NIC, else bonding en+wl with IP2
+
 :ESSID: name of WLAN access point, if any
+
 :PSK: passphrase of WLAN access point, if any
 
 The ``AIP2`` and ``DOTS`` defines are very useful and will be addressed below.
@@ -172,7 +190,7 @@ It
 - installs them
 - does some additional setup
 
-The ``#PKG:`` and ``#REPO:`` comments are used by `rollarch`_.
+The ``#DFN: ``, ``#PKG:`` and ``#REPO:`` comments are used by `rollarch`_.
 The packages provided as arguments to ``rollarch``
 are combined with ``#PKG:`` comments in the ``DOTS`` file.
 
