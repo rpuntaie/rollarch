@@ -14,7 +14,7 @@ run_only_test() {
 
 setup()
 {
-    #run_only_test 13
+    #run_only_test 2
     #mock
     function curl() { return 0; }
     export -f curl
@@ -36,6 +36,8 @@ setup()
     export -f mount
     function mv() { echo "$*"; }
     export -f mv
+    function touch() { return 0; }
+    export -f touch
     function cat() { return 0; }
     export -f cat
     function chmod() { return 0; }
@@ -54,7 +56,7 @@ setup()
     export -f tunefs
     function arch-chroot() { echo "$4"; }
     export -f arch-chroot
-    export ROLLARCH_MIRRORLIST=$(mktemp)
+    export ROLLARCH_MIRRORLIST=mirrorlist
     export MNT_PNT=/tmp
     mkdir -p /tmp/usr/bin/bash
 }
@@ -64,6 +66,7 @@ teardown()
     if [ -z "$TEST_FUNCTION" ]
     then
         #un_mock
+        rm -f mirrorlist*
         rm -rf /tmp/usr
         rm -rf /tmp/etc
         rm -rf /tmp/boot
@@ -83,14 +86,14 @@ teardown()
 @test "no DSK" {
     PW=p run bash ./rollarch
     [ "$status" -eq 1 ]
-    [ $(echo "$output" | sed "s/\(Fatal\): DSK.*/\1/g") = "Fatal" ]
+    [ $(echo "${lines[1]}" | sed "s/\(Fatal\): DSK.*/\1/g") = "Fatal" ]
 }
 
 #3
 @test "no USR" {
     PW=p DSK=x run bash ./rollarch
     [ "$status" -eq 1 ]
-    [ $(echo "$output" | sed "s/\(Fatal\): USR.*/\1/g") = "Fatal" ]
+    [ $(echo "${lines[1]}" | sed "s/\(Fatal\): USR.*/\1/g") = "Fatal" ]
 }
 
 
@@ -98,50 +101,50 @@ teardown()
 @test "no HST" {
     DSK=x USR=y PW=z run bash ./rollarch
     [ "$status" -eq 1 ]
-    [ $(echo "$output" | sed "s/\(Fatal\): HST.*/\1/g") = "Fatal" ]
+    [ $(echo "${lines[1]}" | sed "s/\(Fatal\): HST.*/\1/g") = "Fatal" ]
 }
 
 #5
 @test "no ZONE" {
     DSK=x USR=y PW=z HST=u run bash ./rollarch
     [ "$status" -eq 1 ]
-    [ $(echo "$output" | sed "s/\(Fatal\): ZONE.*/\1/g") = "Fatal" ]
+    [ $(echo "${lines[1]}" | sed "s/\(Fatal\): ZONE.*/\1/g") = "Fatal" ]
 }
 
 #6
 @test "DSK wrong" {
     DSK=x USR=y PW=z HST=u ZONE=v IP2=w run bash ./rollarch
     [ "$status" -eq 1 ]
-    [ $(echo "$output" | sed "s/\(Fatal\): DSK wrong/\1/g") = "Fatal" ]
+    [ $(echo "${lines[1]}" | sed "s/\(Fatal\): DSK wrong/\1/g") = "Fatal" ]
 }
 
 #7
 @test "USR wrong" {
     DSK=/dev/null USR='x y' PW=z HST=u ZONE=v IP2=w run bash ./rollarch
     [ "$status" -eq 1 ]
-    [ $(echo "$output" | sed "s/\(Fatal\): USR wrong/\1/g") = "Fatal" ]
+    [ $(echo "${lines[1]}" | sed "s/\(Fatal\): USR wrong/\1/g") = "Fatal" ]
 }
 
 #8
 @test "ZONE wrong" {
     DSK=/dev/null USR=y PW=z HST=u ZONE=sdfhsv IP2=w run bash ./rollarch
     [ "$status" -eq 1 ]
-    [ $(echo "$output" | sed "s/\(Fatal\): ZONE wrong/\1/g") = "Fatal" ]
+    [ $(echo "${lines[1]}" | sed "s/\(Fatal\): ZONE wrong/\1/g") = "Fatal" ]
 }
 
 #9
 @test "LA_NG wrong" {
     DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 LA_NG=ru run bash ./rollarch
     [ "$status" -eq 1 ]
-    [ $(echo "$output" | sed "s/.*LA_NG \(wrong\)/\1/g") = "wrong" ]
+    [ $(echo "${lines[1]}" | sed "s/.*LA_NG \(wrong\)/\1/g") = "wrong" ]
 }
 
 #10
 @test "SWAP on" {
     DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on EFI=off run bash ./rollarch
-    [ "${lines[1]}" = "--script /dev/null mklabel msdos" ]
+    [ "${lines[2]}" = "--script /dev/null mklabel msdos" ]
     DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on EFI=on run bash ./rollarch
-    [ "${lines[1]}" = "--script /dev/null mklabel gpt" ]
+    [ "${lines[2]}" = "--script /dev/null mklabel gpt" ]
 }
 
 #11
@@ -149,8 +152,8 @@ teardown()
     DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on EFI=off run bash ./rollarch
     #echo "#${lines[8]}" >&3
     [ "$status" -eq 0 ]
-    [ "${lines[11]:0:4}" = "DSK=" ]
-    [ "${lines[12]:0:4}" = "USR=" ]
+    [ "${lines[14]:0:4}" = "DSK=" ]
+    [ "${lines[15]:0:4}" = "USR=" ]
 }
 
 

@@ -151,9 +151,9 @@ teardown()
     source rollarchroot
     run setup_locale
     #echo "#${lines[0]}" >&3
-    [[ "${lines[0]}" =~ "it_IT" ]]
-    [[ "${lines[1]}" =~ "de_DE" ]]
-    [[ "${lines[2]}" =~ "en_US" ]]
+    [[ "${lines[1]}" =~ "it_IT" ]]
+    [[ "${lines[2]}" =~ "de_DE" ]]
+    [[ "${lines[3]}" =~ "en_US" ]]
     [[ -f mocklocalegen ]]
     [[ -f mocklocaleconf ]]
 }
@@ -187,7 +187,7 @@ teardown()
     KM=KM\
     source rollarchroot
     KM="US"
-    run setup_escape
+    run setup_keyboard
     #echo "#${lines[0]}" >&3
     [ "${lines[0]}" = "us.map.gz rollarchus.map.gz" ]
     [ "${lines[1]}" = "rollarchus" ]

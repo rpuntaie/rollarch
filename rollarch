@@ -468,8 +468,10 @@ function rollarch_main()
   fi
 
   rollarch_check_internet
-  rollarch_repos
   [[ $? == 0 ]] || return 1
+
+  rollarch_repos
+
   rollarch_check_defines
   [[ $? == 0 ]] || return 1
   rollarch_partition

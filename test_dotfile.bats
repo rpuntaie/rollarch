@@ -11,8 +11,6 @@
     export PACMANCONF=$(mktemp)
     export ROLLARCH_MIRRORLIST=$(mktemp)
     export AIP2=1.108
-    export MNT_PNT=mnt
-    mkdir -p $MNT_PNT
     source rollarch
     run rollarch_repos
     OUT="$(cat $ROLLARCH_MIRRORLIST)
@@ -21,11 +19,11 @@
     OUT+="$(cat $PACMANCONF)
 "
     rm -f $PACMANCONF
-    [ -e $MNT_PNT/$localdots ]
-    OUT+="$(cat $MNT_PNT/$localdots)
+    [ -e $localdots ]
+    OUT+="$(cat $localdots)
 "
     #echo "$OUT" >&3
-    rm -rf $MNT_PNT
+    rm -rf tmp.*
 
     [[ "$OUT" == "Server = http://192.168.1.108:8080
 [ffy00]
