@@ -74,3 +74,10 @@
 	path = pkg/erfa
 	url = https://aur.archlinux.org/erfa.git
 	ignore = dirty
+[submodule "mutt-wizard-git"]
+	path = mutt-wizard-git
+	url = https://aur.archlinux.org/mutt-wizard-git.git
+	ignore = dirty
+[submodule "pkg/mutt-wizard-git"]
+	path = pkg/mutt-wizard-git
+	url = https://aur.archlinux.org/mutt-wizard-git.git
