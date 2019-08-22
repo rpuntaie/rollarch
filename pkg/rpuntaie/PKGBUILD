@@ -13,7 +13,14 @@ license=(MIT)
 
 package_rpuntaie-meta() {
     #base, base-devel without duplication
-    depends=(bash bzip2 coreutils cryptsetup device-mapper dhcpcd diffutils e2fsprogs file filesystem findutils gawk gcc-libs gettext glibc grep gzip inetutils iproute2 iputils jfsutils less licenses linux linux-firmware logrotate lvm2 man-db man-pages mdadm nano netctl pacman pciutils perl procps-ng psmisc reiserfsprogs s-nail sed shadow sysfsutils systemd-sysvcompat tar texinfo usbutils util-linux vi which xfsprogs autoconf automake binutils bison fakeroot flex gcc groff libtool m4 make patch pkgconf sudo systemd)
+    depends=(bash bzip2 coreutils cryptsetup device-mapper dhcpcd diffutils
+        e2fsprogs file filesystem findutils gawk gcc-libs gettext glibc grep
+        gzip inetutils iproute2 iputils jfsutils less licenses linux
+        linux-firmware logrotate lvm2 man-db man-pages mdadm nano netctl pacman
+        pciutils perl procps-ng psmisc reiserfsprogs s-nail sed shadow
+        sysfsutils systemd-sysvcompat tar texinfo usbutils util-linux vi which
+        xfsprogs autoconf automake binutils bison fakeroot flex gcc groff
+        libtool m4 make patch pkgconf sudo systemd)
     depends+=(systemd-resolvconf)
     # filesystems
     depends+=(exfat-utils dosfstools f2fs-tools nfs-utils)
@@ -24,7 +31,7 @@ package_rpuntaie-meta() {
     depends+=(git mercurial subversion)
     # shell tools (ag=the_silver_searcher)
     depends+=(stow ripgrep fd bc tmux wget fzf udisks2 unzip bat ncdu jshon)
-    depends+=(the_silver_searcher rtorrent tree p7zip ranger mlocate rmlint)
+    depends+=(the_silver_searcher rtorrent tree p7zip ranger file-roller mlocate rmlint)
     # arch
     depends+=(devtools pacman-contrib namcap)
     # android
@@ -34,7 +41,8 @@ package_rpuntaie-meta() {
     # powerline
     depends+=(powerline powerline-fonts awesome-terminal-fonts)
     # zsh (to configure via dotfiles, or install grml-zsh-config afterwards)
-    depends+=(zsh zsh-syntax-highlighting zsh-autosuggestions zsh-completions zsh-history-substring-search)
+    depends+=(zsh zsh-syntax-highlighting zsh-autosuggestions zsh-completions
+    zsh-history-substring-search)
     # editor nvim vor CLI and gvim for GUI (see below)
     depends+=(neovim gvim pluma astyle arch-wiki-lite)
 
@@ -73,20 +81,21 @@ package_rpuntaie-meta() {
     python-flask-restful python-flask-script python-flask-security
     python-flask-silk python-flask-socketio python-flask-sphinx-themes
     python-flask-sqlalchemy python-flask-talisman python-flask-wtf python-black
-    python-pybtex python-pybtex-docutils
+    python-pybtex python-pybtex-docutils python-service_identity
     python-aws-sam-translator python-aws-xray-sdk)
 
     # DB
     depends+=(sqlite mariadb)
 
     # Java/JS
-    depends+=(jdk-openjdk yarn npm nodejs coffeescript asar prettier scala sbt gradle kotlin clojure groovy ant maven)
+    depends+=(jdk-openjdk yarn npm nodejs coffeescript asar prettier scala sbt
+    gradle kotlin clojure groovy ant maven jenkins)
 
     # html/xml
     depends+=(expat docbook-xml docbook-xsl docbook-mathml tidy)
 
     # Other Languages
-    depends+=(go mono dotnet-sdk skia-sharp ghc pandoc cabal-install stack git-annex lua rust julia 
+    depends+=(go mono dotnet-sdk skia-sharp ghc pandoc cabal-install stack git-annex lua rust julia
     openblas gcc-fortran gcc-objc tcl tk ruby ruby-irb fpc ocaml elixir typescript ts-node
     dcd dfmt dmd dmd-docs dscanner dtools dub gdc ldc libgphobos liblphobos libphobos)
 
@@ -96,7 +105,13 @@ package_rpuntaie-meta() {
     # Xorg and utilities
     # xorg-apps
     depends+=(xorg-server)
-    depends+=(xorg-bdftopcf xorg-iceauth xorg-luit xorg-mkfontscale xorg-sessreg xorg-setxkbmap xorg-smproxy xorg-x11perf xorg-xauth xorg-xbacklight xorg-xcmsdb xorg-xcursorgen xorg-xdpyinfo xorg-xdriinfo xorg-xev xorg-xgamma xorg-xhost xorg-xinput xorg-xkbcomp xorg-xkbevd xorg-xkbutils xorg-xkill xorg-xlsatoms xorg-xlsclients xorg-xmodmap xorg-xpr xorg-xprop xorg-xrandr xorg-xrdb xorg-xrefresh xorg-xset xorg-xsetroot xorg-xvinfo xorg-xwd xorg-xwininfo xorg-xwud)
+    depends+=(xorg-bdftopcf xorg-iceauth xorg-luit xorg-mkfontscale
+    xorg-sessreg xorg-setxkbmap xorg-smproxy xorg-x11perf xorg-xauth
+    xorg-xbacklight xorg-xcmsdb xorg-xcursorgen xorg-xdpyinfo xorg-xdriinfo
+    xorg-xev xorg-xgamma xorg-xhost xorg-xinput xorg-xkbcomp xorg-xkbevd
+    xorg-xkbutils xorg-xkill xorg-xlsatoms xorg-xlsclients xorg-xmodmap
+    xorg-xpr xorg-xprop xorg-xrandr xorg-xrdb xorg-xrefresh xorg-xset
+    xorg-xsetroot xorg-xvinfo xorg-xwd xorg-xwininfo xorg-xwud)
     depends+=(ibus-libpinyin ibus-m17n)
     depends+=(xdg-user-dirs openssh-askpass glfw-x11)
 
@@ -111,7 +126,8 @@ package_rpuntaie-meta() {
     ttf-dejavu gnu-free-fonts xorg-fonts-misc ttf-inconsolata ttf-roboto bdf-unifont)
 
     # virtualisation
-    depends+=(virtualbox-guest-modules-arch virtualbox-guest-utils virtualbox-host-modules-arch virtualbox vagrant)
+    depends+=(virtualbox-guest-modules-arch virtualbox-guest-utils
+    virtualbox-host-modules-arch virtualbox vagrant)
 
     # docker
     depends+=(docker docker-compose dnsmasq)
@@ -126,14 +142,34 @@ package_rpuntaie-meta() {
     depends+=(bluez bluez-utils)
 
     # audio
-    depends+=(alsa-utils python-pyalsa pulseaudio pulseaudio-alsa pulseaudio-bluetooth pavucontrol pulsemixer paprefs)
+    depends+=(alsa-utils python-pyalsa pulseaudio pulseaudio-alsa
+    pulseaudio-bluetooth pavucontrol pulsemixer paprefs)
     # pro-audio
-    depends+=(fluidsynth a2jmidid adlplug aeolus aj-snapshot aliki amb-plugins ambdec ams ams-lv2 amsynth ardour artyfx aubio audacity avldrums.lv2 beatslash-lv2 blop blop.lv2 bslizr cadence calf caps carla chuck cmt csound csoundqt deteriorate-lv2 dgedit din dpf-plugins dragonfly-reverb drumgizmo drumkv1 ebumeter ecasound eq10q eteroj.lv2 fabla faust fil-plugins fluajho fomp.lv2 foxdot freewheeling g2reverb geonkick giada gigedit gmsynth.lv2 guitarix2 helm hexter hydrogen infamousplugins ir.lv2 jaaa jack_capture jacktrip jalv japa jconvolver jnoisemeter jsampler linuxsampler lmms lsp-plugins luppp lv2file marsyas mcp-plugins mda.lv2 meterbridge midi_matrix.lv2 mixxx moony.lv2 njconnect noise-repellent non-mixer non-sequencer non-session-manager non-timeline opnplug osc2midi osmid padthv1 patchmatrix patroneo pd pd-lua polyphone pvoc qastools qjackctl qmidiarp qmidictl qmidinet qmidiroute qsampler qsynth qtractor qxgedit realtime-privileges rev-plugins rosegarden samplv1 sc3-plugins setbfree sherlock.lv2 snd solfege sonic-pi sonic-visualiser sorcer spectmorph ssr supercollider sweep swh-plugins synthv1 tap-plugins timidity++ vamp-aubio-plugins vamp-plugin-sdk vco-plugins vm.lv2 vmpk wah-plugins wolf-shaper wolf-spectrum x42-plugins yass yoshimi zam-plugins zita-ajbridge zita-at1 zita-bls1 zita-dc1 zita-dpl1 zita-lrx zita-mu1 zita-njbridge zita-rev1 zynaddsubfx)
+    depends+=(fluidsynth a2jmidid adlplug aeolus aj-snapshot aliki amb-plugins
+    ambdec ams ams-lv2 amsynth ardour artyfx aubio audacity avldrums.lv2
+    beatslash-lv2 blop blop.lv2 bslizr cadence calf caps carla chuck cmt csound
+    csoundqt deteriorate-lv2 dgedit din dpf-plugins dragonfly-reverb drumgizmo
+    drumkv1 ebumeter ecasound eq10q eteroj.lv2 fabla faust fil-plugins fluajho
+    fomp.lv2 foxdot freewheeling g2reverb geonkick giada gigedit gmsynth.lv2
+    guitarix2 helm hexter hydrogen infamousplugins ir.lv2 jaaa jack_capture
+    jacktrip jalv japa jconvolver jnoisemeter jsampler linuxsampler lmms
+    lsp-plugins luppp lv2file marsyas mcp-plugins mda.lv2 meterbridge
+    midi_matrix.lv2 mixxx moony.lv2 njconnect noise-repellent non-mixer
+    non-sequencer non-session-manager non-timeline opnplug osc2midi osmid
+    padthv1 patchmatrix patroneo pd pd-lua polyphone pvoc qastools qjackctl
+    qmidiarp qmidictl qmidinet qmidiroute qsampler qsynth qtractor qxgedit
+    realtime-privileges rev-plugins rosegarden samplv1 sc3-plugins setbfree
+    sherlock.lv2 snd solfege sonic-pi sonic-visualiser sorcer spectmorph ssr
+    supercollider sweep swh-plugins synthv1 tap-plugins timidity++
+    vamp-aubio-plugins vamp-plugin-sdk vco-plugins vm.lv2 vmpk wah-plugins
+    wolf-shaper wolf-spectrum x42-plugins yass yoshimi zam-plugins
+    zita-ajbridge zita-at1 zita-bls1 zita-dc1 zita-dpl1 zita-lrx zita-mu1
+    zita-njbridge zita-rev1 zynaddsubfx)
     # speach synth
     depends+=(espeak-ng)
 
     # video, media
-    depends+=(vlc ffmpeg kodi)
+    depends+=(vlc ffmpeg mpv kodi)
 
     # embedded
     depends+=(qemu qemu-arch-extra picocom ddrescue)
@@ -157,20 +193,26 @@ package_rpuntaie-meta() {
     )
 
     # texlive-most
-    depends+=(texlive-bibtexextra texlive-core texlive-fontsextra texlive-formatsextra texlive-games texlive-humanities texlive-latexextra texlive-music texlive-pictures texlive-pstricks texlive-publishers texlive-science)
+    depends+=(texlive-bibtexextra texlive-core texlive-fontsextra
+    texlive-formatsextra texlive-games texlive-humanities texlive-latexextra
+    texlive-music texlive-pictures texlive-pstricks texlive-publishers
+    texlive-science)
     # texlive-lang
-    depends+=(texlive-langchinese texlive-langcyrillic texlive-langextra texlive-langgreek texlive-langjapanese texlive-langkorean)
+    depends+=(texlive-langchinese texlive-langcyrillic texlive-langextra
+    texlive-langgreek texlive-langjapanese texlive-langkorean)
     # tex tools
     depends+=(mathjax lyx qtikz texmacs latex2html)
 
     # browsers
-    depends+=(firefox chromium links qutebrowser w3m browserpass browserpass-firefox browserpass-chromium)
+    depends+=(firefox chromium links qutebrowser w3m browserpass
+    browserpass-firefox browserpass-chromium)
 
     # viewers
-    depends+=(eom feh evince thunar meld ghostscript mupdf zathura zathura-djvu zathura-pdf-mupdf zathura-ps zathura-cb)
+    depends+=(eom feh evince thunar meld ghostscript mupdf zathura zathura-djvu
+    zathura-pdf-mupdf zathura-ps zathura-cb)
 
     # mail, IRC
-    depends+=(thunderbird mutt offlineimap msmtp weechat)
+    depends+=(neomutt isync msmtp msmtp-mta notmuch urlscan afew abook alot getmail weechat)
 
     # dicts
     depends+=(dictd aspell-de aspell-en aspell-es aspell-fr aspell-it aspell-ru
@@ -189,7 +231,8 @@ package_rpuntaie-meta() {
 
 
     # AUR submodules of rollarch
-    depends+=(yay mimeo plantuml 
+    depends+=(yay mimeo plantuml
+    mutt-wizard-git #mw: sets up mutt account
     rstudio-desktop-bin #rstudio-bin
     texlive-localmanager-git #tllocalmgr
     waf-git #waf

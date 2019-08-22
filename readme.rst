@@ -139,6 +139,8 @@ How `local proxy`_ and `custom packages`_ is used by `rollarch`_:
   .. code:: sh
 
      git submodule add https://aur.archlinux.org/discord pkg/discord
+     #add "ignore = dirty" to .gitmodules
+     #when removing, note, that modules are listed also in .git/config
 
   The ``build`` script
 
