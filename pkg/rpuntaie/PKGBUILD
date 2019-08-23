@@ -232,7 +232,7 @@ package_rpuntaie-meta() {
 
     # AUR submodules of rollarch
     depends+=(yay mimeo plantuml
-    mutt-wizard-git #mw: sets up mutt account
+    #mutt-wizard-git #mw: sets up mutt account
     rstudio-desktop-bin #rstudio-bin
     texlive-localmanager-git #tllocalmgr
     waf-git #waf
