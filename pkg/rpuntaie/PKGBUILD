@@ -4,14 +4,15 @@
 # # DSK=/dev/sda USR=u PW=p HST=up ZONE=Vienna IP2=1.121 AIP2=1.108 ./installarch rpuntaie-meta
 
 pkgname=(rpuntaie-meta)
-pkgver=1.1
+pkgver=1.2.2
 pkgrel=1
 pkgdesc="Archlinux for rpuntaie"
 arch=('x86_64')
 url="https://github.com/rpuntaie/rollarch"
 license=(MIT)
 
-package_rpuntaie-meta() {
+function package()
+{
     #base, base-devel without duplication
     depends=(bash bzip2 coreutils cryptsetup device-mapper dhcpcd diffutils
         e2fsprogs file filesystem findutils gawk gcc-libs gettext glibc grep
@@ -33,7 +34,7 @@ package_rpuntaie-meta() {
     depends+=(stow ripgrep fd bc tmux wget fzf udisks2 unzip bat ncdu jshon)
     depends+=(the_silver_searcher rtorrent tree p7zip ranger file-roller mlocate rmlint)
     # arch
-    depends+=(devtools pacman-contrib namcap)
+    depends+=(arch-install-scripts asp devtools pacman-contrib namcap)
     # android
     depends+=(mtpfs android-file-transfer)
     # security
@@ -125,13 +126,6 @@ package_rpuntaie-meta() {
     ttf-bitstream-vera ttf-fira-mono ttf-fira-code ttf-anonymous-pro ttf-fantasque-sans-mono
     ttf-dejavu gnu-free-fonts xorg-fonts-misc ttf-inconsolata ttf-roboto bdf-unifont)
 
-    # virtualisation
-    depends+=(virtualbox-guest-modules-arch virtualbox-guest-utils
-    virtualbox-host-modules-arch virtualbox vagrant)
-
-    # docker
-    depends+=(docker docker-compose dnsmasq)
-
     # IDE's
     depends+=(atom eclipse-cpp intellij-idea-community-edition lazarus)
 
@@ -171,8 +165,11 @@ package_rpuntaie-meta() {
     # video, media
     depends+=(vlc ffmpeg mpv kodi)
 
-    # embedded
-    depends+=(qemu qemu-arch-extra picocom ddrescue)
+    # embedded, virtualization
+    depends+=(qemu qemu-arch-extra ovmf libvirt virt-manager picocom ddrescue)
+    depends+=(virtualbox-guest-modules-arch virtualbox-guest-utils
+    virtualbox-host-modules-arch virtualbox vagrant)
+    depends+=(docker docker-compose dnsmasq)
 
     # electronics
     depends+=(kicad kicad-library kicad-library-3d geda-gaf pcb yosys ngspice)
@@ -233,6 +230,7 @@ package_rpuntaie-meta() {
     # AUR submodules of rollarch
     depends+=(yay mimeo plantuml
     #mutt-wizard-git #mw: sets up mutt account
+    mkosi-git #VM platform used by systemd
     rstudio-desktop-bin #rstudio-bin
     texlive-localmanager-git #tllocalmgr
     waf-git #waf
@@ -254,5 +252,4 @@ package_rpuntaie-meta() {
     # intel-sde #Intel Software Development Emulator
     # microchip-mplabx-bin #https://aur.archlinux.org/microchip-mplabx-bin.git
 }
-
 
