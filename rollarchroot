@@ -415,6 +415,7 @@ EOF
   [[ "$NIC_WL" != "" ]] && _nic_supplicant
   systemctl enable --now systemd-networkd
   systemctl enable --now systemd-resolved
+  #systemctl enable --now avahi-daemon
 }
 
 # samba: add user share:
@@ -561,6 +562,9 @@ function setup_all() {
   if [[ -z $(grep -q "^flags.*\ hypervisor\ " /proc/cpuinfo) ]]; then
     systemctl enable --now vboxservice
   fi
+
+  # printing
+  systemctl enable --now org.cups.cupsd
 
   setup_dots
   setup_clean_meta

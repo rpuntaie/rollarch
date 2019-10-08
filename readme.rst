@@ -145,7 +145,7 @@ How `local proxy`_ and `custom packages`_ is used by `rollarch`_:
   The ``build`` script
 
   - updates the submodules from AUR
-  - builds all packages or the THOSE PROVIDED (``pkg/rpuntaie``)
+  - builds all packages or the THOSE PROVIDED (e.g. ``pkg/rpuntaie``)
   - adds to, and merges your ``custom`` repo and `custom packages`_
     with the rest of the packages of the `local proxy`_.
 

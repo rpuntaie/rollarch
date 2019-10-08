@@ -13,7 +13,7 @@ license=(MIT)
 
 function package()
 {
-    #base, base-devel without duplication
+    # base, base-devel without duplication
     depends=(bash bzip2 coreutils cryptsetup device-mapper dhcpcd diffutils
         e2fsprogs file filesystem findutils gawk gcc-libs gettext glibc grep
         gzip inetutils iproute2 iputils jfsutils less licenses linux
@@ -23,6 +23,7 @@ function package()
         xfsprogs autoconf automake binutils bison fakeroot flex gcc groff
         libtool m4 make patch pkgconf sudo systemd)
     depends+=(systemd-resolvconf)
+    depends+=(avahi nss-mdns)
     # filesystems
     depends+=(exfat-utils dosfstools f2fs-tools nfs-utils)
     # system tools
@@ -46,9 +47,11 @@ function package()
     zsh-history-substring-search)
     # editor nvim vor CLI and gvim for GUI (see below)
     depends+=(neovim gvim pluma astyle arch-wiki-lite)
+    # print
+    depends+=(cups cups-filters cups-pdf gutenprint foomatic-db-gutenprint-ppds wkhtmltopdf)
 
     # C/C++
-    depends+=(cmake ninja meson cscope ctags llvm clang gdb lldb boost eigen)
+    depends+=(cmake ninja meson cscope ctags llvm clang gdb lldb boost)
 
     # Python
     depends+=(python pypy3 ipython jupyter cython twine wammu xonsh yapf python-ipykernel ansible
@@ -62,7 +65,7 @@ function package()
     python-virtualenv python-yaml python-django python-tornado python-tox
     python-pandas python-pandas-datareader python-cvxopt python-webtest
     python-sphinx python-sphinx-alabaster-theme python-sphinx-testing
-    python-sphinx_rtd_theme python-sphinxcontrib-applehelp
+    python-sphinx_rtd_theme python-sphinxcontrib-applehelp python-gitpython
     python-sphinxcontrib-bibtex python-sphinxcontrib-devhelp
     python-sphinxcontrib-htmlhelp python-sphinxcontrib-jsmath
     python-sphinxcontrib-newsfeed python-sphinxcontrib-qthelp
@@ -83,7 +86,7 @@ function package()
     python-flask-silk python-flask-socketio python-flask-sphinx-themes
     python-flask-sqlalchemy python-flask-talisman python-flask-wtf python-black
     python-pybtex python-pybtex-docutils python-service_identity
-    python-aws-sam-translator python-aws-xray-sdk)
+    python-aws-sam-translator python-aws-xray-sdk python-pynvim)
 
     # DB
     depends+=(sqlite mariadb)
@@ -97,7 +100,7 @@ function package()
 
     # Other Languages
     depends+=(go mono dotnet-sdk skia-sharp ghc pandoc cabal-install stack git-annex lua rust julia
-    openblas gcc-fortran gcc-objc tcl tk ruby ruby-irb fpc ocaml elixir typescript ts-node
+    gcc-fortran gcc-objc tcl tk ruby ruby-irb fpc ocaml elixir typescript ts-node
     dcd dfmt dmd dmd-docs dscanner dtools dub gdc ldc libgphobos liblphobos libphobos)
 
     # drivers and utilities
@@ -185,9 +188,8 @@ function package()
 
     # office
     depends+=(libreoffice-fresh
-    tesseract #ocr
-    tesseract-data-eng
-    )
+    tesseract # ocr
+    tesseract-data-eng)
 
     # texlive-most
     depends+=(texlive-bibtexextra texlive-core texlive-fontsextra
@@ -216,8 +218,8 @@ function package()
     vim-spell-en vim-spell-de vim-spell-it vim-spell-fr vim-spell-ru vim-spell-es)
 
     # maths
-    depends+=(octave sagemath r geogebra root gnuplot coq)
-    #coin-or
+    depends+=(eigen openblas octave sagemath r geogebra root gnuplot coq)
+    # coin-or
     depends+=(coin-or-cbc coin-or-cgl coin-or-clp coin-or-coinutils coin-or-mp coin-or-osi)
 
     # science
@@ -226,30 +228,14 @@ function package()
     # organize, finance
     depends+=(task ledger)
 
+    # AUR packages
+    depends+=(yay mimeo plantuml mkosi-git rstudio-desktop-bin texlive-localmanager-git waf-git wordnet-cli urxvt-vim-scrollback-git
+    powerline-console-fonts tor-browser dropbox dropbox-cli psysh leiningen planck-git cling-git erfa python-astropy)
 
-    # AUR submodules of rollarch
-    depends+=(yay mimeo plantuml
-    #mutt-wizard-git #mw: sets up mutt account
-    mkosi-git #VM platform used by systemd
-    rstudio-desktop-bin #rstudio-bin
-    texlive-localmanager-git #tllocalmgr
-    waf-git #waf
-    wordnet-cli #wn
-    urxvt-vim-scrollback-git #C-v in urxvt
-    powerline-console-fonts #for text console
-    tor-browser
-    dropbox
-    dropbox-cli
-    psysh #PHP REPL
-    leiningen #clojure build automation
-    planck-git #clojure REPL
-    cling-git #C interpreter
-    )
-
-    # #need multilib
-    # openmodelica-git #modelica language
-    # quartus-free #for Altera FPGA
-    # intel-sde #Intel Software Development Emulator
-    # microchip-mplabx-bin #https://aur.archlinux.org/microchip-mplabx-bin.git
+    # # need multilib
+    # openmodelica-git # modelica language
+    # quartus-free # for Altera FPGA
+    # intel-sde # Intel Software Development Emulator
+    # microchip-mplabx-bin # https://aur.archlinux.org/microchip-mplabx-bin.git
 }
 

@@ -470,6 +470,8 @@ function rollarch_main()
   rollarch_check_internet
   [[ $? == 0 ]] || return 1
 
+  pacman-key --refresh-keys
+
   rollarch_repos
 
   rollarch_check_defines
