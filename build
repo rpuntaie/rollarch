@@ -15,7 +15,8 @@ for package in $PACKAGES; do
         echo "$package/PKGBUILD missing.
 Make sure submodules are there:
     git submodule update --init --recursive
-    git submodule foreach git pull origin master" >&2
+    git submodule foreach git pull origin master
+" >&2
         exit 1
     fi
 done
