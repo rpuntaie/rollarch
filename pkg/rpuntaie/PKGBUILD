@@ -175,7 +175,7 @@ function package()
     depends+=(docker docker-compose dnsmasq)
 
     # electronics
-    depends+=(kicad kicad-library kicad-library-3d geda-gaf pcb yosys ngspice)
+    depends+=(kicad kicad-library kicad-library-3d geda-gaf pcb yosys ngspice iverilog verilator)
 
     # processors
     depends+=(avr-binutils avr-gcc avr-gdb avr-libc arduino arduino-docs arm-none-eabi-gcc)
