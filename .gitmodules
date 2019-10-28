@@ -18,10 +18,6 @@
 	path = pkg/rstudio-desktop-bin
 	url = https://aur.archlinux.org/rstudio-desktop-bin
 	ignore = dirty
-[submodule "pkg/texlive-localmanager-git"]
-	path = pkg/texlive-localmanager-git
-	url = https://aur.archlinux.org/texlive-localmanager-git
-	ignore = dirty
 [submodule "pkg/mimeo"]
 	path = pkg/mimeo
 	url = https://aur.archlinux.org/mimeo
