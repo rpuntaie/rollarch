@@ -54,8 +54,8 @@ function package()
     depends+=(cmake ninja meson cscope ctags llvm clang gdb lldb boost)
 
     # Python
-    depends+=(python pypy3 ipython jupyter cython twine wammu xonsh yapf python-ipykernel ansible
-    python-gobject python-pyqt5 python-numpy python-numpydoc python-scipy
+    depends+=(python pypy3 ipython jupyter cython twine wammu xonsh yapf autopep8 python-ipykernel ansible
+    python-gobject python-pyqt5 python-numpy python-numpydoc python-scipy python-ipdb
     python-sympy python-tensorflow python-h5py python-sip python-cffi python-cairocffi
     python-beautifulsoup4 python-html5lib python-bleach python-pytz python-docker
     python-docutils python-gmpy2 python-jinja python-matplotlib python-pillow
@@ -66,6 +66,7 @@ function package()
     python-pandas python-pandas-datareader python-cvxopt python-webtest
     python-sphinx python-sphinx-alabaster-theme python-sphinx-testing
     python-sphinx_rtd_theme python-sphinxcontrib-applehelp python-gitpython
+    python-pathspec python-pudb
     python-sphinxcontrib-bibtex python-sphinxcontrib-devhelp
     python-sphinxcontrib-htmlhelp python-sphinxcontrib-jsmath
     python-sphinxcontrib-newsfeed python-sphinxcontrib-qthelp
@@ -75,7 +76,7 @@ function package()
     python-pycurl python-requests python-twisted python-urllib3 python-urllib3-doc
     python-cairosvg python-click python-click-log python-click-repl
     python-click-threading python-colorama python-fuse python-qrencode
-    python-wikipedia python-doit python-bottle python-flask
+    python-wikipedia python-doit python-bottle python-flask python-pony python-sqlalchemy
     python-flask-appconfig python-flask-autoindex python-flask-babel
     python-flask-babelex python-flask-bootstrap python-flask-caching
     python-flask-dance python-flask-debug python-flask-gravatar
@@ -86,7 +87,7 @@ function package()
     python-flask-silk python-flask-socketio python-flask-sphinx-themes
     python-flask-sqlalchemy python-flask-talisman python-flask-wtf python-black
     python-pybtex python-pybtex-docutils python-service_identity
-    python-aws-sam-translator python-aws-xray-sdk python-pynvim)
+    python-aws-sam-translator python-aws-xray-sdk python-pynvim python-inflection)
 
     # DB
     depends+=(sqlite mariadb)
@@ -207,7 +208,7 @@ function package()
     browserpass-firefox browserpass-chromium)
 
     # viewers
-    depends+=(eom feh evince thunar meld ghostscript mupdf zathura zathura-djvu
+    depends+=(eom feh evince thunar meld ghostscript poppler mupdf zathura zathura-djvu
     zathura-pdf-mupdf zathura-ps zathura-cb)
 
     # mail, IRC
