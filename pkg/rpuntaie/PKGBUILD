@@ -51,7 +51,7 @@ function package()
     depends+=(cups cups-filters cups-pdf gutenprint foomatic-db-gutenprint-ppds wkhtmltopdf)
 
     # C/C++
-    depends+=(cmake ninja meson cscope ctags llvm clang gdb lldb boost)
+    depends+=(cmake ninja meson cscope ctags llvm clang gdb lldb boost grpc)
 
     # Python
     depends+=(python pypy3 ipython jupyter cython twine wammu xonsh yapf autopep8 python-ipykernel ansible
@@ -66,7 +66,7 @@ function package()
     python-pandas python-pandas-datareader python-cvxopt python-webtest
     python-sphinx python-sphinx-alabaster-theme python-sphinx-testing
     python-sphinx_rtd_theme python-sphinxcontrib-applehelp python-gitpython
-    python-pathspec python-pudb
+    python-pathspec python-pudb python-grpcio
     python-sphinxcontrib-bibtex python-sphinxcontrib-devhelp
     python-sphinxcontrib-htmlhelp python-sphinxcontrib-jsmath
     python-sphinxcontrib-newsfeed python-sphinxcontrib-qthelp
@@ -102,7 +102,7 @@ function package()
     # Other Languages
     depends+=(go mono dotnet-sdk skia-sharp ghc pandoc cabal-install stack git-annex lua rust julia
     gcc-fortran gcc-objc tcl tk ruby ruby-irb fpc ocaml elixir typescript ts-node racket
-    dcd dfmt dmd dmd-docs dscanner dtools dub gdc ldc libgphobos liblphobos libphobos)
+    dcd dfmt dmd dmd-docs dscanner dtools dub gdc ldc liblphobos libphobos)
 
     # drivers and utilities
     depends+=(xf86-input-libinput xf86-video-intel nvidia nvidia-utils)
@@ -231,7 +231,7 @@ function package()
 
     # AUR packages
     depends+=(yay mimeo plantuml mkosi-git rstudio-desktop-bin texlive-localmanager-git waf-git wordnet-cli urxvt-vim-scrollback-git
-    powerline-console-fonts tor-browser dropbox dropbox-cli psysh leiningen planck-git cling-git erfa python-astropy)
+    powerline-console-fonts tor-browser psysh leiningen planck-git cling-git erfa python-astropy)
 
     # # need multilib
     # openmodelica-git # modelica language

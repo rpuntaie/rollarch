@@ -38,14 +38,6 @@
 	path = pkg/tor-browser
 	url = https://aur.archlinux.org/tor-browser.git
 	ignore = dirty
-[submodule "pkg/dropbox"]
-	path = pkg/dropbox
-	url = https://aur.archlinux.org/dropbox.git
-	ignore = dirty
-[submodule "pkg/dropbox-cli"]
-	path = pkg/dropbox-cli
-	url = https://aur.archlinux.org/dropbox-cli.git
-	ignore = dirty
 [submodule "pkg/psysh"]
 	path = pkg/psysh
 	url = https://aur.archlinux.org/psysh.git

@@ -2,7 +2,7 @@
 
 _pkgname=nvim-yarp
 pkgname=neovim-yarp
-pkgver=r48.81caad8
+pkgver=r49.83c6f4e
 pkgrel=1
 pkgdesc="Yet Another Remote Plugin Framework for Neovim"
 arch=('any')
