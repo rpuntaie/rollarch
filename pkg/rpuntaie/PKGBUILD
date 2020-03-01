@@ -130,8 +130,8 @@ function package()
     ttf-bitstream-vera ttf-fira-mono ttf-fira-code ttf-anonymous-pro ttf-fantasque-sans-mono
     ttf-dejavu gnu-free-fonts xorg-fonts-misc ttf-inconsolata ttf-roboto bdf-unifont)
 
-    # IDE's
-    depends+=(atom eclipse-cpp intellij-idea-community-edition lazarus)
+    # other editors/IDE's (apart from vim)
+    depends+=(emacs code atom eclipse-cpp intellij-idea-community-edition lazarus)
 
     # PHP/Mediawiki
     depends+=(uwsgi nginx php xdebug mediawiki)
@@ -173,14 +173,14 @@ function package()
     depends+=(qemu qemu-arch-extra ovmf libvirt virt-manager picocom ddrescue)
     depends+=(virtualbox-guest-modules-arch virtualbox-guest-utils
     virtualbox-host-modules-arch virtualbox vagrant)
-    depends+=(docker docker-compose dnsmasq)
+    depends+=(docker docker-compose kubectl dnsmasq)
 
     # electronics
     depends+=(kicad kicad-library kicad-library-3d geda-gaf pcb yosys ngspice iverilog verilator)
 
     # processors
-    depends+=(avr-binutils avr-gcc avr-gdb avr-libc arduino arduino-docs arm-none-eabi-gcc)
-
+    depends+=(avr-binutils avr-gcc avr-gdb avr-libc arduino arduino-docs
+    arm-none-eabi-gcc arm-none-eabi-binutils arm-none-eabi-newlib libopencm3)
     # graphics
     depends+=(graphviz vtk mayavi opencascade
     opencv opencv-samples povray
@@ -219,7 +219,7 @@ function package()
     vim-spell-en vim-spell-de vim-spell-it vim-spell-fr vim-spell-ru vim-spell-es)
 
     # maths
-    depends+=(eigen openblas octave sagemath r geogebra root gnuplot coq)
+    depends+=(eigen openblas octave sagemath r geogebra root gnuplot coq glpk)
     # coin-or
     depends+=(coin-or-cbc coin-or-cgl coin-or-clp coin-or-coinutils coin-or-mp coin-or-osi)
 

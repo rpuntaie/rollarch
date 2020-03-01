@@ -506,7 +506,7 @@ EOF
 function setup_user() {
   groupadd -rf sambashare
   groupadd -rf plugdev
-  useradd -m -g users -G wheel,uucp,storage,power,video,audio,lp,games,scanner,plugdev,lock,sambashare -s /usr/bin/bash $USR
+  useradd -m -g users -G wheel,uucp,storage,power,video,audio,lp,games,scanner,plugdev,lock,sambashare,docker -s /usr/bin/bash $USR
   echo -e "$PW
 $PW" | passwd
   echo -e "$PW
