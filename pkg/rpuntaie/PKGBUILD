@@ -66,7 +66,7 @@ function package()
     python-pandas python-pandas-datareader python-cvxopt python-webtest
     python-sphinx python-sphinx-alabaster-theme python-sphinx-testing
     python-sphinx_rtd_theme python-sphinxcontrib-applehelp python-gitpython
-    python-pathspec python-pudb python-grpcio
+    python-pathspec python-pudb python-grpcio gunicorn uwsgi python-redis
     python-sphinxcontrib-bibtex python-sphinxcontrib-devhelp
     python-sphinxcontrib-htmlhelp python-sphinxcontrib-jsmath
     python-sphinxcontrib-newsfeed python-sphinxcontrib-qthelp
@@ -90,7 +90,7 @@ function package()
     python-aws-sam-translator python-aws-xray-sdk python-pynvim python-inflection)
 
     # DB
-    depends+=(sqlite mariadb)
+    depends+=(sqlite mariadb redis)
 
     # Java/JS
     depends+=(jdk-openjdk yarn npm nodejs coffeescript asar prettier scala sbt
@@ -134,7 +134,7 @@ function package()
     depends+=(emacs code atom eclipse-cpp intellij-idea-community-edition lazarus)
 
     # PHP/Mediawiki
-    depends+=(uwsgi nginx php xdebug mediawiki)
+    depends+=(nginx php xdebug mediawiki)
 
     # bluetooth
     depends+=(bluez bluez-utils)
