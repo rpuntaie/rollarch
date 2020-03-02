@@ -77,14 +77,14 @@ function package()
     python-cairosvg python-click python-click-log python-click-repl
     python-click-threading python-colorama python-fuse python-qrencode
     python-wikipedia python-doit python-bottle python-flask python-pony python-sqlalchemy
-    python-flask-appconfig python-flask-autoindex python-flask-babel
+    python-flask-appconfig python-flask-babel
     python-flask-babelex python-flask-bootstrap python-flask-caching
     python-flask-dance python-flask-debug python-flask-gravatar
     python-flask-htmlmin python-flask-jwt python-flask-login python-flask-mail
     python-flask-marshmallow python-flask-migrate python-flask-nav
-    python-flask-oldsessions python-flask-paranoid python-flask-principal
+    python-flask-paranoid python-flask-principal
     python-flask-restful python-flask-script python-flask-security
-    python-flask-silk python-flask-socketio python-flask-sphinx-themes
+    python-flask-socketio python-flask-sphinx-themes
     python-flask-sqlalchemy python-flask-talisman python-flask-wtf python-black
     python-pybtex python-pybtex-docutils python-service_identity
     python-aws-sam-translator python-aws-xray-sdk python-pynvim python-inflection)
@@ -121,7 +121,7 @@ function package()
     depends+=(xdg-user-dirs openssh-askpass glfw-x11)
 
     # window manager
-    depends+=(xdotool wmctrl xmonad xmonad-contrib i3-wm openbox
+    depends+=(xdotool wmctrl xmonad xmonad-contrib xmonad-utils i3-wm openbox
     xterm alacritty rxvt-unicode urxvt-perls xorg-xinit dmenu gmrun scrot slock
     libnotify dunst xsel xclip dex)
 
@@ -149,7 +149,7 @@ function package()
     csoundqt deteriorate-lv2 dgedit din dpf-plugins dragonfly-reverb drumgizmo
     drumkv1 ebumeter ecasound eq10q eteroj.lv2 fabla faust fil-plugins fluajho
     fomp.lv2 foxdot freewheeling g2reverb geonkick giada gigedit gmsynth.lv2
-    guitarix2 helm hexter hydrogen infamousplugins ir.lv2 jaaa jack_capture
+    helm hexter hydrogen infamousplugins ir.lv2 jaaa jack_capture
     jacktrip jalv japa jconvolver jnoisemeter jsampler linuxsampler lmms
     lsp-plugins luppp lv2file marsyas mcp-plugins mda.lv2 meterbridge
     midi_matrix.lv2 mixxx moony.lv2 njconnect noise-repellent non-mixer
@@ -185,7 +185,7 @@ function package()
     depends+=(graphviz vtk mayavi opencascade
     opencv opencv-samples povray
     librecad blender gimp krita inkscape
-    sk1 fontforge imagemagick imagemagick-doc processing openscad)
+    fontforge imagemagick imagemagick-doc processing openscad)
 
     # office
     depends+=(libreoffice-fresh
