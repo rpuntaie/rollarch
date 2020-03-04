@@ -131,7 +131,7 @@ function package()
     ttf-dejavu gnu-free-fonts xorg-fonts-misc ttf-inconsolata ttf-roboto bdf-unifont)
 
     # other editors/IDE's (apart from vim)
-    depends+=(emacs code atom eclipse-cpp intellij-idea-community-edition lazarus)
+    depends+=(emacs code atom eclipse-java intellij-idea-community-edition lazarus)
 
     # PHP/Mediawiki
     depends+=(nginx php xdebug mediawiki)
@@ -176,7 +176,7 @@ function package()
     depends+=(docker docker-compose kubectl dnsmasq)
 
     # electronics
-    depends+=(kicad kicad-library kicad-library-3d geda-gaf pcb yosys ngspice iverilog verilator)
+    depends+=(kicad kicad-library kicad-library-3d geda-gaf pcb yosys ngspice verilator)
 
     # processors
     depends+=(avr-binutils avr-gcc avr-gdb avr-libc arduino arduino-docs
@@ -185,7 +185,7 @@ function package()
     depends+=(graphviz vtk mayavi opencascade
     opencv opencv-samples povray
     librecad blender gimp krita inkscape
-    fontforge imagemagick imagemagick-doc processing openscad)
+    fontforge imagemagick imagemagick-doc openscad)
 
     # office
     depends+=(libreoffice-fresh
@@ -215,8 +215,7 @@ function package()
     depends+=(neomutt isync msmtp msmtp-mta notmuch urlscan afew abook alot getmail weechat)
 
     # dicts
-    depends+=(dictd aspell-de aspell-en aspell-es aspell-fr aspell-it aspell-ru
-    vim-spell-en vim-spell-de vim-spell-it vim-spell-fr vim-spell-ru vim-spell-es)
+    depends+=(dictd vim-spell-en vim-spell-de vim-spell-it vim-spell-fr vim-spell-ru vim-spell-es)
 
     # maths
     depends+=(eigen openblas octave sagemath r geogebra root gnuplot coq glpk)
