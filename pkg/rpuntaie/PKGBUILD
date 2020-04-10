@@ -171,8 +171,7 @@ function package()
 
     # embedded, virtualization
     depends+=(qemu qemu-arch-extra ovmf libvirt virt-manager picocom ddrescue)
-    depends+=(virtualbox-guest-modules-arch virtualbox-guest-utils
-    virtualbox-host-modules-arch virtualbox vagrant)
+    depends+=(virtualbox-guest-utils virtualbox-host-modules-arch virtualbox vagrant)
     depends+=(docker docker-compose kubectl dnsmasq)
 
     # electronics
