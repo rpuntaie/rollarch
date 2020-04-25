@@ -42,9 +42,11 @@ Then at the ``archiso`` prompt:
     mkdir rollarch
     mount -t nfs 192.168.1.108:</path/to/rollarch> rollarch
     cd rollarch
-    DSK=/dev/sda USR=u PW=p HST=u106 IP2=1.106 ZONE=Berlin bash rollarch
+    DSK=/dev/sda USR=u PW=p HST=u106 IP2=1.106 ZONE=Berlin DOTS=mydots bash rollarch
 
-Without further arguments after ``installarch`` (=``rollarch``), the packages default to
+If ``mydots`` is available as local dots install script, ``https://git.io/mydots`` is not tried.
+
+Without further arguments after ``rollarch`` (=``installarch``), the packages default to
 ``arch-install-scripts base base-devel devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim zsh``.
 
 For systems supporting UEFI
@@ -166,10 +168,15 @@ How `local proxy`_ and `custom packages`_ is used by `rollarch`_:
   the dependencies are made ``--asexplicit`` and the resulting orphaned ``your-meta`` package is removed.
   To make this work, meta packages must not depend on each other.
 
-  Examples:
+  Currently the ``pkg`` folder contains these meta packages:
 
   - ``mdaffin-meta``: Transformed from `arch-pkgs`_, to fit to the above guidelines. Also configures, globally.
   - ``rpuntaie-meta``: `dotfiles`_ are installed afterwards. See `include dotfiles`_.
+  - ``rpuntaie-gnome-meta``: For gaming, with a WM for Linux newbies.
+
+  To build only the one package do, e.g.::
+
+    sudo bash ./build pkg/rpuntaie-gnome
 
 Include dotfiles
 ================
@@ -217,15 +224,13 @@ E.g. to also install ``yay`` you could have these two lines::
         #PKG: yay
 
 My dotfiles can be reached via the github short https://git.io/fjVcp.
+``fjVcp`` could be just a local script like ``mydots`` further down.
 The following installs my system with ``dotfiles`` and packages wanted by it.
 
 .. code:: sh
 
     curl -OLs https://git.io/installarch
     DSK=/dev/sda USR=u PW=p HST=u106 IP2=1.106 AIP2=1.108 ZONE=Vienna DOTS=fjVcp bash installarch
-
-When booting into the new system, I currently still need to run ``~/dotfiles/install`` again.
-The run in ``arch-chroot`` seems unable to accomplish its full task. I don't know why, yet.
 
 Thanks
 ======

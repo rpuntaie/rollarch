@@ -23,7 +23,7 @@ function package()
         xfsprogs autoconf automake binutils bison fakeroot flex gcc groff
         libtool m4 make patch pkgconf sudo systemd)
     depends+=(systemd-resolvconf)
-    depends+=(avahi nss-mdns)
+    depends+=(avahi nss-mdns openvpn)
     # filesystems
     depends+=(exfat-utils dosfstools f2fs-tools nfs-utils)
     # system tools
@@ -105,7 +105,7 @@ function package()
     dcd dfmt dmd dmd-docs dscanner dtools dub gdc ldc liblphobos libphobos)
 
     # drivers and utilities
-    depends+=(xf86-input-libinput xf86-video-intel nvidia nvidia-utils)
+    depends+=(xf86-input-libinput xf86-video-intel nvidia)
 
     # Xorg and utilities
     # xorg-apps
@@ -229,7 +229,7 @@ function package()
 
     # AUR packages
     depends+=(yay mimeo plantuml mkosi-git rstudio-desktop-bin texlive-localmanager-git waf-git wordnet-cli urxvt-vim-scrollback-git
-    powerline-console-fonts tor-browser psysh leiningen planck-git cling-git erfa python-astropy)
+    powerline-console-fonts psysh leiningen planck-git cling-git erfa python-astropy)
 
     # # need multilib
     # openmodelica-git # modelica language

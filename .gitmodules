@@ -34,10 +34,6 @@
 	path = pkg/powerline-console-fonts
 	url = https://aur.archlinux.org/powerline-console-fonts.git
 	ignore = dirty
-[submodule "pkg/tor-browser"]
-	path = pkg/tor-browser
-	url = https://aur.archlinux.org/tor-browser.git
-	ignore = dirty
 [submodule "pkg/psysh"]
 	path = pkg/psysh
 	url = https://aur.archlinux.org/psysh.git

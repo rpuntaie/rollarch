@@ -78,7 +78,7 @@ function setup_keyboard() {
     #Win: 125 on VConsole, for X: `xmodmap -e "keysym Super_L = Caps_Lock"
     #Print: 99 on VConsole, for X: `xmodmap -e "keysym Print = Caps_Lock"
     gunzip rollarch$KBD.map.gz
-    sed -ie "s/keycode *58 *= *Caps_Lock/keycode 58 = Escape/g" rollarch$KBD.map
+    sed -i -e "s/keycode *58 *= *Caps_Lock/keycode 58 = Escape/g" rollarch$KBD.map
     echo "keycode $CL = Caps_Lock" >> rollarch$KBD.map
     echo "# modified: 58 = Escape and $CL = Caps_Lock" >> rollarch$KBD.map
     gzip rollarch$KBD.map
@@ -93,7 +93,7 @@ function setup_keyboard() {
 function _nic_en_wl() {
   NIC_EN=""
   NIC_WL=""
-  for NIC in $(ip link show|grep " UP \| DOWN \| DORMANT"|sed "s/^[^:]: \([^:]\+\).*/\1/g"); do
+  for NIC in $(ip link show|grep " UP \| DOWN \| DORMANT" | sed "s/^[^:]: \([^:]\+\).*/\1/g"); do
     if [[ ${NIC:0:1} == "e" ]] && [[ "$NIC_EN" == "" ]]; then
       NIC_EN=$NIC
     elif [[ ${NIC:0:1} == "w" ]] && [[ "$NIC_WL" == "" ]]; then
@@ -382,7 +382,7 @@ function setup_ip() {
       fi
     fi
   else
-    IP_DNS=$(ip route show default | sed -ne "s/default via \([0-9.]*\).*/\1/p")
+    IP_DNS=$(ip route show default | sed -n -e "s/default via \([0-9.]*\).*/\1/p")
     if [[ "$NIC_EN" != "" ]] && [[ "$NIC_WL" != "" ]]; then
       _nic_bonding_dhcp
     elif [[ "$NIC_EN" != "" ]]; then
@@ -434,7 +434,7 @@ function setup_smb_ssh_nfs() {
    usershare owner only = yes
 
 EOF
-  curl -Ls https://raw.githubusercontent.com/samba-team/samba/master/examples/smb.conf.default|sed \
+  curl -Ls https://raw.githubusercontent.com/samba-team/samba/master/examples/smb.conf.default | sed \
     -e "s,log file = .*$,logging = systemd,g" -e "s,MYGROUP,WORKGROUP,g" -e "s/\[global\]//g" >> $ETCSAMBASMB
   mkdir -p $VARLIBSAMBAUSERSHARES
   groupadd -rf sambashare
@@ -506,6 +506,7 @@ EOF
 function setup_user() {
   groupadd -rf sambashare
   groupadd -rf plugdev
+  groupadd -rf docker
   useradd -m -g users -G wheel,uucp,storage,power,video,audio,lp,games,scanner,plugdev,lock,sambashare,docker -s /usr/bin/bash $USR
   echo -e "$PW
 $PW" | passwd
@@ -559,15 +560,15 @@ function setup_all() {
     setup_arch_proxy
   fi
 
-  if [[ -z $(grep -q "^flags.*\ hypervisor\ " /proc/cpuinfo) ]]; then
-    systemctl enable --now vboxservice
-  fi
-
   # printing
   systemctl enable --now org.cups.cupsd
 
   setup_dots
   setup_clean_meta
+
+  if [[ -z $(grep -q "^flags.*\ hypervisor\ " /proc/cpuinfo) ]]; then
+    systemctl enable --now vboxservice
+  fi
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
