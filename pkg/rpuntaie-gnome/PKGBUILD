@@ -60,7 +60,7 @@ function package()
     # development
     depends+=(cmake ninja meson cscope ctags gdb)
     depends+=(jdk-openjdk yarn npm nodejs)
-    depends+=(go)
+    depends+=(go-pie)
 
     # Python
     depends+=(python ipython python-numpy python-scipy python-sympy
@@ -86,7 +86,8 @@ function package()
     depends+=(graphviz blender gimp inkscape fontforge imagemagick openscad)
 
     # office
-    depends+=(libreoffice-fresh tesseract tesseract-data-eng)
+    depends+=(libreoffice-still hunspell hunspell-en_US hunspell-de_DE hunspell-it_IT)
+    depends+=(tesseract tesseract-data-eng)
     depends+=(eom feh evince thunar ghostscript poppler mupdf)
     depends+=(zathura zathura-djvu zathura-pdf-mupdf zathura-ps zathura-cb)
     depends+=(texlive-core pandoc)

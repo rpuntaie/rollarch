@@ -100,7 +100,7 @@ function package()
     depends+=(expat docbook-xml docbook-xsl docbook-mathml tidy)
 
     # Other Languages
-    depends+=(go mono dotnet-sdk skia-sharp ghc pandoc cabal-install stack git-annex lua rust julia
+    depends+=(go-pie mono dotnet-sdk skia-sharp ghc pandoc cabal-install stack git-annex lua rust julia
     gcc-fortran gcc-objc tcl tk ruby ruby-irb fpc ocaml elixir typescript ts-node racket
     dcd dfmt dmd dmd-docs dscanner dtools dub gdc ldc liblphobos libphobos)
 

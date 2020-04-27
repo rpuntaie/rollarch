@@ -111,6 +111,7 @@ fi
 #PKG: rpuntaie-gnome-meta
 #PKG: gnome
 #PKG: gnome-extra
+#PKG: gnome-software-packagekit-plugin
 
 ##else with less packages ##-># and add a # above
 ##PKG: base
