@@ -131,7 +131,7 @@ function package()
     ttf-dejavu gnu-free-fonts xorg-fonts-misc ttf-inconsolata ttf-roboto bdf-unifont)
 
     # other editors/IDE's (apart from vim)
-    depends+=(emacs code atom eclipse-java intellij-idea-community-edition lazarus)
+    depends+=(emacs code atom intellij-idea-community-edition lazarus)
 
     # PHP/Mediawiki
     depends+=(nginx php xdebug mediawiki)
