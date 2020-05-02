@@ -44,7 +44,10 @@ Then at the ``archiso`` prompt:
     cd rollarch
     DSK=/dev/sda USR=u PW=p HST=u106 IP2=1.106 ZONE=Berlin DOTS=mydots bash rollarch
 
-If ``mydots`` is available as local dots install script, ``https://git.io/mydots`` is not tried.
+If ``mydots`` is available local dots install script,
+``https://git.io/mydots`` is not tried.
+``rpuntaie-dots`` are ``rpuntaie-gnome-dots`` are examples for ``mydots`` scripts
+fitting to the according packages under ``pkg``.
 
 Without further arguments after ``rollarch`` (=``installarch``), the packages default to
 ``arch-install-scripts base base-devel devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim zsh``.
@@ -172,7 +175,7 @@ How `local proxy`_ and `custom packages`_ is used by `rollarch`_:
 
   - ``mdaffin-meta``: Transformed from `arch-pkgs`_, to fit to the above guidelines. Also configures, globally.
   - ``rpuntaie-meta``: `dotfiles`_ are installed afterwards. See `include dotfiles`_.
-  - ``rpuntaie-gnome-meta``: For gaming, with a WM for Linux newbies.
+  - ``rpuntaie-gnome-meta``: with gnome desktop.
 
   To build only the one package do, e.g.::
 
@@ -224,7 +227,7 @@ E.g. to also install ``yay`` you could have these two lines::
         #PKG: yay
 
 My dotfiles can be reached via the github short https://git.io/fjVcp.
-``fjVcp`` could be just a local script like ``mydots`` further down.
+``fjVcp`` could be just a local script like ``rpuntaie-dots`` further down.
 The following installs my system with ``dotfiles`` and packages wanted by it.
 
 .. code:: sh

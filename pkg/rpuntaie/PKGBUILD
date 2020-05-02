@@ -211,7 +211,7 @@ function package()
     zathura-pdf-mupdf zathura-ps zathura-cb)
 
     # mail, IRC
-    depends+=(neomutt isync msmtp msmtp-mta notmuch urlscan afew abook alot getmail weechat)
+    depends+=(neomutt isync msmtp msmtp-mta notmuch urlscan afew abook alot weechat)
 
     # dicts
     depends+=(dictd vim-spell-en vim-spell-de vim-spell-it vim-spell-fr vim-spell-ru vim-spell-es)

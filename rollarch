@@ -250,6 +250,7 @@ function rollarch_partition()
   echo "  root: $ROOT"
 
   roll_mkfs &>/dev/null
+  roll_mount
 }
 
 #"key-ID: No" from https://wiki.archlinux.org/index.php/Unofficial_user_repositories
@@ -330,7 +331,7 @@ function rollarch_repos()
   fi
   for arepo in $USRREPOS; do
     if [[ ! $arepo =~ ^http ]]; then #name from Unofficial_user_repositories
-      #arepoconf=$(curl -Ls https://wiki.archlinux.org/index.php/Unofficial_user_repositories | sed -n -e "/<pre>\[$arepo\]/{N;s/<pre>//p}")
+      #arepoconf=$(curl -Ls https://wiki.archlinux.org/index.php/Unofficial_user_repositories | sed -n "/<pre>\[$arepo\]/{N;s/<pre>//p}")
       arepoconf=$(echo "$rollarch_additional_repo_names_possible" | sed -n -e "/^\[$arepo\]/{N;p}")
       #no areposrv, because not wanted in mirrorlist
       #areposrv=${arepoconf/\[$arepo\]/}
@@ -341,6 +342,8 @@ function rollarch_repos()
         arepoconf="[custom]
 SigLevel = Optional TrustAll
 $areposrv"
+      else
+        echo "EE: custom.db not served by $arepo"
       fi
     fi
     if  [[ -n $areposrv ]] && [[ ! $(head $ROLLARCH_MIRRORLIST.org | grep "$areposrv") ]]; then
@@ -475,6 +478,7 @@ function rollarch_main()
   #XXX pacman-key --refresh-keys
 
   rollarch_repos
+  [[ $? == 0 ]] || return 1
 
   rollarch_check_defines
   [[ $? == 0 ]] || return 1
