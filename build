@@ -14,8 +14,8 @@ for package in $PACKAGES; do
     if [[ ! -f "$package/PKGBUILD" ]]; then
         echo "$package/PKGBUILD missing.
 Make sure submodules are there:
-    git submodule update --init --recursive
     git submodule foreach git pull origin master
+    git submodule update --init --recursive
 " >&2
         exit 1
     fi
@@ -36,11 +36,11 @@ for package in $PACKAGES; do
     for pkg in $pkgs
     do
         mv $PWD/$pkg $LOCAL_PATH
-        repo-add "$LOCAL_PATH/$REPO_NAME.db.tar.xz" $LOCAL_PATH/$pkg
+        repo-add "$LOCAL_PATH/$REPO_NAME.db.tar.gz" $LOCAL_PATH/$pkg
     done
     cd -
 done
 
-ln -sf "$REPO_NAME.db.tar.xz" "$LOCAL_PATH/$REPO_NAME.db"
-ln -sf "$REPO_NAME.files.tar.xz" "$LOCAL_PATH/$REPO_NAME.files"
+ln -sf "$REPO_NAME.db.tar.gz" "$LOCAL_PATH/$REPO_NAME.db"
+ln -sf "$REPO_NAME.files.tar.gz" "$LOCAL_PATH/$REPO_NAME.files"
 
