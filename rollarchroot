@@ -93,8 +93,8 @@ function setup_keyboard() {
 function _nic_en_wl() {
   NIC_EN=""
   NIC_WL=""
-  for NIC in $(ip link show|grep " UP \| DOWN \| DORMANT" | sed "s/^[^:]: \([^:]\+\).*/\1/g"); do
-    if [[ ${NIC:0:1} == "e" ]] && [[ "$NIC_EN" == "" ]]; then
+  for NIC in $(ip link show | grep " UP \| DOWN \| DORMANT" | sed "s/^[^:]: \([^:]\+\).*/\1/g"); do
+    if [[ ${NIC:0:1} == "e" ]] && ( [[ "$NIC_EN" == "" ]] || [[ "$(grep '' /sys/class/net/$NIC_EN/carrier)" == "0" ]] ); then
       NIC_EN=$NIC
     elif [[ ${NIC:0:1} == "w" ]] && [[ "$NIC_WL" == "" ]]; then
       NIC_WL=$NIC
@@ -409,7 +409,7 @@ options bonding mode=active-backup miimon=100 primary=$NIC_EN max_bonds=0
 EOF
   _netctl_bond
   fi
-  [[ -n $NIC_NE ]] && _netctl_en
+  [[ -n $NIC_EN ]] && _netctl_en
   [[ -n $NIC_WL ]] && _netctl_wl
   sed -i -e "s/#DNS=.*$/DNS=$IP_DNS/g" -e "s/#FallbackDNS/FallbackDNS/g" -e "s/#LLMNR/LLMNR/g" -e "s/#Multi/Multi/g" $ETCSYSTEMDRESOLVEDCONF
   [[ "$NIC_WL" != "" ]] && _nic_supplicant
