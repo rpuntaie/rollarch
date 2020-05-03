@@ -322,9 +322,9 @@ function rollarch_repos()
   elif [[ ! "$AIP2" =~ ^([0-9]+[.][0-9]+)$ ]] && [[ "$AIP2" != "no" ]]; then
     AIP2="yes"
   fi
-
+  prev=$(date +%s)
   ROLLARCH_MIRRORLIST=${ROLLARCH_MIRRORLIST:-/etc/pacman.d/mirrorlist}
-  mv $ROLLARCH_MIRRORLIST $ROLLARCH_MIRRORLIST.org
+  mv $ROLLARCH_MIRRORLIST $ROLLARCH_MIRRORLIST.$prev
   touch $ROLLARCH_MIRRORLIST
   if [[ "$AIP2" != "no" ]] && [[ "$AIP2" != "yes" ]]; then
     USRREPOS+=" http://192.168.$AIP2:8080"
@@ -346,14 +346,14 @@ $areposrv"
         echo "EE: custom.db not served by $arepo"
       fi
     fi
-    if  [[ -n $areposrv ]] && [[ ! $(head $ROLLARCH_MIRRORLIST.org | grep "$areposrv") ]]; then
+    if  [[ -n $areposrv ]] && [[ ! $(head $ROLLARCH_MIRRORLIST.$prev | grep "$areposrv") ]]; then
       echo "$areposrv" >> $ROLLARCH_MIRRORLIST
     fi
     if [[ -n $arepoconf ]] && [[ ! $(tail $PACMANCONF | grep "$arepo") ]]; then
          echo "$arepoconf" >> $PACMANCONF
     fi
   done
-  cat $ROLLARCH_MIRRORLIST.org >> $ROLLARCH_MIRRORLIST
+  cat $ROLLARCH_MIRRORLIST.$prev >> $ROLLARCH_MIRRORLIST
 }
 
 
