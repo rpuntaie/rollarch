@@ -31,7 +31,9 @@ mkdir -p "$CHROOT"
 for package in $PACKAGES; do
     cd "$package"
     echo $(pwd) && ls PKGBUILD
-    makechrootpkg -cur $CHROOT
+
+    echo "$package..." && makechrootpkg -cur $CHROOT  &> rollarch.log && echo "OK" || echo "FAIL"
+
     pkgs=*.pkg.tar.xz
     for pkg in $pkgs
     do
