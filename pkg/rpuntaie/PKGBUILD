@@ -207,7 +207,7 @@ function package()
     browserpass-firefox browserpass-chromium)
 
     # viewers
-    depends+=(eom feh evince thunar meld ghostscript poppler mupdf zathura zathura-djvu
+    depends+=(eom feh evince nautilus meld ghostscript poppler mupdf zathura zathura-djvu
     zathura-pdf-mupdf zathura-ps zathura-cb)
 
     # mail, IRC
