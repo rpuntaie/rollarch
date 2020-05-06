@@ -243,6 +243,7 @@ function rollarch_partition()
     lvcreate --yes -l 100%VG vg0 -n lv0 &>/dev/null
     ROOT=/dev/vg0/lv0
   fi
+
   roll_find_partitions
   [[ $?==0 ]] || return 1
   echo "  boot: $BOOT"
@@ -267,16 +268,8 @@ Server = https://repo.herecura.be/\$repo/\$arch
 Server = https://pkgbuild.com/~anatolik/quarry/x86_64/
 [blackeagle-pre-community]
 Server = https://repo.herecura.be/\$repo/\$arch
-[city]
-Server = https://pkgbuild.com/~bgyorgy/\$repo/os/\$arch
-[ffy00]
-Server = https://pkgbuild.com/~ffy00/repo
-[maximbaz]
-Server = https://pkgbuild.com/~maximbaz/repo/
 [seblu]
 Server = https://al.seblu.net/\$repo/\$arch
-[sergej-repo]
-Server = http://www.p5n.pp.ru/\$repo/os/\$arch
 [xyne-x86_64]
 Server = https://xyne.archlinux.ca/repos/xyne
 "
@@ -334,6 +327,7 @@ function rollarch_repos()
       #arepoconf=$(curl -Ls https://wiki.archlinux.org/index.php/Unofficial_user_repositories | sed -n "/<pre>\[$arepo\]/{N;s/<pre>//p}")
       arepoconf=$(echo "$rollarch_additional_repo_names_possible" | sed -n -e "/^\[$arepo\]/{N;p}")
       #no areposrv, because not wanted in mirrorlist
+      areposrv=""
       #areposrv=${arepoconf/\[$arepo\]/}
       #areposrv=${areposrv//[[:space:]]/} #Server = https:...
     else
@@ -343,6 +337,7 @@ function rollarch_repos()
 SigLevel = Optional TrustAll
 $areposrv"
       else
+        arepoconf=""
         echo "EE: custom.db not served by $arepo"
       fi
     fi
@@ -430,7 +425,6 @@ DOTSINSTALL=$DOTSINSTALL
 . ./rollarchroot
 setup_all
 "
-
   ln -sf /run/systemd/resolve/stub-resolv.conf $MNT_PNT/etc/resolv.conf &>/dev/null
 }
 

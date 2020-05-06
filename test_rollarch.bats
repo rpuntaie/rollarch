@@ -14,7 +14,7 @@ run_only_test() {
 
 setup()
 {
-    #run_only_test 2
+    #run_only_test 11
     #mock
     function curl() { return 0; }
     export -f curl
@@ -52,10 +52,28 @@ setup()
     export -f ls
     function mkswap() { read choice; echo "$*"; }
     export -f mkswap
+    function swapon() { echo "$*"; }
+    export -f swapon
     function tunefs() { read choice; echo "$*"; }
     export -f tunefs
     function arch-chroot() { echo "$4"; }
     export -f arch-chroot
+    function ln() { echo "$*"; }
+    export -f ln
+    function vgremove() { echo "$*"; }
+    export -f vgremove
+    function lvremove() { echo "$*"; }
+    export -f lvremove
+    function vgcreate() { echo "$*"; }
+    export -f vgcreate
+    function lvcreate() { echo "$*"; }
+    export -f lvcreate
+    function pvremove() { echo "$*"; }
+    export -f pvremove
+    function pvcreate() { echo "$*"; }
+    export -f pvcreate
+    function pvscan() { echo "$*"; }
+    export -f pvscan
     export ROLLARCH_MIRRORLIST=mirrorlist
     export MNT_PNT=/tmp
     mkdir -p /tmp/usr/bin/bash
@@ -142,18 +160,19 @@ teardown()
 #10
 @test "SWAP on" {
     DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on EFI=off run bash ./rollarch
-    [ "${lines[2]}" = "--script /dev/null mklabel msdos" ]
+    # echo "${lines[@]}" >&3
+    [ "${lines[1]}" = "--script /dev/null mklabel msdos" ]
     DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on EFI=on run bash ./rollarch
-    [ "${lines[2]}" = "--script /dev/null mklabel gpt" ]
+    [ "${lines[1]}" = "--script /dev/null mklabel gpt" ]
 }
 
 #11
 @test "CHROOT preparation" {
     DSK=/dev/null USR=y PW=z HST=u ZONE=Berlin IP2=1.106 SWAP=on EFI=off run bash ./rollarch
-    #echo "#${lines[8]}" >&3
+    #echo "#${lines[@]}" >&3
     [ "$status" -eq 0 ]
-    [ "${lines[14]:0:4}" = "DSK=" ]
-    [ "${lines[15]:0:4}" = "USR=" ]
+    [ "${lines[13]:0:4}" = "DSK=" ]
+    [ "${lines[14]:0:4}" = "USR=" ]
 }
 
 
