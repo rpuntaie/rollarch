@@ -66,3 +66,7 @@
 	path = pkg/mkosi
 	url = https://aur.archlinux.org/mkosi-git
 	ignore = dirty
+[submodule "pkg/python-astropy-helpers"]
+	path = pkg/python-astropy-helpers
+	url = https://aur.archlinux.org/python-astropy-helpers.git
+	ignore = dirty
