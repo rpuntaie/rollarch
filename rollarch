@@ -8,7 +8,7 @@
 # test5: DSK=/dev/sda USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 KM=us CL=99 ZONE=Vienna ./rollarch rpuntaie-min-meta
 # test6: DSK=/dev/sda USR=u PW=p HST=u121 IP2=1.121 DOTS=mydots ./rollarch rpuntaie-gnome-meta
 
-ROLLARCH_VERSION='0.0.2'
+ROLLARCH_VERSION='0.0.3'
 
 function rollarch_usage() 
 {
