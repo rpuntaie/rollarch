@@ -206,7 +206,8 @@ function package()
 
     # browsers
     depends+=(firefox chromium links qutebrowser w3m browserpass
-    browserpass-firefox browserpass-chromium)
+    browserpass-firefox browserpass-chromium
+    tor torbrowser-launcher)
 
     # viewers
     depends+=(eom feh evince nautilus kdiff3 ghostscript poppler mupdf zathura zathura-djvu
