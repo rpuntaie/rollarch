@@ -495,7 +495,7 @@ default arch
 EOF
     bootctl install
   else
-    HOOKS='base udev autodetect modconf block lvm2 filesystems keyboard fsck'
+    HOOKS='base udev autodetect modconf block lvm2 resume filesystems keyboard fsck'
     grub-install --target=i386-pc --recheck $DSK
     grub-mkconfig -o "/boot/grub/grub.cfg"
   fi

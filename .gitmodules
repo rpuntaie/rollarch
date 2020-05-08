@@ -2,10 +2,6 @@
 	path = pkg/yay
 	url = https://aur.archlinux.org/yay
 	ignore = dirty
-[submodule "pkg/plantuml"]
-	path = pkg/plantuml
-	url = https://aur.archlinux.org/plantuml
-	ignore = dirty
 [submodule "pkg/wordnet"]
 	path = pkg/wordnet
 	url = https://aur.archlinux.org/wordnet

@@ -87,7 +87,8 @@ function package()
     python-flask-socketio python-flask-sphinx-themes
     python-flask-sqlalchemy python-flask-talisman python-flask-wtf python-black
     python-pybtex python-pybtex-docutils python-service_identity
-    python-aws-sam-translator python-aws-xray-sdk python-pynvim python-inflection)
+    python-aws-sam-translator python-aws-xray-sdk python-pynvim python-inflection
+    python-srcinfo)
 
     # DB
     depends+=(sqlite mariadb redis)
@@ -183,11 +184,12 @@ function package()
     # graphics
     depends+=(graphviz vtk mayavi opencascade
     opencv opencv-samples povray
-    librecad blender gimp krita inkscape
+    librecad blender gimp krita inkscape ktikz
     fontforge imagemagick imagemagick-doc openscad)
 
     # office
     depends+=(libreoffice-fresh
+    plantuml
     tesseract # ocr
     tesseract-data-eng)
 
@@ -207,8 +209,8 @@ function package()
     browserpass-firefox browserpass-chromium)
 
     # viewers
-    depends+=(eom feh evince nautilus meld ghostscript poppler mupdf zathura zathura-djvu
-    zathura-pdf-mupdf zathura-ps zathura-cb)
+    depends+=(eom feh evince nautilus kdiff3 ghostscript poppler mupdf zathura zathura-djvu
+    zathura-pdf-mupdf zathura-ps zthura-cb)
 
     # mail, IRC
     depends+=(neomutt isync msmtp msmtp-mta notmuch urlscan afew abook alot weechat)
@@ -228,7 +230,7 @@ function package()
     depends+=(task ledger)
 
     # AUR packages
-    depends+=(yay mimeo plantuml mkosi-git rstudio-desktop-bin texlive-localmanager-git waf-git wordnet-cli urxvt-vim-scrollback-git
+    depends+=(yay mimeo mkosi-git rstudio-desktop-bin waf-git wordnet-cli urxvt-vim-scrollback-git
     powerline-console-fonts psysh leiningen planck-git cling-git erfa python-astropy)
 
     # # need multilib

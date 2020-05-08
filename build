@@ -1,9 +1,12 @@
 #!/bin/bash
 
-#rm -rf "tmp"
-
 set -uo pipefail
 trap 's=$?; echo "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
+
+if ! command -v ccm >/dev/null 2>&1; then
+  echo -e "ccm required. https://github.com/graysky2/clean-chroot-manager"
+  exit 1
+fi
 
 LOCAL_PATH=/var/cache/pacman/pkg
 REPO_NAME=custom
@@ -12,35 +15,86 @@ PACKAGES=${@:-pkg/*}
 
 for package in $PACKAGES; do
     if [[ ! -f "$package/PKGBUILD" ]]; then
-        echo "$package/PKGBUILD missing.
+        echo -e "$package/PKGBUILD missing.
 Make sure submodules are there:
-    git submodule foreach git pull origin master
+    # first time
     git submodule update --init --recursive
+    # then
+    git pull --recurse-submodules
 " >&2
         exit 1
     fi
 done
 
-CHROOT="$PWD/tmp"
+get_pkg_arch() {
+    while (( $# )); do
+        if [[ "$1" == "x86_64" ]] || [[ "$1" == "any" ]]; then
+            echo "$1"
+            return
+        fi
+        shift
+    done
+}
 
-mkdir -p "$LOCAL_PATH"
-mkdir -p "$CHROOT"
+ROLLARCH="$PWD"
 
-[[ -d "$CHROOT/root" ]] || mkarchroot -C /etc/pacman.conf "$CHROOT/root" base base-devel git unzip meson cmake clojure
+#additional build tools
+#XXX better would be to accept additional packages in ccm
+if [[ -z "$SUDO_USER" ]]; then
+  if logname &>/dev/null; then
+    USER=$(logname)
+  fi
+elif [[ "$SUDO_USER" = "root" ]]; then
+  echo -e "Cannot determine your username so exiting."
+  exit 1
+else
+  USER="$SUDO_USER"
+fi
+HOMEDIR="$(getent passwd "$USER" | cut -d: -f6)"
+source $HOMEDIR/.config/clean-chroot-manager.conf
+if [[ ! -d "$CHROOTPATH64/root" ]]; then
+    ccm c &> rollarch.log
+fi
+if [[ -d "$CHROOTPATH64/root" ]]; then
+    for tool in git unzip meson cmake clojure; do
+        if [[ ! -x "$CHROOTPATH64/root/usr/bin/$tool" ]]; then
+            pacstrap "$CHROOTPATH64/root" $tool
+        fi
+    done
+fi
 
 for package in $PACKAGES; do
+
     cd "$package"
-    echo $(pwd) && ls PKGBUILD
+    pkgdr="$(pwd)"
 
-    echo "$package..." && makechrootpkg -cur $CHROOT  &> rollarch.log && echo "OK" || echo "FAIL"
-
-    pkgs=*.pkg.tar.xz
-    for pkg in $pkgs
-    do
-        mv $PWD/$pkg $LOCAL_PATH
-        repo-add "$LOCAL_PATH/$REPO_NAME.db.tar.xz" $LOCAL_PATH/$pkg
+    dps="$(source PKGBUILD && echo "${makedepends[@]} ${depends[@]}")"
+    for adep in $dps; do
+        if [[ -d "$ROLLARCH/pkg/$adep" ]]; then
+            echo "first doing dependency $adep"
+            cd $ROLLARCH
+            ./build "pkg/$adep"
+            cd $pkgdr
+        fi
     done
-    cd -
+
+    echo "doing $pkgdr"
+    psuffix="$(source PKGBUILD && echo "-$pkgver-$pkgrel-$(get_pkg_arch ${arch[@]}).pkg.tar.*")"
+    pkgs=*$psuffix
+    if ! ls *$psuffix 1> /dev/null 2>&1; then
+        echo "$package..." && ccm s &> rollarch.log && echo "OK" || echo "FAIL"
+    else
+        echo *$psuffix
+    fi
+    for pkgfile in *$psuffix; do
+        if [[ -f "$pkgfile" ]]; then
+            cp $pkgfile $LOCAL_PATH
+            repo-add "$LOCAL_PATH/$REPO_NAME.db.tar.xz" $LOCAL_PATH/$pkgfile
+        fi
+    done
+
+    cd $ROLLARCH
+
 done
 
 ln -sf "$REPO_NAME.db.tar.xz" "$LOCAL_PATH/$REPO_NAME.db"
