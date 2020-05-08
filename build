@@ -52,6 +52,11 @@ else
 fi
 HOMEDIR="$(getent passwd "$USER" | cut -d: -f6)"
 source $HOMEDIR/.config/clean-chroot-manager.conf
+if cat /etc/fstab | grep $CHROOTPATH64 &> /dev/null; then
+  if ! mount | grep $CHROOTPATH64 &> /dev/null; then
+    mount $CHROOTPATH64
+  fi
+fi
 if [[ ! -d "$CHROOTPATH64/root" ]]; then
     ccm c &> rollarch.log
 fi
