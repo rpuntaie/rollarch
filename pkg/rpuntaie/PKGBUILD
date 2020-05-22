@@ -27,13 +27,14 @@ function package()
     # filesystems
     depends+=(exfat-utils dosfstools f2fs-tools nfs-utils)
     # system tools
+    depends+=(cronie)
     depends+=(acpi hwinfo samba wpa_supplicant ifenslave ifplugd iw ppp ntp)
     depends+=(lsof bind-tools mtr socat htop iotop openbsd-netcat strace)
     # vcs
     depends+=(git mercurial subversion)
     # shell tools (ag=the_silver_searcher)
     depends+=(stow ripgrep fd bc tmux wget fzf udisks2 unzip bat ncdu jshon)
-    depends+=(the_silver_searcher rtorrent tree p7zip ranger file-roller mlocate rmlint)
+    depends+=(the_silver_searcher rtorrent qbittorrent tree p7zip ranger file-roller mlocate rmlint)
     # arch
     depends+=(arch-install-scripts asp devtools pacman-contrib namcap bash-bats)
     # android
@@ -168,7 +169,7 @@ function package()
     depends+=(espeak-ng)
 
     # video, media
-    depends+=(vlc ffmpeg mpv kodi)
+    depends+=(vlc ffmpeg mpv kodi obs-studio)
 
     # embedded, virtualization
     depends+=(qemu qemu-arch-extra ovmf libvirt virt-manager picocom ddrescue)
