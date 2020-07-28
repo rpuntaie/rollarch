@@ -18,7 +18,7 @@ function package()
         e2fsprogs file filesystem findutils gawk gcc-libs gettext glibc grep
         gzip inetutils iproute2 iputils jfsutils less licenses linux linux-headers
         linux-firmware logrotate lvm2 man-db man-pages mdadm nano netctl pacman
-        pciutils perl procps-ng psmisc reiserfsprogs s-nail sed shadow
+        pciutils perl cpanminus procps-ng psmisc reiserfsprogs s-nail sed shadow
         sysfsutils systemd-sysvcompat tar texinfo usbutils util-linux vi which
         xfsprogs autoconf automake binutils bison fakeroot flex gcc groff
         libtool m4 make patch pkgconf sudo systemd)
@@ -29,7 +29,7 @@ function package()
     # system tools
     depends+=(cronie)
     depends+=(acpi hwinfo samba wpa_supplicant ifenslave ifplugd iw ppp ntp)
-    depends+=(lsof bind-tools mtr socat htop iotop openbsd-netcat strace)
+    depends+=(lsof bind-tools mtr socat htop iotop openbsd-netcat strace tcpdump)
     # vcs
     depends+=(git mercurial subversion)
     # shell tools (ag=the_silver_searcher)
@@ -38,7 +38,7 @@ function package()
     # arch
     depends+=(arch-install-scripts asp devtools pacman-contrib namcap bash-bats)
     # android
-    depends+=(mtpfs android-file-transfer)
+    depends+=(gmtp mtpfs android-file-transfer)
     # security
     depends+=(dialog openssh keybase kbfs keybase-gui qrencode gnupg pass)
     # powerline
@@ -92,20 +92,19 @@ function package()
     python-srcinfo)
 
     # DB
-    depends+=(sqlite mariadb redis)
+    depends+=(sqlite mariadb postgresql redis)
 
-    # Java/JS
+    # Java/JS/JVM
     depends+=(jdk-openjdk yarn npm nodejs coffeescript asar prettier scala sbt
     gradle kotlin clojure groovy ant maven jenkins)
 
-    # html/xml
-    depends+=(expat docbook-xml docbook-xsl docbook-mathml tidy)
+    # haskell
+    depends+=(ghc cabal-install stack pandoc hoogle xmonad xmonad-contrib xmonad-utils)
 
     # Other Languages
-    depends+=(go-pie mono dotnet-sdk skia-sharp
-    ghc cabal-install stack pandoc git-annex hoogle
+    depends+=(go go-tools mono dotnet-sdk skia-sharp
     lua rust julia gcc-fortran gcc-objc tcl tk ruby ruby-irb fpc
-    ocaml elixir typescript ts-node racket
+    ocaml elixir typescript ts-node racket guile
     dcd dfmt dmd dmd-docs dscanner dtools dub gdc ldc liblphobos libphobos)
 
     # drivers and utilities
@@ -124,8 +123,8 @@ function package()
     depends+=(ibus-libpinyin ibus-m17n)
     depends+=(xdg-user-dirs openssh-askpass glfw-x11)
 
-    # window manager
-    depends+=(xdotool wmctrl xmonad xmonad-contrib xmonad-utils i3-wm openbox
+    # other window managers
+    depends+=(xdotool wmctrl i3-wm openbox
     xterm alacritty rxvt-unicode urxvt-perls xorg-xinit dmenu gmrun scrot slock
     libnotify dunst xsel xclip dex)
 
@@ -137,8 +136,9 @@ function package()
     # other editors/IDE's (apart from vim)
     depends+=(emacs code atom intellij-idea-community-edition lazarus)
 
-    # PHP/Mediawiki
-    depends+=(nginx php xdebug mediawiki)
+    # PHP
+    depends+=(nginx php xdebug)
+    #depends+=(mediawiki)
 
     # bluetooth
     depends+=(bluez bluez-utils)
@@ -168,7 +168,7 @@ function package()
     zita-ajbridge zita-at1 zita-bls1 zita-dc1 zita-dpl1 zita-lrx zita-mu1
     zita-njbridge zita-rev1 zynaddsubfx)
     # speach synth
-    depends+=(espeak-ng)
+    depends+=(espeak espeak-ng)
 
     # video, media
     depends+=(vlc ffmpeg mpv kodi obs-studio)
@@ -196,6 +196,9 @@ function package()
     tesseract # ocr
     tesseract-data-eng)
 
+    # html/xml
+    depends+=(expat docbook-xml docbook-xsl docbook-mathml tidy)
+
     # texlive-most
     depends+=(texlive-bibtexextra texlive-core texlive-fontsextra
     texlive-formatsextra texlive-games texlive-humanities texlive-latexextra
@@ -221,6 +224,7 @@ function package()
 
     # dicts
     depends+=(dictd vim-spell-en vim-spell-de vim-spell-it vim-spell-fr vim-spell-ru vim-spell-es)
+    depends+=(translate-shell)
 
     # maths
     depends+=(eigen openblas octave sagemath r geogebra root gnuplot coq glpk)
