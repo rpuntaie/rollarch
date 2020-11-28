@@ -27,7 +27,7 @@ function package()
     # filesystems
     depends+=(exfat-utils dosfstools f2fs-tools nfs-utils)
     # system tools
-    depends+=(cronie)
+    depends+=(cronie inotify-tools)
     depends+=(acpi hwinfo samba wpa_supplicant ifenslave ifplugd iw ppp ntp)
     depends+=(lsof bind-tools mtr socat htop iotop openbsd-netcat strace tcpdump)
     # vcs
@@ -118,7 +118,7 @@ function package()
     xorg-sessreg xorg-setxkbmap xorg-smproxy xorg-x11perf xorg-xauth
     xorg-xbacklight xorg-xcmsdb xorg-xcursorgen xorg-xdpyinfo xorg-xdriinfo
     xorg-xev xorg-xgamma xorg-xhost xorg-xinput xorg-xkbcomp xorg-xkbevd
-    xorg-xkbutils xorg-xkill xorg-xlsatoms xorg-xlsclients xorg-xmodmap
+    xorg-xkbutils xorg-xkill xorg-xlsfonts xorg-xlsatoms xorg-xlsclients xorg-xmodmap
     xorg-xpr xorg-xprop xorg-xrandr xorg-xrdb xorg-xrefresh xorg-xset
     xorg-xsetroot xorg-xvinfo xorg-xwd xorg-xwininfo xorg-xwud)
     depends+=(ibus-libpinyin ibus-m17n)
