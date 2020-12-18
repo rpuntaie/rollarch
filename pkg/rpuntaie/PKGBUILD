@@ -54,6 +54,9 @@ function package()
     # C/C++
     depends+=(cmake ninja meson cscope ctags llvm clang gdb lldb boost grpc)
 
+    # tensorflow
+    depends+=(tensorflow,tensorboard)
+
     # Python
     depends+=(python pypy3 ipython jupyter cython twine wammu xonsh yapf autopep8 python-ipykernel ansible
     python-gobject python-pyqt5 python-numpy python-numpydoc python-scipy python-ipdb
@@ -172,7 +175,7 @@ function package()
     depends+=(espeak espeak-ng)
 
     # video, media
-    depends+=(vlc ffmpeg mpv kodi obs-studio)
+    depends+=(vlc ffmpeg mpv kodi obs-studio cmus)
 
     # embedded, virtualization
     depends+=(qemu qemu-arch-extra ovmf libvirt virt-manager picocom ddrescue)
