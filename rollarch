@@ -8,7 +8,8 @@
 # test5: DSK=/dev/sda USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 KM=us CL=99 ZONE=Vienna ./rollarch rpuntaie-min-meta
 # test6: DSK=/dev/sda USR=u PW=p HST=u121 IP2=1.121 DOTS=mydots ./rollarch rpuntaie-gnome-meta
 
-ROLLARCH_VERSION='0.0.3'
+ROLLARCH_VERSION='0.0.4'
+ROLLARCH_BASE='arch-install-scripts base base-devel linux linux-firmware mkinitcpio lvm2 devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim zsh'
 
 function rollarch_usage() 
 {
@@ -26,7 +27,7 @@ function rollarch_usage()
   echo "  DSK=/dev/sda USR=A PW=B HST=C IP2=1.106 ZONE=Berlin bash installarch"
   echo
   echo "All parameters following 'installarch' are Arch or custom packages."
-  echo "Default: base base-devel devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim"
+  echo "Default: $ROLLARCH_BASE"
   echo
   echo "If the custom repo's name is 'custom',"
   echo "'AIP2=x.y' for 192.168.x.y is the only additional parameter needed.".
@@ -298,15 +299,18 @@ function rollarch_repos()
   PACMANCONF=${PACMANCONF:-/etc/pacman.conf}
   if [[ "$DOTS" != "" ]]; then
     if [[ "$DOTS" =~ ^https:// ]] || [[ "$DOTS" =~ ^file:/// ]]; then
-      curl -OLs $DOTS
-      DOTS=${DOTS##*/}
+      DOTS_LOCAL=${DOTS##*/}
+      curl -Ls $DOTS -o ~/$DOTS_LOCAL
     elif [[ ! -f $DOTS ]]; then
-      curl -OLs https://git.io/$DOTS
+      DOTS_LOCAL=$DOTS
+      curl -Ls https://git.io/$DOTS -o ~/$DOTS_LOCAL
     fi
-    if [[ -f "$DOTS" ]]; then
-      eval $(sed -n -e "s/^#DFN: *//p" $DOTS)
-      USRPKGS=$(sed -n -e "s/^#PKG: *//p" $DOTS)
-      USRREPOS=$(sed -n -e "s/^#REPO: *//p" $DOTS)
+    if [[ -f "$DOTS" ]] || [[ -f "~/$DOTS_LOCAL" ]] ; then
+      DOTS_LOCAL=${DOTS##*/}
+      cp $DOTS ~/$DOTS_LOCAL
+      eval $(sed -n -e "s/^#DFN: *//p" ~/$DOTS_LOCAL)
+      USRPKGS=$(sed -n -e "s/^#PKG: *//p" ~/$DOTS_LOCAL)
+      USRREPOS=$(sed -n -e "s/^#REPO: *//p" ~/$DOTS_LOCAL)
     fi
   fi
 
@@ -361,7 +365,7 @@ function rollarch_packstrap()
     USRPKGS="$USRPKGS $@"
     pacstrap $MNT_PNT $GRUB $USRPKGS
   else
-    pacstrap $MNT_PNT $GRUB arch-install-scripts base base-devel devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim zsh $USRPKGS
+    pacstrap $MNT_PNT $GRUB $ROLLARCH_BASE $USRPKGS
   fi
 
   mkdir -p $MNT_PNT/etc
@@ -396,9 +400,9 @@ function rollarch_chroot()
     return 1
   fi
 
-  if [[ "$DOTS" != "" ]]; then
-    cp $DOTS "$MNT_PNT/$DOTS"
-    DOTSINSTALL='/$DOTS'
+  if [[ "$DOTS_LOCAL" != "" ]]; then
+    cp ~/$DOTS_LOCAL "$MNT_PNT/$DOTS"
+    DOTSINSTALL='/$DOTS_LOCAL'
   else
     DOTSINSTALL=
   fi

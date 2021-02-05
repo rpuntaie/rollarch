@@ -64,7 +64,7 @@ Parameters
 
 :USR: main user of the system
 
-:PW: password of main user
+:PW: password of main user (will ask if omitted)
 
 :HST: host name of the system
 

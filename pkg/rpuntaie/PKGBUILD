@@ -36,7 +36,7 @@ function package()
     depends+=(stow ripgrep fd bc tmux wget fzf udisks2 unzip unrar bat ncdu jshon)
     depends+=(the_silver_searcher rtorrent qbittorrent tree p7zip ranger file-roller mlocate rmlint)
     # arch
-    depends+=(arch-install-scripts asp devtools pacman-contrib namcap bash-bats)
+    depends+=(arch-install-scripts asp devtools pacman-contrib namcap bash-bats bash-completion)
     # android
     depends+=(gmtp mtpfs android-file-transfer)
     # security
@@ -58,7 +58,7 @@ function package()
     depends+=(tensorflow,tensorboard,bazel)
 
     # Python
-    depends+=(python pypy3 ipython jupyter cython twine wammu xonsh yapf autopep8 python-ipykernel ansible
+    depends+=(python pypy3 ipython jupyter cython twine xonsh yapf autopep8 python-ipykernel ansible
     python-gobject python-pyqt5 python-numpy python-numpydoc python-scipy python-ipdb python-sympy
     python-tensorflow python-tensorflow-estimator python-tensorflow-opt python-tensorflow-serving-api
     python-h5py python-sip python-cffi python-cairocffi
@@ -69,14 +69,14 @@ function package()
     python-pytest-cov python-setuptools python-wheel python-snowballstemmer
     python-virtualenv python-yaml python-django python-tornado python-tox
     python-pandas python-pandas-datareader python-cvxopt python-webtest
-    python-sphinx python-sphinx-alabaster-theme python-sphinx-testing
-    python-sphinx_rtd_theme python-sphinxcontrib-applehelp python-gitpython
-    python-pathspec python-pudb python-grpcio gunicorn uwsgi python-redis
-    python-sphinxcontrib-bibtex python-sphinxcontrib-devhelp
-    python-sphinxcontrib-htmlhelp python-sphinxcontrib-jsmath
-    python-sphinxcontrib-newsfeed python-sphinxcontrib-qthelp
-    python-sphinxcontrib-seqdiag python-sphinxcontrib-serializinghtml
-    python-sphinxcontrib-websupport python-lxml python-lxml-docs python-pyx
+    python-sphinx python-sphinx-alabaster-theme python-sphinx-testing python-gitpython
+    python-sphinx_rtd_theme python-pathspec python-pudb python-grpcio gunicorn uwsgi python-redis
+    python-sphinxcontrib-applehelp python-sphinxcontrib-autoprogram
+    python-sphinxcontrib-bibtex python-sphinxcontrib-blockdiag python-sphinxcontrib-devhelp
+    python-sphinxcontrib-htmlhelp python-sphinxcontrib-jsmath python-sphinxcontrib-newsfeed
+    python-sphinxcontrib-qthelp python-sphinxcontrib-seqdiag python-sphinxcontrib-serializinghtml
+    python-sphinxcontrib-trio
+    python-lxml python-lxml-docs python-pyx
     python-dateutil python-decorator python-pyparsing python-nltk python-pycparser
     python-pycurl python-requests python-twisted python-urllib3 python-urllib3-doc
     python-cairosvg python-click python-click-log python-click-repl
@@ -103,7 +103,7 @@ function package()
     gradle kotlin clojure groovy ant maven jenkins)
 
     # haskell
-    depends+=(ghc cabal-install stack pandoc hoogle xmonad xmonad-contrib xmonad-utils)
+    depends+=(ghc cabal-install stack hoogle xmonad xmonad-contrib xmonad-utils)
     depends+=(haskell-shake)
 
     # Other Languages
@@ -118,7 +118,7 @@ function package()
     # Xorg and utilities
     # xorg-apps
     depends+=(xorg-server arandr)
-    depends+=(xorg-bdftopcf xorg-iceauth xorg-luit xorg-mkfontscale
+    depends+=(xorg-bdftopcf xorg-iceauth xorg-mkfontscale
     xorg-sessreg xorg-setxkbmap xorg-smproxy xorg-x11perf xorg-xauth
     xorg-xbacklight xorg-xcmsdb xorg-xcursorgen xorg-xdpyinfo xorg-xdriinfo
     xorg-xev xorg-xgamma xorg-xhost xorg-xinput xorg-xkbcomp xorg-xkbevd
@@ -203,7 +203,7 @@ function package()
     tesseract # ocr
     tesseract-data-eng)
 
-    # html/xml
+    depends+=(pandoc asciidoc)
     depends+=(expat docbook-xml docbook-xsl docbook-mathml tidy)
 
     # texlive-most
@@ -224,7 +224,7 @@ function package()
 
     # viewers
     depends+=(eom feh evince nautilus kdiff3 ghostscript poppler mupdf zathura zathura-djvu
-    zathura-pdf-mupdf zathura-ps zthura-cb mcomix catfish)
+    zathura-pdf-mupdf zathura-ps mcomix catfish)
 
     # mail, IRC
     depends+=(neomutt isync msmtp msmtp-mta notmuch urlscan afew abook alot weechat)
@@ -244,9 +244,9 @@ function package()
     # organize, finance
     depends+=(task ledger)
 
-    # AUR packages
-    depends+=(yay mimeo mkosi-git rstudio-desktop-bin waf-git wordnet-cli urxvt-vim-scrollback-git
-    powerline-console-fonts psysh leiningen planck-git cling-git erfa python-astropy)
+    # # AUR packages
+    # depends+=(yay mimeo mkosi-git rstudio-desktop-bin waf-git wordnet-cli urxvt-vim-scrollback-git
+    # powerline-console-fonts psysh leiningen planck-git cling-git erfa python-astropy)
 
     # # need multilib
     # openmodelica-git # modelica language

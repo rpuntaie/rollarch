@@ -2,9 +2,9 @@
 
 function rollarchrootusage() {
   echo "Required defines:"
-  echo "DSK USR PW HST ZONE IP2 AIP2 BOOT SWAP ROOT KM"
+  echo "DSK USR PW HST ZONE IP2 AIP2 BOOT SWAP ROOT"
   echo "Optional:"
-  echo "CL LA_NG USRPKGS DOTSINSTALL WLIP2 SSID PSK"
+  echo "KM CL LA_NG USRPKGS DOTSINSTALL WLIP2 SSID PSK"
   echo ""
   echo "Functions for after arch-chroot"
   echo ""
@@ -69,20 +69,20 @@ function setup_locale() {
 
 function setup_keyboard() {
   VCONSOLECONF=${VCONSOLECONF:-/etc/vconsole.conf}
+  KM=${KM:-us}
+  CL=${CL:-99}
   local KBD=$(find /usr/share/kbd/keymaps/i386 -iname "$KM.map*")
   cd "${KBD%/*}"
   KBD=${KBD##*/}
   KBD=${KBD%%.*}
   cp $KBD.map.gz rollarch$KBD.map.gz
-  if [[ -n $CL ]]; then
-    #Win: 125 on VConsole, for X: `xmodmap -e "keysym Super_L = Caps_Lock"
-    #Print: 99 on VConsole, for X: `xmodmap -e "keysym Print = Caps_Lock"
-    gunzip rollarch$KBD.map.gz
-    sed -i -e "s/keycode *58 *= *Caps_Lock/keycode 58 = Escape/g" rollarch$KBD.map
-    echo "keycode $CL = Caps_Lock" >> rollarch$KBD.map
-    echo "# modified: 58 = Escape and $CL = Caps_Lock" >> rollarch$KBD.map
-    gzip rollarch$KBD.map
-  fi
+  #Win: 125 on VConsole, for X: `xmodmap -e "keysym Super_L = Caps_Lock"
+  #Print: 99 on VConsole, for X: `xmodmap -e "keysym Print = Caps_Lock"
+  gunzip rollarch$KBD.map.gz
+  sed -i -e "s/keycode *58 *= *Caps_Lock/keycode 58 = Escape/g" rollarch$KBD.map
+  echo "keycode $CL = Caps_Lock" >> rollarch$KBD.map
+  echo "# modified: 58 = Escape and $CL = Caps_Lock" >> rollarch$KBD.map
+  gzip rollarch$KBD.map
   loadkeys rollarch$KBD
   localectl set-keymap rollarch$KBD
   if [[ ! -f "$VCONSOLECONF" ]]; then
@@ -462,6 +462,7 @@ EOF
 function setup_boot() {
   EFI=${EFI:-$(test -e /sys/firmware/efi && echo on || echo off)}
   LOADERENTRY=${LOADERENTRY:-/boot/loader/entries/arch.conf}
+  ROOT=${ROOT:-$(fdisk /dev/sda -l | grep "Linux filesystem" | cut -d " " -f 1)}
   #microcode used by systemd-boot as well as grub (automatically)
   UCODE=''
   if [[ "$(cat /proc/cpuinfo | grep GenuineIntel)" != "" ]]; then
