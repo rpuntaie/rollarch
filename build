@@ -50,10 +50,10 @@ elif [[ "$SUDO_USER" = "root" ]]; then
 else
   USER="$SUDO_USER"
 fi
-HOMEDIR="$(getent passwd "$USER" | cut -d: -f6)"
-if [[ -f $XDG_CONFIG_HOME/clean-chroot-manager.conf ]]; then
+if [[ -f "$XDG_CONFIG_HOME/clean-chroot-manager.conf" ]]; then
     source $XDG_CONFIG_HOME/clean-chroot-manager.conf
 else
+    HOMEDIR="$(getent passwd "$USER" | cut -d: -f6)"
     source $HOMEDIR/.config/clean-chroot-manager.conf
 fi
 if cat /etc/fstab | grep $CHROOTPATH64 &> /dev/null; then
