@@ -3,7 +3,7 @@
 set -uo pipefail
 trap 's=$?; echo "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
 
-if ! command -v ccm >/dev/null 2>&1; then
+if ! command -v ccm64 >/dev/null 2>&1; then
   echo -e "ccm required. https://github.com/graysky2/clean-chroot-manager"
   exit 1
 fi
@@ -51,14 +51,18 @@ else
   USER="$SUDO_USER"
 fi
 HOMEDIR="$(getent passwd "$USER" | cut -d: -f6)"
-source $HOMEDIR/.config/clean-chroot-manager.conf
+if [[ -f $XDG_CONFIG_HOME/clean-chroot-manager.conf ]]; then
+    source $XDG_CONFIG_HOME/clean-chroot-manager.conf
+else
+    source $HOMEDIR/.config/clean-chroot-manager.conf
+fi
 if cat /etc/fstab | grep $CHROOTPATH64 &> /dev/null; then
   if ! mount | grep $CHROOTPATH64 &> /dev/null; then
     mount $CHROOTPATH64
   fi
 fi
 if [[ ! -d "$CHROOTPATH64/root" ]]; then
-    ccm c &> rollarch.log
+    ccm64 c &> rollarch.log
 fi
 if [[ -d "$CHROOTPATH64/root" ]]; then
     for tool in git unzip meson cmake clojure; do
@@ -87,7 +91,7 @@ for package in $PACKAGES; do
     psuffix="$(source PKGBUILD && echo "-$pkgver-$pkgrel-$(get_pkg_arch ${arch[@]}).pkg.tar.*")"
     pkgs=*$psuffix
     if ! ls *$psuffix 1> /dev/null 2>&1; then
-        echo "$package..." && ccm s &> rollarch.log && echo "OK" || echo "FAIL"
+        echo "$package..." && ccm64 s &> rollarch.log && echo "OK" || echo "FAIL"
     else
         echo *$psuffix
     fi
