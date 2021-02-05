@@ -56,6 +56,9 @@ if [[ -f "$HOMEDIR/.local/etc/clean-chroot-manager.conf" ]]; then
 else
     source $HOMEDIR/.config/clean-chroot-manager.conf
 fi
+# in /etc/fstab add setting 10G
+# tmpfs   /scratch/.chroot64    tmpfs   nodev,user,noauto,size=10G  0   0
+CHROOTPATH64="/scratch/.chroot64"
 if cat /etc/fstab | grep $CHROOTPATH64 &> /dev/null; then
   if ! mount | grep $CHROOTPATH64 &> /dev/null; then
     mount $CHROOTPATH64
