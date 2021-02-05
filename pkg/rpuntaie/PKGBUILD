@@ -13,7 +13,7 @@ license=(MIT)
 
 function package()
 {
-    # base, base-devel without duplication
+    # base base-devel without duplication
     depends=(bash bzip2 coreutils cryptsetup device-mapper dhcpcd diffutils
         e2fsprogs file filesystem findutils gawk gcc-libs gettext glibc grep
         gzip inetutils iproute2 iputils jfsutils less licenses linux linux-headers
@@ -43,7 +43,7 @@ function package()
     depends+=(dialog openssh keybase kbfs keybase-gui qrencode gnupg pass)
     # powerline
     depends+=(powerline powerline-fonts awesome-terminal-fonts)
-    # zsh (to configure via dotfiles, or install grml-zsh-config afterwards)
+    # zsh (to configure via dotfiles or install grml-zsh-config afterwards)
     depends+=(zsh zsh-syntax-highlighting zsh-autosuggestions zsh-completions
     zsh-history-substring-search)
     # editor nvim vor CLI and gvim for GUI (see below)
@@ -55,7 +55,7 @@ function package()
     depends+=(cmake ninja meson cscope ctags llvm clang gdb lldb boost grpc)
 
     # tensorflow
-    depends+=(tensorflow,tensorboard,bazel)
+    depends+=(tensorflow tensorboard bazel)
 
     # Python
     depends+=(python pypy3 ipython jupyter cython twine xonsh yapf autopep8 python-ipykernel ansible
@@ -175,10 +175,10 @@ function package()
     # speach synth
     depends+=(espeak espeak-ng)
 
-    # video, media
+    # video media
     depends+=(vlc ffmpeg mpv kodi obs-studio cmus)
 
-    # embedded, virtualization
+    # embedded virtualization
     depends+=(qemu qemu-arch-extra ovmf libvirt virt-manager picocom ddrescue)
     depends+=(virtualbox-guest-utils virtualbox-host-modules-arch virtualbox vagrant)
     depends+=(docker docker-compose kubectl dnsmasq)
@@ -226,7 +226,7 @@ function package()
     depends+=(eom feh evince nautilus kdiff3 ghostscript poppler mupdf zathura zathura-djvu
     zathura-pdf-mupdf zathura-ps mcomix catfish)
 
-    # mail, IRC
+    # mail IRC
     depends+=(neomutt isync msmtp msmtp-mta notmuch urlscan afew abook alot weechat)
 
     # dicts
@@ -241,7 +241,7 @@ function package()
     # science
     depends+=(hdf5 cfitsio pymol wcslib)
 
-    # organize, finance
+    # organize finance
     depends+=(task ledger)
 
     # # AUR packages

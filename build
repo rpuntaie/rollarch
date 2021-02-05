@@ -51,6 +51,8 @@ else
   USER="$SUDO_USER"
 fi
 HOMEDIR="$(getent passwd "$USER" | cut -d: -f6)"
+# CHROOTPATH64="/scratch/.chroot64"
+# comes from clean-chroot-manager.conf
 if [[ -f "$HOMEDIR/.local/etc/clean-chroot-manager.conf" ]]; then
     source $HOMEDIR/.local/etc/clean-chroot-manager.conf
 else
@@ -58,7 +60,6 @@ else
 fi
 # in /etc/fstab add setting 10G
 # tmpfs   /scratch/.chroot64    tmpfs   nodev,user,noauto,size=10G  0   0
-CHROOTPATH64="/scratch/.chroot64"
 if cat /etc/fstab | grep $CHROOTPATH64 &> /dev/null; then
   if ! mount | grep $CHROOTPATH64 &> /dev/null; then
     mount $CHROOTPATH64
