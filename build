@@ -4,7 +4,7 @@ set -uo pipefail
 trap 's=$?; echo "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
 
 if ! command -v ccm64 >/dev/null 2>&1; then
-  echo -e "ccm required. https://github.com/graysky2/clean-chroot-manager"
+  echo -e "ccm64 required. https://github.com/graysky2/clean-chroot-manager"
   exit 1
 fi
 
@@ -39,7 +39,7 @@ get_pkg_arch() {
 ROLLARCH="$PWD"
 
 #additional build tools
-#XXX better would be to accept additional packages in ccm
+#XXX better would be to accept additional packages in ccm64
 if [[ -z "$SUDO_USER" ]]; then
   if logname &>/dev/null; then
     USER=$(logname)
@@ -102,7 +102,7 @@ for package in $PACKAGES; do
     for pkgfile in *$psuffix; do
         if [[ -f "$pkgfile" ]]; then
             cp $pkgfile $LOCAL_PATH
-            repo-add "$LOCAL_PATH/$REPO_NAME.db.tar.xz" $LOCAL_PATH/$pkgfile
+            repo-add "$LOCAL_PATH/$REPO_NAME.db.tar.zst" $LOCAL_PATH/$pkgfile
         fi
     done
 
@@ -110,6 +110,6 @@ for package in $PACKAGES; do
 
 done
 
-ln -sf "$REPO_NAME.db.tar.xz" "$LOCAL_PATH/$REPO_NAME.db"
-ln -sf "$REPO_NAME.files.tar.xz" "$LOCAL_PATH/$REPO_NAME.files"
+ln -sf "$REPO_NAME.db.tar.zst" "$LOCAL_PATH/$REPO_NAME.db"
+ln -sf "$REPO_NAME.files.tar.zst" "$LOCAL_PATH/$REPO_NAME.files"
 

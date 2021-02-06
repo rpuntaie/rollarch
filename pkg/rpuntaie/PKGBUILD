@@ -4,7 +4,7 @@
 # # DSK=/dev/sda USR=u PW=p HST=up ZONE=Vienna IP2=1.121 AIP2=1.108 ./installarch rpuntaie-meta
 
 pkgname=(rpuntaie-meta)
-pkgver=1.2.2
+pkgver=1.2.3
 pkgrel=1
 pkgdesc="Archlinux for rpuntaie"
 arch=('x86_64')

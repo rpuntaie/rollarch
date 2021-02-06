@@ -291,7 +291,7 @@ Server = https://xyne.archlinux.ca/repos/xyne
 #'xyne':'https://xyne.archlinux.ca/repos/xyne'}
 #import urllib
 #for nm,srv in srvrs.items():
-#  assert b"pkg.tar.xz" in urllib.request.urlopen(srv).read(), nm+' failed'
+#  assert b"pkg.tar.zst" in urllib.request.urlopen(srv).read(), nm+' failed'
 
 
 function rollarch_repos()

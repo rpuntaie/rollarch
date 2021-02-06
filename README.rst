@@ -149,9 +149,13 @@ How `local proxy`_ and `custom packages`_ is used by `rollarch`_:
 
   The ``build`` script
 
-  - needs `ccm <https://github.com/graysky2/clean-chroot-manager>`__ installed::
+  - needs `clean-chroot-manager <https://github.com/graysky2/clean-chroot-manager>`__ installed::
 
       yay -S clean-chroot-manager
+      ###### add to /etc/fstab
+      #tmpfs /scratch tmpfs nodev,size=4G 0 0
+      ###### new /etc/tmpfiles.d/ccm_dir.conf
+      #d /scratch/.chroot64 0750 root users -
 
   - builds all packages or THOSE PROVIDED (e.g. ``pkg/rpuntaie``)
   - adds the packages to `custom packages`_

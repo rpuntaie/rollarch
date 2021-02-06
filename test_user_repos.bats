@@ -12,7 +12,7 @@
             reposrv=${reposrv//[[:space:]]/}
             reposrv=$(eval echo "${reposrv/Server=/}")
             # echo "repo $reposrv" >&3
-            curl -Ls $reposrv | grep "pkg.tar.xz" &> /dev/null
+            curl -Ls $reposrv | grep "pkg.tar.zst" &> /dev/null
             [ $? ]
         else
             echo "removed $repo" >&3
