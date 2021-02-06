@@ -7,7 +7,7 @@
 # $ USR=u PW=p HST=u121 IP2=1.121 DSK=/dev/sda DOTS=fjVcp bash rollarch
 
 pkgname=(rpuntaie-gnome-meta)
-pkgver=0.0.1
+pkgver=0.0.2
 pkgrel=1
 pkgdesc="Archlinux with gnome for/by rpuntaie"
 arch=('x86_64')
@@ -45,7 +45,7 @@ function package()
     # arch
     depends+=(arch-install-scripts asp devtools pacman-contrib namcap)
     # mobile connectivity
-    depends+=(mtpfs android-file-transfer libimobiledevice ifuse)
+    depends+=(mtpfs android-file-transfer libimobiledevice)
     # security
     depends+=(dialog openssh keybase kbfs keybase-gui qrencode gnupg pass)
     # zsh
@@ -60,7 +60,6 @@ function package()
     # development
     depends+=(cmake ninja meson cscope ctags gdb)
     depends+=(jdk-openjdk yarn npm nodejs)
-    depends+=(go-pie)
 
     # Python
     depends+=(python ipython python-numpy python-scipy python-sympy
@@ -89,7 +88,7 @@ function package()
     depends+=(libreoffice-still hunspell hunspell-en_US hunspell-de_DE hunspell-it_IT)
     depends+=(tesseract tesseract-data-eng)
     depends+=(eom feh evince thunar ghostscript poppler mupdf)
-    depends+=(zathura zathura-djvu zathura-pdf-mupdf zathura-ps zathura-cb)
+    depends+=(zathura zathura-djvu zathura-pdf-mupdf zathura-ps)
     depends+=(texlive-core pandoc)
     depends+=(espeak-ng)
 
