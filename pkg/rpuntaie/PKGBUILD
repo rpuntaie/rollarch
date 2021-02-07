@@ -60,7 +60,7 @@ function package()
     # Python
     depends+=(python pypy3 ipython jupyter cython twine xonsh yapf autopep8 python-ipykernel ansible
     python-gobject python-pyqt5 python-numpy python-numpydoc python-scipy python-ipdb python-sympy
-    python-tensorflow python-tensorflow-estimator python-tensorflow-opt python-tensorflow-serving-api
+    python-tensorflow python-tensorflow-estimator python-tensorflow-serving-api
     python-h5py python-sip python-cffi python-cairocffi
     python-beautifulsoup4 python-html5lib python-bleach python-pytz python-docker
     python-docutils python-gmpy2 python-jinja python-matplotlib python-pillow
@@ -239,7 +239,8 @@ function package()
     depends+=(coin-or-cbc coin-or-cgl coin-or-clp coin-or-coinutils coin-or-mp coin-or-osi)
 
     # science
-    depends+=(hdf5 cfitsio pymol wcslib)
+    depends+=(cfitsio pymol wcslib)
+    #hdf5 conflicts with python-h5py
 
     # organize finance
     depends+=(task ledger)

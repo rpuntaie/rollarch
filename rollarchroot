@@ -562,7 +562,7 @@ function setup_all() {
   fi
 
   # printing
-  systemctl enable --now org.cups.cupsd
+  systemctl enable --now cups
 
   setup_dots
   setup_clean_meta
@@ -570,6 +570,8 @@ function setup_all() {
   if [[ -z $(grep -q "^flags.*\ hypervisor\ " /proc/cpuinfo) ]]; then
     systemctl enable --now vboxservice
   fi
+  # on client call
+  # VBoxClient-all
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
