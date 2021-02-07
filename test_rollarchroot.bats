@@ -43,7 +43,7 @@ teardown()
 @test "show help" {
     run bash ./rollarchroot -h
     #echo "#${lines[1]}" >&3
-    [ "${lines[1]}" = "DSK USR PW HST ZONE IP2 AIP2 BOOT SWAP ROOT KM" ]
+    [ "${lines[1]}" = "DSK USR PW HST ZONE IP2 AIP2 BOOT SWAP ROOT" ]
     [ "$status" -eq 0 ]
 }
 
@@ -190,7 +190,7 @@ teardown()
     run setup_keyboard
     #echo "#${lines[0]}" >&3
     [ "${lines[0]}" = "us.map.gz rollarchus.map.gz" ]
-    [ "${lines[1]}" = "rollarchus" ]
+    [ "${lines[1]}" = "rollarchus.map.gz" ]
 }
 
 #7
@@ -312,6 +312,8 @@ teardown()
     export -f grub-install
     function grub-mkconfig() { echo "$*"; }
     export -f grub-mkconfig
+    function fdisk() { echo "$*"; }
+    export -f fdisk
     DSK=DSK\
     USR=USR\
     PW=PW\
@@ -345,6 +347,8 @@ teardown()
     export -f bootctl
     function blkid() { echo "$*"; }
     export -f blkid
+    function fdisk() { echo "$*"; }
+    export -f fdisk
     export LOADERENTRY="loader/entries/arch"
     DSK=DSK\
     USR=USR\

@@ -300,14 +300,15 @@ function rollarch_repos()
   if [[ "$DOTS" != "" ]]; then
     if [[ "$DOTS" =~ ^https:// ]] || [[ "$DOTS" =~ ^file:/// ]]; then
       DOTS_LOCAL=${DOTS##*/}
-      curl -Ls $DOTS -o ~/$DOTS_LOCAL
+      curl -Ls $DOTS -o /home/$USR/$DOTS_LOCAL
     elif [[ ! -f $DOTS ]]; then
       DOTS_LOCAL=$DOTS
-      curl -Ls https://git.io/$DOTS -o ~/$DOTS_LOCAL
-    fi
-    if [[ -f "$DOTS" ]] || [[ -f "~/$DOTS_LOCAL" ]] ; then
+      curl -Ls https://git.io/$DOTS -o /home/$USR/$DOTS_LOCAL
+    else
       DOTS_LOCAL=${DOTS##*/}
-      cp $DOTS ~/$DOTS_LOCAL
+      cp $DOTS /home/$USR/$DOTS_LOCAL
+    fi
+    if [[ -f "/home/$USR/$DOTS_LOCAL" ]]; then
       eval $(sed -n -e "s/^#DFN: *//p" ~/$DOTS_LOCAL)
       USRPKGS=$(sed -n -e "s/^#PKG: *//p" ~/$DOTS_LOCAL)
       USRREPOS=$(sed -n -e "s/^#REPO: *//p" ~/$DOTS_LOCAL)

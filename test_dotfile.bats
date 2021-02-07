@@ -19,10 +19,11 @@ teardown()
 #REPO: arcanisrepo
 #REPO: dvzrv">$tmpdots
     export DOTS="file://$tmpdots"
-    local localdots=${DOTS##*/}
+    local localdots=${DOTS#*/}
     export PACMANCONF=$(mktemp)
     export ROLLARCH_MIRRORLIST=$(mktemp)
     export AIP2=1.108
+    export USR=$USER
     source rollarch
     run rollarch_repos
     OUT="$(cat $ROLLARCH_MIRRORLIST)
