@@ -20,12 +20,12 @@ function package()
         linux-firmware logrotate lvm2 man-db man-pages mdadm nano netctl pacman
         pciutils perl cpanminus procps-ng psmisc reiserfsprogs s-nail sed shadow
         sysfsutils systemd-sysvcompat tar texinfo usbutils util-linux vi which
-        xfsprogs autoconf automake binutils bison fakeroot flex gcc groff
+        xfsprogs autoconf automake binutils bison fakeroot fakechroot flex gcc groff
         libtool m4 make patch pkgconf sudo systemd)
     depends+=(systemd-resolvconf)
-    depends+=(avahi nss-mdns openvpn)
+    depends+=(avahi nss-mdns openvpn nmap)
     # filesystems
-    depends+=(exfat-utils dosfstools f2fs-tools nfs-utils)
+    depends+=(dosfstools f2fs-tools nfs-utils)
     # system tools
     depends+=(cronie inotify-tools perl-rename)
     depends+=(acpi hwinfo samba wpa_supplicant ifenslave ifplugd iw ppp ntp)
@@ -40,7 +40,7 @@ function package()
     # android
     depends+=(gmtp mtpfs android-file-transfer)
     # security
-    depends+=(dialog openssh keybase kbfs keybase-gui qrencode gnupg pass)
+    depends+=(dialog openssh keybase kbfs keybase-gui qrencode gnupg pass mkcert)
     # powerline
     depends+=(powerline powerline-fonts awesome-terminal-fonts)
     # zsh (to configure via dotfiles or install grml-zsh-config afterwards)
@@ -139,7 +139,7 @@ function package()
     ttf-dejavu gnu-free-fonts xorg-fonts-misc ttf-inconsolata ttf-roboto bdf-unifont)
 
     # other editors/IDE's (apart from vim)
-    depends+=(emacs code atom intellij-idea-community-edition lazarus)
+    depends+=(emacs code atom intellij-idea-community-edition lazarus pycharm-community-edition)
 
     # PHP
     depends+=(nginx php xdebug)
@@ -150,7 +150,7 @@ function package()
 
     # audio
     depends+=(alsa-utils python-pyalsa pulseaudio pulseaudio-alsa
-    pulseaudio-bluetooth pavucontrol pulsemixer paprefs)
+    pulseaudio-bluetooth pavucontrol pulsemixer paprefs lv2 jack2)
     # pro-audio
     depends+=(fluidsynth a2jmidid adlplug aeolus aj-snapshot aliki amb-plugins
     ambdec ams ams-lv2 amsynth ardour artyfx aubio audacity avldrums.lv2
@@ -179,7 +179,7 @@ function package()
     depends+=(vlc ffmpeg mpv kodi obs-studio cmus)
 
     # embedded virtualization
-    depends+=(qemu qemu-arch-extra ovmf libvirt virt-manager picocom ddrescue)
+    depends+=(qemu qemu-arch-extra ovmf libvirt virt-manager bridge-utils picocom ddrescue)
     depends+=(virtualbox-guest-utils virtualbox-host-modules-arch virtualbox vagrant)
     depends+=(docker docker-compose kubectl dnsmasq)
 
@@ -193,7 +193,7 @@ function package()
 
     # graphics
     depends+=(graphviz xdot vtk mayavi opencascade
-    opencv opencv-samples povray
+    opencv opencv-samples povray openshot
     librecad blender gimp krita inkscape ktikz
     fontforge imagemagick imagemagick-doc openscad)
 
