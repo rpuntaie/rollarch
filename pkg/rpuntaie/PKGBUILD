@@ -22,16 +22,16 @@ function package()
         sysfsutils systemd-sysvcompat tar texinfo usbutils util-linux vi which
         xfsprogs autoconf automake binutils bison fakeroot fakechroot flex gcc groff
         libtool m4 make patch pkgconf sudo systemd)
-    depends+=(systemd-resolvconf)
+    depends+=(systemd-resolvconf ccache distcc)
     depends+=(avahi nss-mdns openvpn nmap)
     # filesystems
     depends+=(dosfstools f2fs-tools nfs-utils)
     # system tools
-    depends+=(cronie inotify-tools perl-rename)
+    depends+=(cronie inotify-tools perl-rename cpulimit dpkg tldr)
     depends+=(acpi hwinfo samba wpa_supplicant ifenslave ifplugd iw ppp ntp)
     depends+=(lsof bind-tools mtr socat htop iotop openbsd-netcat strace tcpdump)
     # vcs
-    depends+=(git repo mercurial subversion)
+    depends+=(git tig git-annex repo mercurial subversion)
     # shell tools (ag=the_silver_searcher)
     depends+=(stow ripgrep fd bc tmux wget fzf udisks2 unzip unrar bat ncdu jshon)
     depends+=(the_silver_searcher rtorrent qbittorrent tree p7zip ranger file-roller mlocate rmlint)
@@ -52,7 +52,7 @@ function package()
     depends+=(cups cups-filters cups-pdf gutenprint foomatic-db-gutenprint-ppds wkhtmltopdf)
 
     # C/C++
-    depends+=(cmake ninja meson cscope ctags llvm clang gdb lldb boost grpc)
+    depends+=(cmake ninja meson cscope ctags llvm clang gdb lldb boost grpc tbb fmt)
 
     # tensorflow
     depends+=(tensorflow tensorboard bazel)
@@ -100,11 +100,14 @@ function package()
 
     # Java/JS/JVM
     depends+=(jdk-openjdk yarn npm nodejs coffeescript asar prettier scala sbt
-    gradle kotlin clojure groovy ant maven jenkins)
+    gradle kotlin clojure rlwrap groovy ant maven jenkins)
 
     # haskell
     depends+=(ghc cabal-install stack hoogle xmonad xmonad-contrib xmonad-utils)
     depends+=(haskell-shake)
+
+    # nix
+    depends+=(nix) # archlinux-nix from aur
 
     # Other Languages
     depends+=(go go-tools mono dotnet-sdk skia-sharp
@@ -188,7 +191,8 @@ function package()
     depends+=(iverilog yosys verilator gtkwave)
 
     # processors
-    depends+=(avr-binutils avr-gcc avr-gdb avr-libc arduino arduino-docs
+    depends+=(avr-binutils avr-gcc avr-gdb avr-libc arduino arduino-docs stlink
+    ghdl-gcc ghdl-llvm ghdl-mcode ghdl-pyghdl
     arm-none-eabi-gcc arm-none-eabi-binutils arm-none-eabi-newlib libopencm3)
 
     # graphics
@@ -202,6 +206,7 @@ function package()
     plantuml
     tesseract # ocr
     tesseract-data-eng)
+    depends+=(recoll pdfgrep tracker lucene++)
 
     depends+=(pandoc asciidoc)
     depends+=(expat docbook-xml docbook-xsl docbook-mathml tidy)
@@ -227,7 +232,7 @@ function package()
     zathura-pdf-mupdf zathura-ps mcomix catfish)
 
     # mail IRC
-    depends+=(neomutt isync msmtp msmtp-mta notmuch urlscan afew abook alot weechat)
+    depends+=(neomutt isync msmtp msmtp-mta procmail notmuch urlscan afew abook alot weechat)
 
     # dicts
     depends+=(dictd vim-spell-en vim-spell-de vim-spell-it vim-spell-fr vim-spell-ru vim-spell-es)
@@ -245,9 +250,16 @@ function package()
     # organize finance
     depends+=(task ledger)
 
+##yay
+#cd ~/tmp
+#git clone https://aur.archlinux.org/yay.git
+#cd yay
+#makepkg -si
+
     # # AUR packages
     # depends+=(yay mimeo mkosi-git rstudio-desktop-bin waf-git wordnet-cli urxvt-vim-scrollback-git
     # powerline-console-fonts psysh leiningen planck-git cling-git erfa python-astropy)
+    # depends+=(archlinux-nix)
 
     # # need multilib
     # openmodelica-git # modelica language
