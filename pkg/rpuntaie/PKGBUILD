@@ -22,12 +22,12 @@ function package()
         sysfsutils systemd-sysvcompat tar texinfo usbutils util-linux vi which
         xfsprogs autoconf automake binutils bison fakeroot fakechroot flex gcc groff
         libtool m4 make patch pkgconf sudo systemd)
-    depends+=(systemd-resolvconf ccache distcc)
+    depends+=(systemd-resolvconf ccache distcc cppcheck)
     depends+=(avahi nss-mdns openvpn nmap)
     # filesystems
-    depends+=(dosfstools f2fs-tools nfs-utils)
+    depends+=(dosfstools f2fs-tools nfs-utils unison)
     # system tools
-    depends+=(cronie inotify-tools perl-rename cpulimit dpkg tldr)
+    depends+=(cronie inotify-tools perl-rename cpulimit dpkg tldr mkosi)
     depends+=(acpi hwinfo samba wpa_supplicant ifenslave ifplugd iw ppp ntp)
     depends+=(lsof bind-tools mtr socat htop iotop openbsd-netcat strace tcpdump)
     # vcs
@@ -37,8 +37,8 @@ function package()
     depends+=(the_silver_searcher rtorrent qbittorrent tree p7zip ranger file-roller mlocate rmlint)
     # arch
     depends+=(arch-install-scripts asp devtools pacman-contrib namcap bash-bats bash-completion)
-    # android
-    depends+=(gmtp mtpfs android-file-transfer)
+    # android (android-file-transfer = aft: aft-mtp-cli)
+    depends+=(gmtp mtpfs android-file-transfer gammu)
     # security
     depends+=(dialog openssh keybase kbfs keybase-gui qrencode gnupg pass mkcert)
     # powerline
@@ -61,12 +61,12 @@ function package()
     depends+=(python pypy3 ipython jupyter cython twine xonsh yapf autopep8 python-ipykernel ansible
     python-gobject python-pyqt5 python-numpy python-numpydoc python-scipy python-ipdb python-sympy
     python-tensorflow python-tensorflow-estimator python-tensorflow-serving-api
-    python-h5py python-sip python-cffi python-cairocffi
+    python-h5py python-sip python-cffi python-cairocffi python-gammu
     python-beautifulsoup4 python-html5lib python-bleach python-pytz python-docker
     python-docutils python-gmpy2 python-jinja python-matplotlib python-pillow
     python-pip python-pygal python-pygments python-pylint python-whoosh
     python-watchdog python-pytest python-mock python-pytest-mock python-coverage
-    python-pytest-cov python-setuptools python-wheel python-snowballstemmer
+    python-pytest-cov python-setuptools python-setuptools-scm python-wheel python-snowballstemmer
     python-virtualenv python-yaml python-django python-tornado python-tox
     python-pandas python-pandas-datareader python-cvxopt python-webtest
     python-sphinx python-sphinx-alabaster-theme python-sphinx-testing python-gitpython
@@ -104,7 +104,7 @@ function package()
 
     # haskell
     depends+=(ghc cabal-install stack hoogle xmonad xmonad-contrib xmonad-utils)
-    depends+=(haskell-shake)
+    depends+=(haskell-shake haskell-haddock-library)
 
     # nix
     depends+=(nix) # archlinux-nix from aur
@@ -196,7 +196,7 @@ function package()
     arm-none-eabi-gcc arm-none-eabi-binutils arm-none-eabi-newlib libopencm3)
 
     # graphics
-    depends+=(graphviz xdot vtk mayavi opencascade
+    depends+=(doxygen graphviz xdot vtk mayavi opencascade
     opencv opencv-samples povray openshot
     librecad blender gimp krita inkscape ktikz
     fontforge imagemagick imagemagick-doc openscad)
@@ -229,10 +229,10 @@ function package()
 
     # viewers
     depends+=(eom feh evince nautilus kdiff3 ghostscript poppler mupdf zathura zathura-djvu
-    zathura-pdf-mupdf zathura-ps mcomix catfish)
+    zathura-pdf-mupdf zathura-ps mcomix catfish pyhton-pdfminer)
 
     # mail IRC
-    depends+=(neomutt isync msmtp msmtp-mta procmail notmuch urlscan afew abook alot weechat)
+    depends+=(neomutt isync msmtp msmtp-mta procmail notmuch urlscan afew abook alot weechat reminder)
 
     # dicts
     depends+=(dictd vim-spell-en vim-spell-de vim-spell-it vim-spell-fr vim-spell-ru vim-spell-es)
@@ -248,7 +248,7 @@ function package()
     #hdf5 conflicts with python-h5py
 
     # organize finance
-    depends+=(task ledger)
+    depends+=(task timew ledger)
 
 ##yay
 #cd ~/tmp
@@ -256,15 +256,5 @@ function package()
 #cd yay
 #makepkg -si
 
-    # # AUR packages
-    # depends+=(yay mimeo mkosi-git rstudio-desktop-bin waf-git wordnet-cli urxvt-vim-scrollback-git
-    # powerline-console-fonts psysh leiningen planck-git cling-git erfa python-astropy)
-    # depends+=(archlinux-nix)
-
-    # # need multilib
-    # openmodelica-git # modelica language
-    # quartus-free # for Altera FPGA
-    # intel-sde # Intel Software Development Emulator
-    # microchip-mplabx-bin # https://aur.archlinux.org/microchip-mplabx-bin.git
 }
 

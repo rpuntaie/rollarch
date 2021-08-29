@@ -21,6 +21,7 @@ Make sure submodules are there:
     git submodule update --init --recursive
     # then
     git pull --recurse-submodules
+    git submodule update --remote --recursive
 " >&2
         exit 1
     fi
@@ -45,7 +46,7 @@ if [[ -z "$SUDO_USER" ]]; then
     USER=$(logname)
   fi
 elif [[ "$SUDO_USER" = "root" ]]; then
-  echo -e "Cannot determine your username so exiting."
+  echo -e "Cannot determine your username. Exiting."
   exit 1
 else
   USER="$SUDO_USER"

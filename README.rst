@@ -44,10 +44,9 @@ Then at the ``archiso`` prompt:
     cd rollarch
     DSK=/dev/sda USR=u PW=p HST=u106 IP2=1.106 ZONE=Berlin DOTS=mydots bash rollarch
 
-If ``mydots`` is available local dots install script,
+If ``mydots`` is a dots install script available locally,
 ``https://git.io/mydots`` is not tried.
-``rpuntaie-dots`` are ``rpuntaie-gnome-dots`` are examples for ``mydots`` scripts
-fitting to the according packages under ``pkg``.
+Here an `example <https://git.io/fjVcp>`__ for a ``mydots`` script.
 
 Without further arguments after ``rollarch`` (=``installarch``), the packages default to
 ``arch-install-scripts base base-devel devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim zsh``.
@@ -135,8 +134,12 @@ How `local proxy`_ and `custom packages`_ is used by `rollarch`_:
 
     #git clone --recurse-submodules https://github.com/rpuntaie/rollarch
     #git submodule foreach git pull origin master
+    # or
+    #make update
     cd rollarch
     sudo bash ./build
+    # or
+    #make build
 
   Before doing so,
   you can add some packages from AUR into the ``pkg`` subfolder, e.g.
@@ -214,6 +217,7 @@ are combined with ``#PKG:`` comments in the ``DOTS`` file.
 
 As an example see my
 `dotfiles install script <https://github.com/rpuntaie/dotfiles/blob/desktop/install>`__.
+It can be reached via the github short https://git.io/fjVcp.
 In my example I use only ``rpuntaie-meta`` served from a LAN machine prepared with ``sudo ./build``,
 which also builds the AUR submodules that are part of `rollarch`_, e.g. ``yay``.
 
@@ -232,8 +236,6 @@ E.g. to also install ``yay`` you could have these two lines::
         #REPO: arcanisrepo
         #PKG: yay
 
-My dotfiles can be reached via the github short https://git.io/fjVcp.
-``fjVcp`` could be just a local script like ``rpuntaie-dots`` further down.
 The following installs my system with ``dotfiles`` and packages wanted by it.
 
 .. code:: sh
