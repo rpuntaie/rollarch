@@ -23,6 +23,11 @@ list:
 add:
 	read ff && for f in $$ff; do git submodule add https://aur.archlinux.org/$$f pkg/$$f; done
 
+.DEFAULT_GOAL := all
+.PHONY: all
+all:
+	sudo -E bash ./build
+
 .PHONY: build
 build:
-	sudo bash ./build
+	for f in $$(ls pkg); do sudo -E bash ./build pkg/$$f; done

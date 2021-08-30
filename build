@@ -3,6 +3,7 @@
 set -uo pipefail
 trap 's=$?; echo "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
 
+#needed https://github.com/graysky2/clean-chroot-manager/pull/77
 if ! command -v ccm64 >/dev/null 2>&1; then
   echo -e "ccm64 required. https://github.com/graysky2/clean-chroot-manager"
   exit 1
@@ -40,7 +41,6 @@ get_pkg_arch() {
 ROLLARCH="$PWD"
 
 #additional build tools
-#XXX better would be to accept additional packages in ccm64
 if [[ -z "$SUDO_USER" ]]; then
   if logname &>/dev/null; then
     USER=$(logname)
@@ -52,25 +52,31 @@ else
   USER="$SUDO_USER"
 fi
 HOMEDIR="$(getent passwd "$USER" | cut -d: -f6)"
-# CHROOTPATH64="/scratch/.chroot64"
+# CHROOTPATH64="/scratch/.buildroot"
 # comes from clean-chroot-manager.conf
-if [[ -f "$HOMEDIR/.local/etc/clean-chroot-manager.conf" ]]; then
-    source $HOMEDIR/.local/etc/clean-chroot-manager.conf
-else
-    source $HOMEDIR/.config/clean-chroot-manager.conf
-fi
+source ${XDG_CONFIG_HOME:-$HOMEDIR/.config}/clean-chroot-manager.conf
 # in /etc/fstab add setting 10G
-# tmpfs   /scratch/.chroot64    tmpfs   nodev,user,noauto,size=10G  0   0
+# tmpfs   /scratch/.buildroot    tmpfs   nodev,user,noauto,size=10G  0   0
 if cat /etc/fstab | grep $CHROOTPATH64 &> /dev/null; then
   if ! mount | grep $CHROOTPATH64 &> /dev/null; then
     mount $CHROOTPATH64
   fi
 fi
-if [[ ! -d "$CHROOTPATH64/root" ]]; then
-    ccm64 c &> rollarch.log
+
+if [[ ! -f "$CHROOTPATH64"/root/.arch-chroot ]]; then
+    rm -rf "$CHROOTPATH64"/root
+    if ! ccm64 c &> rollarch.log; then
+        rm -rf "$CHROOTPATH64"/root
+    fi
+    if [[ ! -f "$CHROOTPATH64"/root/.arch-chroot ]]; then
+        rm -rf "$CHROOTPATH64"/root
+        echo "mkarchroot failed"
+        exit 1
+    fi
 fi
 if [[ -d "$CHROOTPATH64/root" ]]; then
     for tool in git unzip meson cmake clojure; do
+        echo "tool $tool"
         if [[ ! -x "$CHROOTPATH64/root/usr/bin/$tool" ]]; then
             pacstrap "$CHROOTPATH64/root" $tool
         fi
@@ -82,7 +88,7 @@ for package in $PACKAGES; do
     cd "$package"
     pkgdr="$(pwd)"
 
-    dps="$(source PKGBUILD && echo "${makedepends[@]} ${depends[@]}")"
+    dps="$(ARCH=x86_64 CARCH=x86_64 source PKGBUILD && echo "${makedepends[@]} ${depends[@]}")"
     for adep in $dps; do
         if [[ -d "$ROLLARCH/pkg/$adep" ]]; then
             echo "first doing dependency $adep"
@@ -93,7 +99,7 @@ for package in $PACKAGES; do
     done
 
     echo "doing $pkgdr"
-    psuffix="$(source PKGBUILD && echo "-$pkgver-$pkgrel-$(get_pkg_arch ${arch[@]}).pkg.tar.*")"
+    psuffix="$(ARCH=x86_64 CARCH=x86_64 source PKGBUILD && echo "-$pkgver-$pkgrel-$(get_pkg_arch ${arch[@]}).pkg.tar.*")"
     pkgs=*$psuffix
     if ! ls *$psuffix 1> /dev/null 2>&1; then
         echo "$package..." && ccm64 s &> rollarch.log && echo "OK" || echo "FAIL"

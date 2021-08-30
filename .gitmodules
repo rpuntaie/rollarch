@@ -10,10 +10,6 @@
 	path = pkg/waf-git
 	url = https://aur.archlinux.org/waf-git
 	ignore = dirty
-[submodule "pkg/rstudio-desktop-bin"]
-	path = pkg/rstudio-desktop-bin
-	url = https://aur.archlinux.org/rstudio-desktop-bin
-	ignore = dirty
 [submodule "pkg/mimeo"]
 	path = pkg/mimeo
 	url = https://aur.archlinux.org/mimeo
@@ -81,10 +77,6 @@
 [submodule "pkg/git-quick-stats"]
 	path = pkg/git-quick-stats
 	url = https://aur.archlinux.org/git-quick-stats
-	ignore = dirty
-[submodule "pkg/skypeforlinux-preview-bin"]
-	path = pkg/skypeforlinux-preview-bin
-	url = https://aur.archlinux.org/skypeforlinux-preview-bin
 	ignore = dirty
 [submodule "pkg/dockerize-git"]
 	path = pkg/dockerize-git

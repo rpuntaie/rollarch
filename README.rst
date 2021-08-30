@@ -137,9 +137,9 @@ How `local proxy`_ and `custom packages`_ is used by `rollarch`_:
     # or
     #make update
     cd rollarch
-    sudo bash ./build
+    sudo -E bash ./build
     # or
-    #make build
+    #make
 
   Before doing so,
   you can add some packages from AUR into the ``pkg`` subfolder, e.g.
@@ -152,13 +152,14 @@ How `local proxy`_ and `custom packages`_ is used by `rollarch`_:
 
   The ``build`` script
 
-  - needs `clean-chroot-manager <https://github.com/graysky2/clean-chroot-manager>`__ installed::
+  - needs `clean-chroot-manager <https://github.com/graysky2/clean-chroot-manager>`__ installed,
+    with pull https://github.com/graysky2/clean-chroot-manager/pull/77::
 
       yay -S clean-chroot-manager
       ###### add to /etc/fstab
       #tmpfs /scratch tmpfs nodev,size=4G 0 0
       ###### new /etc/tmpfiles.d/ccm_dir.conf
-      #d /scratch/.chroot64 0750 root users -
+      #d /scratch/.buildroot 0750 root users -
 
   - builds all packages or THOSE PROVIDED (e.g. ``pkg/rpuntaie``)
   - adds the packages to `custom packages`_
@@ -188,7 +189,7 @@ How `local proxy`_ and `custom packages`_ is used by `rollarch`_:
 
   To build only the one package do, e.g.::
 
-    sudo bash ./build pkg/rpuntaie-gnome
+    sudo -E bash ./build pkg/rpuntaie-gnome
 
 Include dotfiles
 ================
@@ -218,10 +219,10 @@ are combined with ``#PKG:`` comments in the ``DOTS`` file.
 As an example see my
 `dotfiles install script <https://github.com/rpuntaie/dotfiles/blob/desktop/install>`__.
 It can be reached via the github short https://git.io/fjVcp.
-In my example I use only ``rpuntaie-meta`` served from a LAN machine prepared with ``sudo ./build``,
+In my example I use only ``rpuntaie-meta`` served from a LAN machine prepared with ``sudo -E ./build``,
 which also builds the AUR submodules that are part of `rollarch`_, e.g. ``yay``.
 
-You don't need to clone `rollarch`_ and run ``sudo bash ./build`` and use ``AIP2``.
+You don't need to clone `rollarch`_ and run ``sudo -E bash ./build`` and use ``AIP2``.
 You can just list all the official packages directly in your install script::
 
         #PKG: bash
