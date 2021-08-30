@@ -28,12 +28,8 @@ PACKAGES=${@:-pkg/*}
 for package in $PACKAGES; do
     if [[ ! -f "$package/PKGBUILD" ]]; then
         echo -e "$package/PKGBUILD missing.
-Make sure submodules are there:
-    # first time
-    git submodule update --init --recursive
-    # then
-    git pull --recurse-submodules
-    git submodule update --remote --recursive
+Make sure submodules are there. Do::
+    make update
 " >&2
         exit 1
     fi

@@ -11,6 +11,7 @@ endef
 
 .PHONY: update
 update:
+	git submodule update --init --recursive
 	git pull --recurse-submodules
 	git submodule update --remote --recursive
 
