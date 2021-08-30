@@ -32,7 +32,7 @@ remove:
 .DEFAULT_GOAL := all
 .PHONY: all
 all:
-	sudo -E bash ./build pkg/$(PKG)
+	sudo -E bash ./build $(PKG)
 
 .PHONY: build
 build:
