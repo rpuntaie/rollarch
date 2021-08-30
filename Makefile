@@ -23,6 +23,10 @@ list:
 add:
 	read ff && for f in $$ff; do git submodule add https://aur.archlinux.org/$$f pkg/$$f; done
 
+.PHONY: remove
+remove:
+	read ff && for f in $$ff; do git-remove-submodule pkg/$$f; done
+
 .DEFAULT_GOAL := all
 .PHONY: all
 all:

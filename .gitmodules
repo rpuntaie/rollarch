@@ -70,10 +70,6 @@
 	path = pkg/clean-chroot-manager
 	url = https://aur.archlinux.org/clean-chroot-manager
 	ignore = dirty
-[submodule "pkg/processing4"]
-	path = pkg/processing4
-	url = https://aur.archlinux.org/processing4
-	ignore = dirty
 [submodule "pkg/git-quick-stats"]
 	path = pkg/git-quick-stats
 	url = https://aur.archlinux.org/git-quick-stats
@@ -89,10 +85,6 @@
 [submodule "pkg/logiops-git"]
 	path = pkg/logiops-git
 	url = https://aur.archlinux.org/logiops-git
-	ignore = dirty
-[submodule "pkg/brother-hl2250dn"]
-	path = pkg/brother-hl2250dn
-	url = https://aur.archlinux.org/brother-hl2250dn
 	ignore = dirty
 [submodule "pkg/python-pyerfa"]
 	path = pkg/python-pyerfa
@@ -113,8 +105,4 @@
 [submodule "pkg/include-what-you-use"]
 	path = pkg/include-what-you-use
 	url = https://aur.archlinux.org/include-what-you-use
-	ignore = dirty
-[submodule "pkg/conan"]
-	path = pkg/conan
-	url = https://aur.archlinux.org/conan
 	ignore = dirty
