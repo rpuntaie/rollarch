@@ -28,7 +28,7 @@ add:
 remove:
 	read ff && for f in $$ff; do git-remove-submodule pkg/$$f; done
 
-# make PKG=name_inside_pkg_folder
+# make PKG=pkg/name_inside_pkg_folder
 # make
 .DEFAULT_GOAL := all
 .PHONY: all
