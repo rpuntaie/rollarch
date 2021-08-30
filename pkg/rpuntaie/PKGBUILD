@@ -31,7 +31,7 @@ function package()
     xcb-util startup-notification lzo pixman cairo dconf libdatrie
     libthai fribidi dbus at-spi2-atk libpciaccess libomxil-bellagio
     popt argon2 libmnl libnftnl libnl libnfnetlink libnetfilter_conntrack
-    iptables kdb libtermkey)
+    iptables kdb libtermkey libxpm libyuv libde265 libheif)
     depends+=(systemd-resolvconf ccache distcc cppcheck)
     depends+=(avahi nss-mdns openvpn nmap json-c jsoncpp lm_sensors)
     # filesystems
@@ -77,7 +77,7 @@ function package()
     python-beautifulsoup4 python-html5lib python-bleach python-pytz python-docker
     python-docutils python-gmpy2 python-jinja python-matplotlib python-pillow
     python-pip python-pygal python-pygments python-pylint python-whoosh python-ordered-set
-    python-watchdog python-pytest python-mock python-pytest-mock python-coverage
+    python-watchdog python-py python-pytest python-mock python-pytest-mock python-coverage
     python-pytest-cov python-setuptools python-setuptools-scm python-wheel python-snowballstemmer
     python-virtualenv python-yaml python-django python-tornado python-tox python-packaging
     python-pandas python-pandas-datareader python-cvxopt python-webtest python-six
@@ -87,25 +87,25 @@ function package()
     python-sphinxcontrib-bibtex python-sphinxcontrib-blockdiag python-sphinxcontrib-devhelp
     python-sphinxcontrib-htmlhelp python-sphinxcontrib-jsmath python-sphinxcontrib-newsfeed
     python-sphinxcontrib-qthelp python-sphinxcontrib-seqdiag python-sphinxcontrib-serializinghtml
-    python-sphinxcontrib-trio python-pyxdg
-    python-lxml python-lxml-docs python-pyx python-markupsafe
+    python-sphinxcontrib-trio python-pyxdg python-msgpack python-chardet python-cachecontrol
+    python-lxml python-lxml-docs python-pyx python-markupsafe python-attrs
     python-dateutil python-decorator python-pyparsing python-nltk python-pycparser
     python-pycurl python-requests python-twisted python-urllib3 python-urllib3-doc
-    python-cairosvg python-click python-click-log python-click-repl
+    python-cairosvg python-click python-click-log python-click-repl python-webencodings
     python-click-threading python-colorama python-fuse python-qrencode
     python-wikipedia python-doit python-bottle python-flask python-pony python-sqlalchemy
-    python-flask-appconfig python-flask-babel
+    python-flask-appconfig python-flask-babel python-contextlib2 python-distro
     python-flask-babelex python-flask-bootstrap python-flask-caching
-    python-flask-dance python-flask-debug python-flask-gravatar
+    python-flask-dance python-flask-debug python-flask-gravatar python-openssl
     python-flask-htmlmin python-flask-jwt python-flask-login python-flask-mail
     python-flask-marshmallow python-flask-migrate python-flask-nav
-    python-flask-paranoid python-flask-principal
-    python-flask-restful python-flask-script python-flask-security
-    python-flask-socketio python-flask-sphinx-themes
+    python-flask-paranoid python-flask-principal python-retrying python-toml
+    python-flask-restful python-flask-script python-flask-security python-ply
+    python-flask-socketio python-flask-sphinx-themes python-progress
     python-flask-sqlalchemy python-flask-talisman python-flask-wtf python-black
     python-pybtex python-pybtex-docutils python-service_identity
     python-aws-sam-translator python-aws-xray-sdk python-pynvim python-inflection
-    python-srcinfo)
+    python-srcinfo python-iniconfig python-pluggy python-apipkg python-imagesize)
 
     # DB
     depends+=(sqlite mariadb postgresql postgresql-libs redis)
@@ -136,7 +136,7 @@ function package()
     depends+=(xorg-server xorgproto libxext libxss libxrender arandr)
     depends+=(libxdmcp libxau libxcb libxkbcommon libxkbcommon-x11 libxtst libxfixes
     libxcursor libxinerama libxrandr libxi libxcomposite libxdamage libxxf86vm
-    libxshmfence libglvnd)
+    libxshmfence libglvnd libxaw)
     depends+=(wayland adwaita-icon-theme wayland-protocols desktop-file-utils)
     depends+=(xorg-bdftopcf xorg-iceauth xorg-mkfontscale libunwind
     xorg-sessreg xorg-setxkbmap xorg-smproxy xorg-x11perf xorg-xauth

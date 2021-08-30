@@ -1,5 +1,16 @@
 #!/bin/bash
 
+: '
+
+usage:
+
+    sudo -E bash ./build [pkg/xyz]
+
+
+result in rollarch.log and pkg/xyz/rollarch.log
+
+'
+
 set -uo pipefail
 trap 's=$?; echo "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
 

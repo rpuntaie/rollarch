@@ -21,16 +21,18 @@ list:
 
 .PHONY: add
 add:
-	read ff && for f in $$ff; do git submodule add https://aur.archlinux.org/$$f pkg/$$f; done
+	read ff && for f in $$ff; do git submodule add https://aur.archlinux.org/$$f pkg/$$f; git config -f .gitmodules submodule.pkg/$$f.ignore dirty; done
 
 .PHONY: remove
 remove:
 	read ff && for f in $$ff; do git-remove-submodule pkg/$$f; done
 
+# make PKG=name_inside_pkg_folder
+# make
 .DEFAULT_GOAL := all
 .PHONY: all
 all:
-	sudo -E bash ./build
+	sudo -E bash ./build pkg/$(PKG)
 
 .PHONY: build
 build:

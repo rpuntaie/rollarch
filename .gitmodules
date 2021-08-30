@@ -26,14 +26,6 @@
 	path = pkg/powerline-console-fonts
 	url = https://aur.archlinux.org/powerline-console-fonts.git
 	ignore = dirty
-[submodule "pkg/psysh"]
-	path = pkg/psysh
-	url = https://aur.archlinux.org/psysh.git
-	ignore = dirty
-[submodule "pkg/planck-git"]
-	path = pkg/planck-git
-	url = https://aur.archlinux.org/planck-git.git
-	ignore = dirty
 [submodule "pkg/leiningen"]
 	path = pkg/leiningen
 	url = https://aur.archlinux.org/leiningen.git
@@ -105,4 +97,12 @@
 [submodule "pkg/include-what-you-use"]
 	path = pkg/include-what-you-use
 	url = https://aur.archlinux.org/include-what-you-use
+	ignore = dirty
+[submodule "pkg/python-extension-helpers"]
+	path = pkg/python-extension-helpers
+	url = https://aur.archlinux.org/python-extension-helpers
+	ignore = dirty
+[submodule "pkg/python-sphinx-automodapi"]
+	path = pkg/python-sphinx-automodapi
+	url = https://aur.archlinux.org/python-sphinx-automodapi
 	ignore = dirty

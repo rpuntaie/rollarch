@@ -134,12 +134,13 @@ How `local proxy`_ and `custom packages`_ is used by `rollarch`_:
 
     #git clone --recurse-submodules https://github.com/rpuntaie/rollarch
     #git submodule foreach git pull origin master
-    # or
+    ## or
     #make update
     cd rollarch
     sudo -E bash ./build
-    # or
+    ## or
     #make
+    ##result in pkg/xyz/rollarch.log
 
   Before doing so,
   you can add some packages from AUR into the ``pkg`` subfolder, e.g.
@@ -149,6 +150,7 @@ How `local proxy`_ and `custom packages`_ is used by `rollarch`_:
      git submodule add https://aur.archlinux.org/discord pkg/discord
      #add "ignore = dirty" to .gitmodules
      #when removing, note, that modules are listed also in .git/config
+     #see Makefile
 
   The ``build`` script
 
