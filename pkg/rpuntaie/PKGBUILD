@@ -211,7 +211,7 @@ function package()
 
     # processors
     depends+=(avr-binutils avr-gcc avr-gdb avr-libc arduino arduino-docs stlink
-    ghdl python-pydecor python-pyvhdlmodel python-pyghdl
+    ghdl-gcc python-pydecor python-pyvhdlmodel python-pyghdl
     arm-none-eabi-gcc arm-none-eabi-binutils arm-none-eabi-newlib libopencm3)
 
     # graphics
