@@ -23,9 +23,9 @@ function package()
     xfsprogs autoconf automake binutils bison fakeroot fakechroot flex gcc groff
     libtool m4 make patch pkgconf sudo systemd)
     depends+=(tzdata ncurses readline attr acl gmp
-    libsasl keyutils krb5 libtirpc pam libtasn1 libffi libp11-kit libpgp-error
+    libsasl keyutils krb5 libtirpc pam libtasn1 libffi libp11-kit libgpg-error
     libgcrypt lz4 xz zlib zstd libssh2 libunistring libpsl db libnsl hicolor-icon-theme
-    libtiff lcsm2 libnet libpng graphite freetype2 giflib libseccomp libxml2
+    libtiff lcms2 libnet libpng graphite freetype2 giflib libseccomp libxml2
     libmpc icu libcroco gc npth libassuan libsecret pinentry libice dnssec-anchors
     unibilium xcb-proto libzip shared-mime-info libedit atk
     xcb-util startup-notification lzo pixman cairo dconf libdatrie
@@ -96,7 +96,7 @@ function package()
     python-wikipedia python-doit python-bottle python-flask python-pony python-sqlalchemy
     python-flask-appconfig python-flask-babel python-contextlib2 python-distro
     python-flask-babelex python-flask-bootstrap python-flask-caching
-    python-flask-dance python-flask-debug python-flask-gravatar python-openssl
+    python-flask-dance python-flask-debug python-flask-gravatar
     python-flask-htmlmin python-flask-jwt python-flask-login python-flask-mail
     python-flask-marshmallow python-flask-migrate python-flask-nav
     python-flask-paranoid python-flask-principal python-retrying python-toml
@@ -211,7 +211,7 @@ function package()
 
     # processors
     depends+=(avr-binutils avr-gcc avr-gdb avr-libc arduino arduino-docs stlink
-    ghdl-gcc ghdl-llvm ghdl-mcode ghdl-pyghdl
+    ghdl python-pydecor python-pyvhdlmodel python-pyghdl
     arm-none-eabi-gcc arm-none-eabi-binutils arm-none-eabi-newlib libopencm3)
 
     # graphics
@@ -248,10 +248,10 @@ function package()
 
     # viewers
     depends+=(eom feh evince nautilus kdiff3 ghostscript poppler mupdf zathura zathura-djvu
-    zathura-pdf-mupdf zathura-ps mcomix catfish pyhton-pdfminer)
+    zathura-pdf-mupdf zathura-ps mcomix catfish python-pdfminer)
 
     # mail IRC
-    depends+=(neomutt isync msmtp msmtp-mta procmail notmuch urlscan afew abook alot weechat reminder)
+    depends+=(neomutt isync msmtp msmtp-mta procmail notmuch urlscan afew alot weechat)
 
     # dicts
     depends+=(dictd vim-spell-en vim-spell-de vim-spell-it vim-spell-fr vim-spell-ru vim-spell-es)
