@@ -64,7 +64,7 @@ function package()
     depends+=(cups cups-filters cups-pdf gutenprint foomatic-db-gutenprint-ppds wkhtmltopdf)
 
     # C/C++
-    depends+=(cmake ninja meson cscope ctags llvm clang gdb lldb boost grpc tbb fmt)
+    depends+=(cmake ninja meson cscope ctags llvm clang gdb cgdb lldb boost grpc tbb fmt)
 
     # tensorflow
     depends+=(tensorflow tensorboard bazel)
@@ -251,8 +251,8 @@ function package()
     depends+=(eom feh evince nautilus kdiff3 ghostscript poppler mupdf zathura zathura-djvu
     zathura-pdf-mupdf zathura-ps mcomix catfish python-pdfminer)
 
-    # mail IRC
-    depends+=(neomutt isync msmtp msmtp-mta procmail notmuch urlscan afew alot weechat)
+    # mail IRC signal
+    depends+=(neomutt isync msmtp msmtp-mta procmail notmuch urlscan afew alot weechat signal-desktop)
 
     # dicts
     depends+=(dictd vim-spell-en vim-spell-de vim-spell-it vim-spell-fr vim-spell-ru vim-spell-es)
