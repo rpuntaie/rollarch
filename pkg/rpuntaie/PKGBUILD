@@ -105,7 +105,8 @@ function package()
     python-flask-sqlalchemy python-flask-talisman python-flask-wtf python-black
     python-pybtex python-pybtex-docutils python-service_identity
     python-aws-sam-translator python-aws-xray-sdk python-pynvim python-inflection
-    python-srcinfo python-iniconfig python-pluggy python-apipkg python-imagesize)
+    python-srcinfo python-iniconfig python-pluggy python-apipkg python-imagesize
+    python-openpyxl)
 
     # DB
     depends+=(sqlite mariadb postgresql postgresql-libs redis)
@@ -252,7 +253,8 @@ function package()
     zathura-pdf-mupdf zathura-ps mcomix catfish python-pdfminer)
 
     # mail IRC signal
-    depends+=(neomutt isync msmtp msmtp-mta procmail notmuch urlscan afew alot weechat signal-desktop)
+    depends+=(neomutt isync msmtp msmtp-mta procmail notmuch urlscan afew alot weechat
+    signal-desktop rclone)
 
     # dicts
     depends+=(dictd vim-spell-en vim-spell-de vim-spell-it vim-spell-fr vim-spell-ru vim-spell-es)
