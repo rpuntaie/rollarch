@@ -265,6 +265,7 @@ EOF
 }
 
 function _netctl_en() {
+  mkdir -p ${ETCNETCTLSE%/*}
   cat > $ETCNETCTLSE <<EOF
 Description='static ethernet'
 Interface=$NIC_EN
@@ -274,6 +275,7 @@ Address=('$IP_CIDR_EN')
 Gateway='$IP_DNS'
 DNS=('$IP_DNS')
 EOF
+  mkdir -p ${ETCNETCTLDE%/*}
   cat > $ETCNETCTLDE <<EOF
 Description='dhcp ethernet'
 Interface=$NIC_EN
@@ -283,6 +285,7 @@ EOF
 }
 
 function _netctl_wl() {
+  mkdir -p ${ETCNETCTLSW%/*}
   cat > $ETCNETCTLSW <<EOF
 Description='static wireless'
 Interface=$NIC_WL
@@ -295,6 +298,7 @@ Address=('$IP_CIDR_EN')
 Gateway='$IP_DNS'
 DNS=('$IP_DNS')
 EOF
+  mkdir -p ${ETCNETCTLDW%/*}
   cat > $ETCNETCTLDW <<EOF
 Description='dhcp wireless'
 Interface=$NIC_WL
@@ -307,6 +311,7 @@ EOF
 }
 
 function _netctl_bond() {
+  mkdir -p ${ETCNETCTLSBOND%/*}
   cat > $ETCNETCTLSBOND <<EOF
 Description='static bond'
 Interface=sbond
@@ -317,6 +322,7 @@ Address=('$IP_CIDR_EN')
 Gateway='$IP_DNS'
 DNS=('$IP_DNS')
 EOF
+  mkdir -p ${ETCNETCTLDBOND%/*}
   cat > $ETCNETCTLDBOND <<EOF
 Description='dynamic bond'
 Interface=dbond
@@ -516,6 +522,7 @@ $PW" | passwd $USR
   echo -e "$PW
 $PW" | smbpasswd -a $USR
   sed -i -e "s/^# *\(%wheel ALL=(ALL) ALL\)/\1/" /etc/sudoers
+echo 
   if [[ -e /usr/bin/zsh ]]; then
     chsh -s /usr/bin/zsh $USR
   fi
@@ -538,6 +545,34 @@ function setup_clean_meta() {
       fi
     done
   fi
+}
+
+function setup_qemu() {
+  cat > /etc/qemu-ifup << 'EOF'
+#!/bin/sh
+echo "Executing /etc/qemu-ifup"
+echo "Bringing up $1 for bridged mode..."
+sudo /usr/bin/ip link set $1 up promisc on
+echo "Adding $1 to br0..."
+sudo /usr/bin/brctl addif br0 $1
+sleep 2
+EOF
+  cat > /etc/qemu-ifdown << 'EOF'
+#!/bin/sh
+echo "Executing /etc/qemu-ifdown"
+sudo /usr/bin/ip link set $1 down
+sudo /usr/bin/brctl delif br0 $1
+sudo /usr/bin/ip link delete dev $1
+EOF
+  chown root:kvm /etc/qemu-ifup
+  chown root:kvm /etc/qemu-ifdown
+  chmod 750 /etc/qemu-ifup
+  chown 750 /etc/qemu-ifdown
+  echo "allow br0" >> /etc/qemu/bridge.conf
+  cat >> /etc/sudoers << 'EOF'
+Cmnd_Alias      QEMU=/usr/bin/ip,/usr/bin/modprobe,/usr/bin/brctl
+%kvm     ALL=NOPASSWD: QEMU
+EOF
 }
 
 function setup_all() {
@@ -568,10 +603,15 @@ function setup_all() {
   setup_clean_meta
 
   if [[ -z $(grep -q "^flags.*\ hypervisor\ " /proc/cpuinfo) ]]; then
-    systemctl enable --now vboxservice
+    # on a vm
+    # systemctl enable --now vboxservice
+    # on client call
+    # VBoxClient-all
+  else
+    if type qemu-system-x86_64 &> /dev/null; then
+      setup_qemu
+    fi
   fi
-  # on client call
-  # VBoxClient-all
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

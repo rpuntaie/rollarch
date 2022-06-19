@@ -185,13 +185,11 @@ How `local proxy`_ and `custom packages`_ is used by `rollarch`_:
 
   Currently the ``pkg`` folder contains these meta packages:
 
-  - ``mdaffin-meta``: Transformed from `arch-pkgs`_, to fit to the above guidelines. Also configures, globally.
   - ``rpuntaie-meta``: `dotfiles`_ are installed afterwards. See `include dotfiles`_.
-  - ``rpuntaie-gnome-meta``: with gnome desktop.
 
   To build only the one package do, e.g.::
 
-    sudo -E bash ./build pkg/rpuntaie-gnome
+    sudo -E bash ./build pkg/rpuntaie
 
 Include dotfiles
 ================

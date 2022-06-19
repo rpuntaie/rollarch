@@ -2,14 +2,11 @@
 
 # manual tests to perform on virtualbox: sed -n -e "s/^.*testX: //p" rollarch | bash
 # test1: DSK=/dev/sda USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna ./rollarch
-# test2: DSK=/dev/sda USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 KM=us CL=99 LA_NG="de_DE es_ES fr_FR it_IT ru_RU" ZONE=Vienna ./rollarch mdaffin-meta yay
 # test3: DSK=/dev/sda USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 KM=us CL=99 LA_NG="de_DE es_ES fr_FR it_IT ru_RU" ZONE=Vienna DOTS=fjVcp ./rollarch
 # test4: DSK=/dev/sda LVM=/dev/sdb USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna ./rollarch
-# test5: DSK=/dev/sda USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 KM=us CL=99 ZONE=Vienna ./rollarch rpuntaie-min-meta
-# test6: DSK=/dev/sda USR=u PW=p HST=u121 IP2=1.121 DOTS=mydots ./rollarch rpuntaie-gnome-meta
 
-ROLLARCH_VERSION='0.0.4'
-ROLLARCH_BASE='arch-install-scripts base base-devel linux linux-firmware mkinitcpio lvm2 devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim zsh'
+ROLLARCH_VERSION='0.0.5'
+ROLLARCH_BASE='arch-install-scripts base base-devel linux linux-firmware mkinitcpio lvm2 devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim zsh netctl stow'
 
 function rollarch_usage() 
 {
@@ -93,7 +90,7 @@ function rollarch_check_defines()
   for req in DSK USR PW HST ZONE
   do
     if [[ "${!req}" == "" ]]; then
-      echo "Fatal: ${req} missing!" >&2
+      echo "Fatal: $req missing!" >&2
       return 1
     fi
   done
@@ -299,16 +296,16 @@ function rollarch_repos()
   PACMANCONF=${PACMANCONF:-/etc/pacman.conf}
   if [[ "$DOTS" != "" ]]; then
     if [[ "$DOTS" =~ ^https:// ]] || [[ "$DOTS" =~ ^file:/// ]]; then
-      DOTS_LOCAL=${DOTS##*/}
-      curl -Ls $DOTS -o /home/$USR/$DOTS_LOCAL
+      DOTS_LOCAL=L${DOTS##*/}
+      curl -Ls $DOTS -o ~/$DOTS_LOCAL
     elif [[ ! -f $DOTS ]]; then
-      DOTS_LOCAL=$DOTS
-      curl -Ls https://git.io/$DOTS -o /home/$USR/$DOTS_LOCAL
+      DOTS_LOCAL=L$DOTS
+      curl -Ls https://git.io/$DOTS -o ~/$DOTS_LOCAL
     else
-      DOTS_LOCAL=${DOTS##*/}
-      cp $DOTS /home/$USR/$DOTS_LOCAL
+      DOTS_LOCAL=L${DOTS##*/}
+      cp $DOTS ~/$DOTS_LOCAL
     fi
-    if [[ -f "/home/$USR/$DOTS_LOCAL" ]]; then
+    if [[ -f "~/$DOTS_LOCAL" ]]; then
       eval $(sed -n -e "s/^#DFN: *//p" ~/$DOTS_LOCAL)
       USRPKGS=$(sed -n -e "s/^#PKG: *//p" ~/$DOTS_LOCAL)
       USRREPOS=$(sed -n -e "s/^#REPO: *//p" ~/$DOTS_LOCAL)
@@ -402,8 +399,8 @@ function rollarch_chroot()
   fi
 
   if [[ "$DOTS_LOCAL" != "" ]]; then
-    cp ~/$DOTS_LOCAL "$MNT_PNT/$DOTS"
-    DOTSINSTALL='/$DOTS_LOCAL'
+    cp ~/$DOTS_LOCAL $MNT_PNT
+    DOTSINSTALL="/$DOTS_LOCAL"
   else
     DOTSINSTALL=
   fi
@@ -482,8 +479,6 @@ function rollarch_main()
   rollarch_check_defines
   [[ $? == 0 ]] || return 1
   rollarch_partition
-  # roll_find_partitions
-  # roll_mount
   rollarch_packstrap "$@"
   rollarch_chroot
   [[ $? == 0 ]] || return 1
