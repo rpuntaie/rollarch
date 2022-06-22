@@ -525,7 +525,9 @@ function rollarch_main() {
   rollarch_check_defines
   [[ $? == 0 ]] || return 1
   rollarch_partition
+  [[ $? == 0 ]] || return 1
   rollarch_packstrap "$@"
+  [[ $? == 0 ]] || return 1
   rollarch_chroot
   [[ $? == 0 ]] || return 1
   rollarch_bye
