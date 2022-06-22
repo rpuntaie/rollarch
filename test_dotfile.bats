@@ -38,14 +38,14 @@ teardown()
     #echo "$OUT" >&3
     rm -rf tmp.*
 
-    [[ "$OUT" == "Server = http://192.168.1.108:8080
+    [[ "$OUT" == "Server = http://192.168.1.108:8237
 [arcanisrepo]
 Server = https://repo.arcanis.me/repo/\$arch
 [dvzrv]
 Server = https://pkgbuild.com/~dvzrv/repo/\$arch
 [custom]
 SigLevel = Optional TrustAll
-Server = http://192.168.1.108:8080
+Server = http://192.168.1.108:8237
 #PKG: A
 #PKG: B
 #REPO: arcanisrepo

@@ -6,7 +6,13 @@
 # test4: DSK=/dev/sda LVM=/dev/sdb USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna ./rollarch
 
 ROLLARCH_VERSION='0.0.5'
-ROLLARCH_BASE='arch-install-scripts systemd-resolvconf base base-devel linux linux-firmware mkinitcpio lvm2 devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim zsh netctl stow'
+ROLLARCH_BASE='arch-install-scripts systemd-resolvconf base base-devel linux linux-firmware mkinitcpio lvm2 devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim zsh netctl'
+# other packages used below:
+# pacman -Si darkhttpd
+# pacman -Si intel-ucode
+# pacman -Si amd-ucode
+# pacman -Si efibootmgr
+# pacman -Si efitools
 
 function rollarch_usage() 
 {
@@ -30,7 +36,7 @@ function rollarch_usage()
   echo
   echo "If the custom repo's name is 'custom',"
   echo "'AIP2=x.y' for 192.168.x.y is the only additional parameter needed.".
-  echo "'AIP2=yes' sets up an ArchProxy server instead of using one."
+  echo "'AIP2=yes' sets up an ArchProxy server on port 8237 instead of using one."
   echo
   echo "Required: values are exampes"
   echo "# DSK=/dev/sda"
@@ -48,8 +54,8 @@ function rollarch_usage()
   echo "  LA_NG in addition to en_US [e.g. de_DE] (none)"
   echo "  KM: (us) one of 'localectl list-keymaps'."
   echo "      If in upper case: ESCAPE->CAPS_LOCK and CAPS_LOCK->WIN"
-  echo "  CL: New key for Caps_Lock making room for Escape in vconsole (for X use xmodmap)."
-  echo "  WLIP2: for static IP2 and separate wl NIC, else bonding en+wl with IP2; not for netctl"
+  echo "  CL: (99) New key for Caps_Lock making room for Escape in vconsole (for X use xmodmap)."
+  echo "  WLIP2: separate wl NIC IP in addition to static IP2, else bonding en+wl with IP2 (not for netctl)"
   echo "  SSID: wlan access point, if any"
   echo "  PSK: passphrase for wlan, if any"
   echo
@@ -62,6 +68,26 @@ function rollarch_usage()
   echo
 }
 
+function _rollarch_example_params() {
+  DSK=/dev/sda
+  USR=u
+  PW=p
+  HST=u121
+  ZONE=Vienna
+  AIP=1.106
+  DOTS=fjVcp
+}
+
+function _rollarchroot_example_params() {
+  _rollarch_example_params
+  BOOT=/dev/sda1
+  SWAP=/dev/sda2
+  ROOT=/dev/sda3
+  KM=us
+  CL=99
+  LA_NG=ru_RU
+  DOTSINSTALL="/LfjVcp"
+}
 
 function rollarchrootusage() {
   echo "Required defines:"
@@ -86,8 +112,7 @@ function rollarchrootusage() {
   exit 0
 }
 
-function rollarch_check_internet()
-{
+function rollarch_check_internet() {
   ping -c 1 -W 1 8.8.8.8 &>/dev/null
   if [[ $? != 0 ]]; then
     echo 'Fatal: Internet not available. Fix first.' >&2
@@ -102,8 +127,7 @@ function rollarch_check_internet()
 
 MNT_PNT=${MNT_PNT:-/mnt}
 
-function rollarch_check_defines()
-{
+function rollarch_check_defines() {
   while [[ -z $PW ]]; do
     read -s -p "Password:" PW
     echo
@@ -148,8 +172,7 @@ function rollarch_check_defines()
 
 }
 
-function roll_find_partitions()
-{
+function roll_find_partitions() {
   if [[ "$DSK" == "" ]]; then
     echo 'DSK not defined' >&2
     return 1
@@ -187,8 +210,7 @@ function roll_find_partitions()
   fi
 }
 
-function roll_mkfs()
-{
+function roll_mkfs() {
   EFI=${EFI:-$(test -e /sys/firmware/efi && echo on || echo off)}
   if [[ "$SWAP" != "off" ]] && [[ "$SWAP" != "on" ]] && [[ "$SWAP" != "" ]]; then
     yes y | mkswap $SWAP
@@ -203,21 +225,24 @@ function roll_mkfs()
   fi
 }
 
-function roll_mount()
-{
+#DSK=/dev/sda
+#roll_find_partitions
+#roll_mount
+#arch-chroot /mnt
+#. ./rollarchrootparams
+#. ./rollarchroot
+function roll_mount() {
   mount $ROOT $MNT_PNT
   mkdir -p $MNT_PNT/boot
   mount $BOOT $MNT_PNT/boot
 }
 
-function roll_umount()
-{
+function roll_umount() {
   umount $MNT_PNT/boot
   umount $MNT_PNT
 }
 
-function rollarch_partition()
-{
+function rollarch_partition() {
   EFI=${EFI:-$(test -e /sys/firmware/efi && echo on || echo off)}
   roll_umount &>/dev/null
   swapoff $(fdisk -l $DSK 2> /dev/null | sed -n -e "s/ [0-9\. GMT]* 82 .*//p") &>/dev/null
@@ -317,24 +342,24 @@ Server = https://xyne.archlinux.ca/repos/xyne
 #  assert b"pkg.tar.zst" in urllib.request.urlopen(srv).read(), nm+' failed'
 
 
-function rollarch_repos()
-{ #custom AIP2 and unofficial repo names from Unofficial_user_repositories to pacman.conf and mirrorlist
+function rollarch_repos() {
+  #custom AIP2 and unofficial repo names from Unofficial_user_repositories to pacman.conf and mirrorlist
   PACMANCONF=${PACMANCONF:-/etc/pacman.conf}
   if [[ "$DOTS" != "" ]]; then
     if [[ "$DOTS" =~ ^https:// ]] || [[ "$DOTS" =~ ^file:/// ]]; then
       DOTS_LOCAL=L${DOTS##*/}
-      curl -Ls $DOTS -o ~/$DOTS_LOCAL
+      curl -Ls $DOTS -o $DOTS_LOCAL
     elif [[ ! -f $DOTS ]]; then
       DOTS_LOCAL=L$DOTS
-      curl -Ls https://git.io/$DOTS -o ~/$DOTS_LOCAL
+      curl -Ls https://git.io/$DOTS -o $DOTS_LOCAL
     else
       DOTS_LOCAL=L${DOTS##*/}
-      cp $DOTS ~/$DOTS_LOCAL
+      cp $DOTS $DOTS_LOCAL
     fi
-    if [[ -f "~/$DOTS_LOCAL" ]]; then
-      eval $(sed -n -e "s/^#DFN: *//p" ~/$DOTS_LOCAL)
-      USRPKGS=$(sed -n -e "s/^#PKG: *//p" ~/$DOTS_LOCAL)
-      USRREPOS=$(sed -n -e "s/^#REPO: *//p" ~/$DOTS_LOCAL)
+    if [[ -f $DOTS_LOCAL ]]; then
+      eval $(sed -n -e "s/^#DFN: *//p" $DOTS_LOCAL)
+      USRPKGS=$(sed -n -e "s/^#PKG: *//p" $DOTS_LOCAL)
+      USRREPOS=$(sed -n -e "s/^#REPO: *//p" $DOTS_LOCAL)
     fi
   fi
 
@@ -343,12 +368,12 @@ function rollarch_repos()
   elif [[ ! "$AIP2" =~ ^([0-9]+[.][0-9]+)$ ]] && [[ "$AIP2" != "no" ]]; then
     AIP2="yes"
   fi
-  prev=$(date +%s)
   ROLLARCH_MIRRORLIST=${ROLLARCH_MIRRORLIST:-/etc/pacman.d/mirrorlist}
-  mv $ROLLARCH_MIRRORLIST $ROLLARCH_MIRRORLIST.$prev
+  MIRRORLISTPREV="$ROLLARCH_MIRRORLIST$(date +%s)"
+  mv $ROLLARCH_MIRRORLIST $MIRRORLISTPREV
   touch $ROLLARCH_MIRRORLIST
   if [[ "$AIP2" != "no" ]] && [[ "$AIP2" != "yes" ]]; then
-    USRREPOS+=" http://192.168.$AIP2:8080"
+    USRREPOS+=" http://192.168.$AIP2:8237"
   fi
   for arepo in $USRREPOS; do
     if [[ ! $arepo =~ ^http ]]; then #name from Unofficial_user_repositories
@@ -362,26 +387,25 @@ function rollarch_repos()
       areposrv="Server = $arepo"
       if [[ -n $(curl -s "$arepo" | grep "custom\.db") ]]; then
         arepoconf="[custom]
-SigLevel = Optional TrustAll
+SigLevel = Optional DatabaseNever
 $areposrv"
       else
         arepoconf=""
         echo "EE: custom.db not served by $arepo"
       fi
     fi
-    if  [[ -n $areposrv ]] && [[ ! $(head $ROLLARCH_MIRRORLIST.$prev | grep "$areposrv") ]]; then
+    if  [[ -n $areposrv ]] && [[ ! $(head $MIRRORLISTPREV | grep "$areposrv") ]]; then
       echo "$areposrv" >> $ROLLARCH_MIRRORLIST
     fi
     if [[ -n $arepoconf ]] && [[ ! $(tail $PACMANCONF | grep "$arepo") ]]; then
          echo "$arepoconf" >> $PACMANCONF
     fi
   done
-  cat $ROLLARCH_MIRRORLIST.$prev >> $ROLLARCH_MIRRORLIST
+  cat $MIRRORLISTPREV >> $ROLLARCH_MIRRORLIST
 }
 
 
-function rollarch_packstrap()
-{
+function rollarch_packstrap() {
   PACMANCONF=${PACMANCONF:-/etc/pacman.conf}
 
   pacman -Sy
@@ -398,11 +422,7 @@ function rollarch_packstrap()
 }
 
 
-#DSK=/dev/sda
-#roll_find_partitions
-#roll_mount
-function rollarch_chroot()
-{
+function rollarch_chroot() {
   if [[ ! "$IP2" =~ ^([0-9]+[.][0-9]+)$ ]]; then
     IP2="dhcp"
   fi
@@ -422,13 +442,13 @@ function rollarch_chroot()
   fi
 
   if [[ "$DOTS_LOCAL" != "" ]]; then
-    cp ~/$DOTS_LOCAL $MNT_PNT
+    cp $DOTS_LOCAL $MNT_PNT
     DOTSINSTALL="/$DOTS_LOCAL"
   else
     DOTSINSTALL=
   fi
 
-  arch-chroot $MNT_PNT bash -c "
+  cat > $MNT_PNT/rollarchrootparams <<EOF
 DSK=$DSK
 USR=$USR
 PW='$PW'
@@ -447,15 +467,19 @@ WLIP2=$WLIP2
 SSID=$SSID
 PSK=$PSK
 DOTSINSTALL=$DOTSINSTALL
+EOF
+
+  ln -sf /run/systemd/resolve/stub-resolv.conf $MNT_PNT/etc/resolv.conf &>/dev/null
+
+  arch-chroot $MNT_PNT bash -c "
+. ./rollarchrootparams
 . ./rollarchroot
 setup_all
 "
-  ln -sf /run/systemd/resolve/stub-resolv.conf $MNT_PNT/etc/resolv.conf &>/dev/null
 }
 
 
-function rollarch_bye()
-{
+function rollarch_bye() {
   echo "Arch Linux was installed with
 ${USRPKGS:-rollarch defaults}."
   echo "  boot: $BOOT"
@@ -484,8 +508,7 @@ $ ibus-setup
 }
 
 
-function rollarch_main()
-{
+function rollarch_main() {
   if [[ $1 == "--help" ]] || [[ $1 == "-h" ]]; then
     rollarch_usage
     exit 0
@@ -511,11 +534,18 @@ function rollarch_main()
 #          for rollarchroot
 
 function setup_arch_proxy() {
-  pacman -S --needed --noconfirm darkhttpd
+  if ! pacman -Qi darkhttpd; then
+    pacman -S --needed --noconfirm darkhttpd
+  fi
   ln -s /var/lib/pacman/sync/*.db /var/cache/pacman/pkg
   cd /usr/lib/systemd/system/
-  cat darkhttpd.service | sed -e "s/Webserver/ArchProxy/g" -e "s,/srv/http.*$,/var/cache/pacman/pkg --no-server-id --port 8080,g" > ArchProxy.service
-  systemctl enable --now ArchProxy
+  cat darkhttpd.service | sed -e "s/Webserver/ArchProxy/g" -e "s,/srv/http.*$,/var/cache/pacman/pkg --no-server-id --port 8237,g" > ArchProxy.service
+  systemctl enable ArchProxy
+  for pkg in $(ls /var/cache/pacman/pkg/*.zst); do
+    if ! ls $pkg.sig; then
+      echo $pkg
+    fi
+  done
 }
 
 function setup_time() {
@@ -572,7 +602,7 @@ function setup_keyboard() {
   gzip rollarch$KBD.map
   cd /
   loadkeys rollarch$KBD
-  localectl set-keymap rollarch$KBD
+  # does not work in arch-chroot: localectl set-keymap rollarch$KBD
   if [[ ! -f "$VCONSOLECONF" ]]; then
     echo "KEYMAP=rollarch$KBD" > $VCONSOLECONF
   fi
@@ -683,7 +713,7 @@ EOF
   if [[ "$SSID" != "" ]] && [[ "$PSK" != "" ]]; then
     wpa_passphrase $SSID $PSK >> $SUPPLICANT_CONF
   fi
-  systemctl enable --now wpa_supplicant@$NIC_WL
+  systemctl enable wpa_supplicant@$NIC_WL
 }
 
 function _nic_bonding_ip() {
@@ -907,9 +937,9 @@ EOF
   [[ -n $NIC_WL ]] && _netctl_wl
   sed -i -e "s/#DNS=.*$/DNS=$IP_DNS/g" -e "s/#FallbackDNS/FallbackDNS/g" -e "s/#LLMNR/LLMNR/g" -e "s/#Multi/Multi/g" $ETCSYSTEMDRESOLVEDCONF
   [[ "$NIC_WL" != "" ]] && _nic_supplicant
-  systemctl enable --now systemd-networkd
-  systemctl enable --now systemd-resolved
-  #systemctl enable --now avahi-daemon
+  systemctl enable systemd-networkd
+  systemctl enable systemd-resolved
+  #systemctl enable avahi-daemon
 }
 
 # samba: add user share:
@@ -934,9 +964,9 @@ EOF
   groupadd -rf sambashare
   chown root:sambashare $VARLIBSAMBAUSERSHARES
   chmod 1770 $VARLIBSAMBAUSERSHARES
-  systemctl enable --now smb nmb
-  systemctl enable --now sshd
-  systemctl enable --now nfs-server.service
+  systemctl enable smb nmb
+  systemctl enable sshd
+  systemctl enable nfs-server.service
 }
 
 #IP2=1.107 WLIP2=1.117 SSID="YOURSSID" PSK="YOURPASSPHRASE"
@@ -1091,20 +1121,22 @@ function setup_all() {
     setup_arch_proxy
   fi
 
-  # printing
-  systemctl enable --now cups
-
   setup_dots
   setup_clean_meta
 
+  # printing
+  if pacman -Qi cups; then
+    systemctl enable cups
+  fi
+
   if [[ -z $(grep -q "^flags.*\ hypervisor\ " /proc/cpuinfo) ]]; then
+    # we are in a VM
     :
-    # on a vm
-    # systemctl enable --now vboxservice
-    # on client call
-    # VBoxClient-all
+    # for virtualbox:
+    #   systemctl enable vboxservice
+    #   VBoxClient-all
   else
-    if type qemu-system-x86_64 &> /dev/null; then
+    if pacman -Qi qemu-base; then
       setup_qemu
     fi
   fi
@@ -1132,8 +1164,3 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   fi
   exit 0
 fi
-
-
-
-
-
