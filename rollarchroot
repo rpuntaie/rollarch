@@ -83,6 +83,7 @@ function setup_keyboard() {
   echo "keycode $CL = Caps_Lock" >> rollarch$KBD.map
   echo "# modified: 58 = Escape and $CL = Caps_Lock" >> rollarch$KBD.map
   gzip rollarch$KBD.map
+  cd /
   loadkeys rollarch$KBD
   localectl set-keymap rollarch$KBD
   if [[ ! -f "$VCONSOLECONF" ]]; then
@@ -569,6 +570,13 @@ EOF
   chmod 750 /etc/qemu-ifup
   chown 750 /etc/qemu-ifdown
   echo "allow br0" >> /etc/qemu/bridge.conf
+  echo "net.ipv4.ip_forward=1" > /etc/sysctl.d/99-sysctl.conf
+  cat > /etc/sysctl.d/10-disable-firewall-on-bridge.conf << 'EOF'
+net.bridge.bridge-nf-call-ip6tables = 0
+net.bridge.bridge-nf-call-iptables = 0
+net.bridge.bridge-nf-call-arptables = 0
+EOF
+  echo "tun" > /etc/modules-load.d/tun.conf
   cat >> /etc/sudoers << 'EOF'
 Cmnd_Alias      QEMU=/usr/bin/ip,/usr/bin/modprobe,/usr/bin/brctl
 %kvm     ALL=NOPASSWD: QEMU
@@ -603,6 +611,7 @@ function setup_all() {
   setup_clean_meta
 
   if [[ -z $(grep -q "^flags.*\ hypervisor\ " /proc/cpuinfo) ]]; then
+    :
     # on a vm
     # systemctl enable --now vboxservice
     # on client call

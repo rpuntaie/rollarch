@@ -6,7 +6,7 @@
 # test4: DSK=/dev/sda LVM=/dev/sdb USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna ./rollarch
 
 ROLLARCH_VERSION='0.0.5'
-ROLLARCH_BASE='arch-install-scripts base base-devel linux linux-firmware mkinitcpio lvm2 devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim zsh netctl stow'
+ROLLARCH_BASE='arch-install-scripts systemd-resolvconf base base-devel linux linux-firmware mkinitcpio lvm2 devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim zsh netctl stow'
 
 function rollarch_usage() 
 {
@@ -90,7 +90,7 @@ function rollarch_check_defines()
   for req in DSK USR PW HST ZONE
   do
     if [[ "${!req}" == "" ]]; then
-      echo "Fatal: $req missing!" >&2
+      echo "Fatal: ${req} missing!" >&2
       return 1
     fi
   done
