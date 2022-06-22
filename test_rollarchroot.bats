@@ -41,10 +41,12 @@ teardown()
 
 #1
 @test "show help" {
+    cp rollarch rollarchroot
     run bash ./rollarchroot -h
     #echo "#${lines[1]}" >&3
     [ "${lines[1]}" = "DSK USR PW HST ZONE IP2 AIP2 BOOT SWAP ROOT" ]
     [ "$status" -eq 0 ]
+    rm -rf rollarchroot
 }
 
 
@@ -62,7 +64,7 @@ teardown()
     SWAP=SWAP\
     ROOT=ROOT\
     KM=KM\
-    run source rollarchroot
+    run source rollarch
     #echo "#${lines[1]}" >&3
     [ "$status" -eq 0 ]
 }
@@ -89,7 +91,7 @@ teardown()
     SWAP=SWAP\
     ROOT=ROOT\
     KM=KM\
-    source rollarchroot
+    source rollarch
     run setup_arch_proxy
     [ "$status" -eq 0 ]
     [ -e ArchProxy.service ]
@@ -116,7 +118,7 @@ teardown()
     SWAP=SWAP\
     ROOT=ROOT\
     KM=KM\
-    source rollarchroot
+    source rollarch
     run setup_time
     [ -e mocklocaltime ]
     [ -e mocktimesyncd ]
@@ -148,7 +150,7 @@ teardown()
     SWAP=SWAP\
     ROOT=ROOT\
     KM=KM\
-    source rollarchroot
+    source rollarch
     run setup_locale
     #echo "#${lines[0]}" >&3
     [[ "${lines[1]}" =~ "it_IT" ]]
@@ -185,7 +187,7 @@ teardown()
     SWAP=SWAP\
     ROOT=ROOT\
     KM=KM\
-    source rollarchroot
+    source rollarch
     KM="US"
     run setup_keyboard
     #echo "#${lines[0]}" >&3
@@ -235,7 +237,7 @@ teardown()
     SWAP=SWAP\
     ROOT=ROOT\
     KM=KM\
-    source rollarchroot
+    source rollarch
     run setup_network
     [ -e etchostname ]
     [ -e etchosts ]
@@ -287,7 +289,7 @@ teardown()
     SWAP=SWAP\
     ROOT=ROOT\
     KM=KM\
-    source rollarchroot
+    source rollarch
     run setup_network
     [ -e etchostname ]
     [ -e etchosts ]
@@ -326,7 +328,7 @@ teardown()
     SWAP=SWAP\
     ROOT=ROOT\
     KM=KM\
-    source rollarchroot
+    source rollarch
     EFI=off
     run setup_boot
     #echo "#${lines[1]}" >&3
@@ -362,7 +364,7 @@ teardown()
     SWAP=SWAP\
     ROOT=ROOT\
     KM=KM\
-    source rollarchroot
+    source rollarch
     EFI=on
     run setup_boot
     #echo "#${lines[1]}" >&3

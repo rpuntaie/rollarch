@@ -16,6 +16,8 @@ function rollarch_usage()
   echo "  https://raw.githubusercontent.com/rpuntaie/rollarch/master/rollarch"
   echo "  https://git.io/installarch"
   echo
+  echo "rollarch or installarch, i.e. \${0}, becomes /rollarchroot used for setup after arch-chroot"
+  echo
   echo "See:"
   echo "https://github.com/rpuntaie/rollarch/rollarch"
   echo
@@ -56,8 +58,32 @@ function rollarch_usage()
   echo "  - create and mount partitions"
   echo "  - check 'custom' at 192.168.$AIP2"
   echo "  - pacstrap"
-  echo "  - arch-chroot using rollarchroot script"
+  echo "  - arch-chroot using rollarchroot script (which is the same as rollarch or installarch)"
   echo
+}
+
+
+function rollarchrootusage() {
+  echo "Required defines:"
+  echo "DSK USR PW HST ZONE IP2 AIP2 BOOT SWAP ROOT"
+  echo "Optional:"
+  echo "KM CL LA_NG USRPKGS DOTSINSTALL WLIP2 SSID PSK"
+  echo ""
+  echo "Functions for after arch-chroot"
+  echo ""
+  echo "- setup_time: \$ZONE"
+  echo "- setup_locale: \$LA_NG"
+  echo "- setup_keyboard: \$KM (keymap) and new \$CL(Caps_Lock) to make room for Escape"
+  echo "- setup_network: with \$IP2 \$HST \$SSID \$PSK. Enables systemd-networkd, but netctl files are created, too"
+  echo "- setup_boot: \$ROOT, EFI boot if /sys/firmware/efi, else BIOS using grub"
+  echo "- setup_user: using \$USR and \$PW, the latter also for root"
+  echo "- setup_arch_proxy: if \$AIP2=yes"
+  echo "- setup_dots: installs user dotfiles with the script \$DOTSINSTALL"
+  echo "- setup_clean_meta: makes \$USRPKGS '-meta' package dependencies 'asexplicit'"
+  echo "- setup_all: does all of the above"
+  echo ""
+  echo "See https://github.com/rpuntaie/rollarch"
+  exit 0
 }
 
 function rollarch_check_internet()
@@ -386,11 +412,8 @@ function rollarch_chroot()
   fi
 
   if [[ ! -f $MNT_PNT/rollarchroot ]]; then
-    if [[ ! -f rollarchroot ]]; then
-      curl -OLs https://raw.githubusercontent.com/rpuntaie/rollarch/master/rollarchroot
-      chmod a+x ./rollarchroot
-    fi
-    cp rollarchroot $MNT_PNT
+    cp ${0} $MNT_PNT/rollarchroot
+    chmod a+x $MNT_PNT/rollarchroot
   fi
 
   if [[ ! -e $MNT_PNT/usr/bin/bash ]]; then
@@ -485,11 +508,632 @@ function rollarch_main()
   rollarch_bye
 }
 
+#          for rollarchroot
+
+function setup_arch_proxy() {
+  pacman -S --needed --noconfirm darkhttpd
+  ln -s /var/lib/pacman/sync/*.db /var/cache/pacman/pkg
+  cd /usr/lib/systemd/system/
+  cat darkhttpd.service | sed -e "s/Webserver/ArchProxy/g" -e "s,/srv/http.*$,/var/cache/pacman/pkg --no-server-id --port 8080,g" > ArchProxy.service
+  systemctl enable --now ArchProxy
+}
+
+function setup_time() {
+  LOCALTIMECONF=${LOCALTIMECONF:-/etc/localtime}
+  SYSTEMTIMECONF=${SYSTEMTIMECONF:-/etc/systemd/timesyncd.conf}
+  for z in $(find /usr/share/zoneinfo/ -iname "*$ZONE"); do
+    if [[ ! $z =~ ^.*/right/.*$ ]] && [[ ! $z =~ ^.*/posix/.*$ ]]; then
+      rm -rf $LOCALTIMECONF
+      ln -s "$z" $LOCALTIMECONF
+      break
+    fi
+  done
+  hwclock --systohc
+  cat > $SYSTEMTIMECONF <<EOF
+[Time]
+NTP=0.arch.pool.ntp.org 1.arch.pool.ntp.org 2.arch.pool.ntp.org 3.arch.pool.ntp.org
+FallbackNTP=0.pool.ntp.org 1.pool.ntp.org
+RootDistanceMaxSec=5
+PollIntervalMinSec=32
+PollIntervalMaxSec=2048
+EOF
+  timedatectl set-ntp true
+}
+
+function setup_locale() {
+  LOCALEGEN=${LOCALEGEN:-/etc/locale.gen}
+  LOCALECONF=${LOCALECONF:-/etc/locale.conf}
+  sed -i -r -e "s/#*(.*)/#\1/g" $LOCALEGEN
+  local X=$LA_NG
+  X+=" en_US"
+  for x in $X
+  do
+    sed -i -r -e "s/^#+($x.* UTF-8)/\1/" $LOCALEGEN
+  done
+  locale-gen
+  LC_ALL="en_US.UTF-8" locale > $LOCALECONF
+}
+
+function setup_keyboard() {
+  VCONSOLECONF=${VCONSOLECONF:-/etc/vconsole.conf}
+  KM=${KM:-us}
+  CL=${CL:-99}
+  local KBD=$(find /usr/share/kbd/keymaps/i386 -iname "$KM.map*")
+  cd "${KBD%/*}"
+  KBD=${KBD##*/}
+  KBD=${KBD%%.*}
+  cp $KBD.map.gz rollarch$KBD.map.gz
+  #Win: 125 on VConsole, for X: `xmodmap -e "keysym Super_L = Caps_Lock"
+  #Print: 99 on VConsole, for X: `xmodmap -e "keysym Print = Caps_Lock"
+  gunzip rollarch$KBD.map.gz
+  sed -i -e "s/keycode *58 *= *Caps_Lock/keycode 58 = Escape/g" rollarch$KBD.map
+  echo "keycode $CL = Caps_Lock" >> rollarch$KBD.map
+  echo "# modified: 58 = Escape and $CL = Caps_Lock" >> rollarch$KBD.map
+  gzip rollarch$KBD.map
+  cd /
+  loadkeys rollarch$KBD
+  localectl set-keymap rollarch$KBD
+  if [[ ! -f "$VCONSOLECONF" ]]; then
+    echo "KEYMAP=rollarch$KBD" > $VCONSOLECONF
+  fi
+}
+
+function _nic_en_wl() {
+  NIC_EN=""
+  NIC_WL=""
+  for NIC in $(ip link show | grep " UP \| DOWN \| DORMANT" | sed "s/^[^:]: \([^:]\+\).*/\1/g"); do
+    if [[ ${NIC:0:1} == "e" ]] && ( [[ "$NIC_EN" == "" ]] || [[ "$(grep '' /sys/class/net/$NIC_EN/carrier)" == "0" ]] ); then
+      NIC_EN=$NIC
+    elif [[ ${NIC:0:1} == "w" ]] && [[ "$NIC_WL" == "" ]]; then
+      NIC_WL=$NIC
+    fi
+    if [[ "$NIC_EN" != "" ]] && [[ "$NIC_WL" != "" ]]; then
+      break
+    fi
+  done
+}
+
+function _nic_en_ip() {
+  cat > $ETCSYSTEMDNETWORKWIRED <<EOF
+[Match]
+Name=$NIC_EN
+
+[Network]
+Address=$IP_CIDR_EN
+Gateway=$IP_DNS
+DNS=$IP_DNS
+LLMNR=yes
+MulticastDNS=yes
+LinkLocalAddressing=no
+
+[Route]
+Metric=10
+EOF
+}
+
+function _nic_wl_ip() {
+  cat > $ETCSYSTEMDNETWORKWIRELESS <<EOF
+[Match]
+Name=$NIC_WL
+
+[Network]
+Address=$IP_CIDR_WL
+Gateway=$IP_DNS
+DNS=$IP_DNS
+LLMNR=yes
+MulticastDNS=yes
+LinkLocalAddressing=no
+
+[Route]
+Metric=20
+EOF
+}
+
+function _nic_en_dhcp() {
+  cat > $ETCSYSTEMDNETWORKWIRED <<EOF
+[Match]
+Name=$NIC_EN
+
+[Network]
+DHCP=ipv4
+LLMNR=yes
+MulticastDNS=yes
+
+[Route]
+RouteMetric=10
+EOF
+}
+
+function _nic_wl_dhcp() {
+  cat > $ETCSYSTEMDNETWORKWIRELESS <<EOF
+[Match]
+Name=$NIC_WL
+
+[Network]
+DHCP=ipv4
+LLMNR=yes
+MulticastDNS=yes
+
+[Route]
+RouteMetric=20
+EOF
+}
+
+##systemd-networkd needs wpa_supplicant to connect to access point
+#wpa_cli>scan>scan_results
+#>add_network 0
+#>set_network 0 ssid <SSID>
+#>set_network 0 psk <passphrase>
+#>enable_network 0
+#>save_config>quit
+## repeat the wpa_passphrase line manually for other access points
+function _nic_supplicant() {
+  SUPPLICANT_CONF=${SUPPLICANT_CONF:-/etc/wpa_supplicant/wpa_supplicant-$NIC_WL.conf}
+  cat > $SUPPLICANT_CONF <<EOF
+ctrl_interface=/var/run/wpa_supplicant
+update_config=1
+eapol_version=1
+fast_reauth=1
+ap_scan=1
+#network={
+#    ssid="$SSID"
+#    psk="$PSK"
+#    }
+EOF
+  if [[ "$SSID" != "" ]] && [[ "$PSK" != "" ]]; then
+    wpa_passphrase $SSID $PSK >> $SUPPLICANT_CONF
+  fi
+  systemctl enable --now wpa_supplicant@$NIC_WL
+}
+
+function _nic_bonding_ip() {
+  cat > $ETCSYSTEMNETEORK_SBONDDEV <<EOF
+[NetDev]
+Name=sbond
+Kind=bond
+EOF
+  cat > $ETCSYSTEMNETEORK_SBOND << EOF
+[Match]
+Name=sbond
+
+[Network]
+Address=$IP_CIDR_EN
+Gateway=$IP_DNS
+DNS=$IP_DNS
+LLMNR=yes
+MulticastDNS=yes
+LinkLocalAddressing=no
+EOF
+  cat > $ETCSYSTEMDNETWORKWIRED <<EOF
+[Match]
+Name=$NIC_EN
+
+[Network]
+Bond=sbond
+EOF
+  cat > $ETCSYSTEMDNETWORKWIRELESS <<EOF
+[Match]
+Name=$NIC_WL
+
+[Network]
+Bond=sbond
+EOF
+}
+
+function _nic_bonding_dhcp() {
+  cat > $ETCSYSTEMNETEORK_DBONDDEV <<EOF
+[NetDev]
+Name=dbond
+Kind=bond
+EOF
+  cat > $ETCSYSTEMNETEORK_DBOND << EOF
+[Match]
+Name=dbond
+
+[Network]
+DHCP=yes
+LLMNR=yes
+MulticastDNS=yes
+LinkLocalAddressing=no
+EOF
+  cat > $ETCSYSTEMDNETWORKWIRED <<EOF
+[Match]
+Name=$NIC_EN
+
+[Network]
+Bond=dbond
+EOF
+  cat > $ETCSYSTEMDNETWORKWIRELESS <<EOF
+[Match]
+Name=$NIC_WL
+
+[Network]
+Bond=dbond
+EOF
+}
+
+function _netctl_en() {
+  mkdir -p ${ETCNETCTLSE%/*}
+  cat > $ETCNETCTLSE <<EOF
+Description='static ethernet'
+Interface=$NIC_EN
+Connection=ethernet
+IP=static
+Address=('$IP_CIDR_EN')
+Gateway='$IP_DNS'
+DNS=('$IP_DNS')
+EOF
+  mkdir -p ${ETCNETCTLDE%/*}
+  cat > $ETCNETCTLDE <<EOF
+Description='dhcp ethernet'
+Interface=$NIC_EN
+Connection=ethernet
+IP=dhcp
+EOF
+}
+
+function _netctl_wl() {
+  mkdir -p ${ETCNETCTLSW%/*}
+  cat > $ETCNETCTLSW <<EOF
+Description='static wireless'
+Interface=$NIC_WL
+Connection=wireless
+Security=wpa
+ESSID='$SSID'
+Key='$PSK'
+IP=static
+Address=('$IP_CIDR_EN')
+Gateway='$IP_DNS'
+DNS=('$IP_DNS')
+EOF
+  mkdir -p ${ETCNETCTLDW%/*}
+  cat > $ETCNETCTLDW <<EOF
+Description='dhcp wireless'
+Interface=$NIC_WL
+Connection=wireless
+Security=wpa
+IP=dhcp
+ESSID='$SSID'
+Key='$PSK'
+EOF
+}
+
+function _netctl_bond() {
+  mkdir -p ${ETCNETCTLSBOND%/*}
+  cat > $ETCNETCTLSBOND <<EOF
+Description='static bond'
+Interface=sbond
+Connection=bond
+BindsToInterfaces=('$NIC_EN' '$NIC_WL')
+IP=static
+Address=('$IP_CIDR_EN')
+Gateway='$IP_DNS'
+DNS=('$IP_DNS')
+EOF
+  mkdir -p ${ETCNETCTLDBOND%/*}
+  cat > $ETCNETCTLDBOND <<EOF
+Description='dynamic bond'
+Interface=dbond
+Connection=bond
+BindsToInterfaces=('$NIC_EN' '$NIC_WL')
+IP=dhcp
+EOF
+}
+
+# for VirtualBox use bridged to have access to LAN
+# systemd-resolved instead of `echo "nameserver $IP_DNS" > /etc/resolv.conf`
+# netctl is configured but not started
+## FOR NETCTL
+## #systemctl disable systemd-networkd
+## #systemctl disable wpa_supplicant@$NIC_WL
+## #systemctl --type=service #to ensure no other network service is running
+## nectl start sbond/dbond #FOR EN AND WL
+## #cat /proc/net/bonding/sbond # to check status # OR
+## if [[ "$IP2" = "dhcp" ]]; then
+##   netctl start dw #<wifi-menu-gnerated> # OR
+##   netctl start de # ... FOR EN ONLY
+## else
+##   netctl start sw # see above # OR
+##   netctl start se # ... FOR EN
+## fi
+function setup_ip() {
+  ETCSYSTEMDNETWORKWIRED=${ETCSYSTEMDNETWORKWIRED:-/etc/systemd/network/20-wired.network}
+  ETCSYSTEMDNETWORKWIRELESS=${ETCSYSTEMDNETWORKWIRELESS:-/etc/systemd/network/25-wireless.network}
+  ETCSYSTEMDRESOLVEDCONF=${ETCSYSTEMDRESOLVEDCONF:-/etc/systemd/resolved.conf}
+  ETCSYSTEMDFALLBACK=${ETCSYSTEMDFALLBACK:-/etc/systemd/network/99-dhcp.network}
+  BONDINGMODULE=${BONDINGMODULE:-/etc/modules-load.d/bonding.conf}
+  BONDINGCONF=${BONDINGCONF:-/etc/modprobe.d/bonding.conf}
+  ETCSYSTEMNETEORK_SBONDDEV=${ETCSYSTEMNETEORK_SBONDDEV:-/etc/systemd/network/10-sbond.netdev}
+  ETCSYSTEMNETEORK_SBOND=${ETCSYSTEMNETEORK_SBOND:-/etc/systemd/network/10-sbond.network}
+  ETCSYSTEMNETEORK_DBONDDEV=${ETCSYSTEMNETEORK_DBONDDEV:-/etc/systemd/network/10-dbond.netdev}
+  ETCSYSTEMNETEORK_DBOND=${ETCSYSTEMNETEORK_DBOND:-/etc/systemd/network/10-dbond.network}
+  ETCNETCTLSE=${ETCNETCTLSE:-/etc/netctl/se}
+  ETCNETCTLDE=${ETCNETCTLDE:-/etc/netctl/de}
+  ETCNETCTLSW=${ETCNETCTLSW:-/etc/netctl/sw}
+  ETCNETCTLDW=${ETCNETCTLDW:-/etc/netctl/dw}
+  ETCNETCTLSBOND=${ETCNETCTLSBOND:-/etc/netctl/sbond}
+  ETCNETCTLDBOND=${ETCNETCTLDBOND:-/etc/netctl/dbond}
+  rm -rf /etc/systemd/network
+  mkdir /etc/systemd/network
+  _nic_en_wl
+  if [[ "$IP2" != "dhcp" ]]; then
+    local IP_2=${IP2##*.}
+    local IP_1=${IP2%$IP_2}
+    IP_DNS=192.168.${IP_1}1
+    IP_CIDR_EN="192.168.$IP2/24"
+    if [[ -n $WLIP2 ]]; then
+      IP_CIDR_WL="192.168.$WLIP2/24"
+      _nic_en_ip
+      _nic_wl_ip
+    else
+      IP_CIDR_WL=$IP_CIDR_EN
+      if [[ "$NIC_EN" != "" ]] && [[ "$NIC_WL" != "" ]]; then
+        _nic_bonding_ip
+      elif [[ "$NIC_EN" != "" ]]; then
+        _nic_en_ip
+      elif [[ "$NIC_WL" != "" ]]; then
+        _nic_wl_ip
+      fi
+    fi
+  else
+    IP_DNS=$(ip route show default | sed -n -e "s/default via \([0-9.]*\).*/\1/p")
+    if [[ "$NIC_EN" != "" ]] && [[ "$NIC_WL" != "" ]]; then
+      _nic_bonding_dhcp
+    elif [[ "$NIC_EN" != "" ]]; then
+      _nic_en_dhcp
+    elif [[ "$NIC_WL" != "" ]]; then
+      _nic_wl_dhcp
+    fi
+  fi
+  cat > $ETCSYSTEMDFALLBACK <<EOF
+[Match]
+Name=${NIC_WL:-$NIC_EN}
+[Network]
+DHCP=yes
+EOF
+  netctl stop-all
+  if [[ "$NIC_EN" != "" ]] && [[ "$NIC_WL" != "" ]]; then
+    cat > $BONDINGMODULE <<EOF
+bonding
+EOF
+    # https://kerlilow.me/blog/setting-up-systemd-networkd-with-bonding/
+    # not necessary for systemd-networkd according % but for netctl yes
+    cat > $BONDINGCONF <<EOF
+options bonding mode=active-backup miimon=100 primary=$NIC_EN max_bonds=0
+EOF
+  _netctl_bond
+  fi
+  [[ -n $NIC_EN ]] && _netctl_en
+  [[ -n $NIC_WL ]] && _netctl_wl
+  sed -i -e "s/#DNS=.*$/DNS=$IP_DNS/g" -e "s/#FallbackDNS/FallbackDNS/g" -e "s/#LLMNR/LLMNR/g" -e "s/#Multi/Multi/g" $ETCSYSTEMDRESOLVEDCONF
+  [[ "$NIC_WL" != "" ]] && _nic_supplicant
+  systemctl enable --now systemd-networkd
+  systemctl enable --now systemd-resolved
+  #systemctl enable --now avahi-daemon
+}
+
+# samba: add user share:
+# net usershare add cifs_share /home/$USR/path_to_cifs_share
+# nfs: edit /etc/exports
+function setup_smb_ssh_nfs() {
+  ETCSAMBASMB=${ETCSAMBASMB:-/etc/samba/smb.conf}
+  VARLIBSAMBAUSERSHARES=${VARLIBSAMBAUSERSHARES:-/var/lib/samba/usershares}
+  LOADMODULECIFS=${LOADMODULECIFS:-/etc/modules-load.d/cifs.conf}
+  echo "cifs" > $LOADMODULECIFS
+  cat > $ETCSAMBASMB <<EOF
+[global]
+   usershare path = /var/lib/samba/usershares
+   usershare max shares = 100
+   usershare allow guests = yes
+   usershare owner only = yes
+
+EOF
+  curl -Ls https://raw.githubusercontent.com/samba-team/samba/master/examples/smb.conf.default | sed \
+    -e "s,log file = .*$,logging = systemd,g" -e "s,MYGROUP,WORKGROUP,g" -e "s/\[global\]//g" >> $ETCSAMBASMB
+  mkdir -p $VARLIBSAMBAUSERSHARES
+  groupadd -rf sambashare
+  chown root:sambashare $VARLIBSAMBAUSERSHARES
+  chmod 1770 $VARLIBSAMBAUSERSHARES
+  systemctl enable --now smb nmb
+  systemctl enable --now sshd
+  systemctl enable --now nfs-server.service
+}
+
+#IP2=1.107 WLIP2=1.117 SSID="YOURSSID" PSK="YOURPASSPHRASE"
+function setup_network() {
+  ETCHOSTS=${ETCHOSTS:-/etc/hosts}
+  ETCHOSTNAME=${ETCHOSTNAME:-/etc/hostname}
+  echo $HST > $ETCHOSTNAME
+  cat > $ETCHOSTS <<EOF
+127.0.0.1     localhost
+::1           localhost
+127.0.0.1     $HST.localdomain  $HST
+EOF
+  setup_ip
+  setup_smb_ssh_nfs
+}
+
+function setup_boot() {
+  EFI=${EFI:-$(test -e /sys/firmware/efi && echo on || echo off)}
+  LOADERENTRY=${LOADERENTRY:-/boot/loader/entries/arch.conf}
+  ROOT=${ROOT:-$(fdisk /dev/sda -l | grep "Linux filesystem" | cut -d " " -f 1)}
+  #microcode used by systemd-boot as well as grub (automatically)
+  UCODE=''
+  if [[ "$(cat /proc/cpuinfo | grep GenuineIntel)" != "" ]]; then
+    UCODE='intel-ucode'
+  elif [[ "$(cat /proc/cpuinfo | grep AuthenticAMD)" != "" ]]; then
+    UCODE='amd-ucode'
+  fi
+  if [[ "$UCODE" != "" ]]; then
+    UCODE_STRING="initrd  /${UCODE}.img
+"
+    pacman -S --needed --noconfirm $UCODE
+  fi
+  if [[ "$EFI" == "on" ]]; then
+    HOOKS='base systemd autodetect modconf block sd-lvm2 filesystems keyboard sd-vconsole fsck'
+    pacman -S --needed --noconfirm efibootmgr efitools
+    UUID="$(blkid -s UUID -o value $ROOT)"
+    APPEND="options root=UUID=${UUID} rw quiet splash loglevel=0 console=tty2"
+    LOADERENTRYDIR=${LOADERENTRY%/*}
+    mkdir -p $LOADERENTRYDIR
+    echo "title   arch
+linux   /vmlinuz-linux
+${UCODE_STRING}initrd  /initramfs-linux.img
+${APPEND}" > $LOADERENTRY
+    echo "title   fallback arch
+linux   /vmlinuz-linux
+${UCODE_STRING}initrd  /initramfs-linux-fallback.img
+${APPEND}" > ${LOADERENTRY/arch/fallback}
+    cat > ${LOADERENTRYDIR%/*}/loader.conf <<EOF
+timeout 1
+default arch
+EOF
+    bootctl install
+  else
+    HOOKS='base udev autodetect modconf block lvm2 resume filesystems keyboard fsck'
+    grub-install --target=i386-pc --recheck $DSK
+    grub-mkconfig -o "/boot/grub/grub.cfg"
+  fi
+  sed -i -e "s/^HOOKS=.*/HOOKS=($HOOKS)/g" /etc/mkinitcpio.conf
+  mkinitcpio -p linux
+}
+
+function setup_user() {
+  groupadd -rf sambashare
+  groupadd -rf plugdev
+  groupadd -rf docker
+  useradd -m -g users -G wheel,uucp,storage,power,video,audio,lp,games,scanner,plugdev,lock,sambashare,docker -s /usr/bin/bash $USR
+  echo -e "$PW
+$PW" | passwd
+  echo -e "$PW
+$PW" | passwd $USR
+  echo -e "$PW
+$PW" | smbpasswd -a $USR
+  sed -i -e "s/^# *\(%wheel ALL=(ALL) ALL\)/\1/" /etc/sudoers
+echo 
+  if [[ -e /usr/bin/zsh ]]; then
+    chsh -s /usr/bin/zsh $USR
+  fi
+}
+
+function setup_dots() {
+  if [[ -e $DOTSINSTALL ]]; then
+    cd "/home/$USR"
+    sudo -H -u $USR bash $DOTSINSTALL
+  fi
+}
+
+#make dependencies of meta packages explicit
+function setup_clean_meta() {
+  if [[ -n $USRPKGS ]]; then
+    for m in $USRPKGS; do
+      if [[ "$m" =~ .*-meta ]]; then
+        pacman -D $(LANG=C pacman -Si $m |sed -n '/Depends\ On/,/:/p'|sed '$d'|cut -d: -f2 |tr -d '>=[0-9]') --asexplicit
+        pacman -R --noconfirm $m
+      fi
+    done
+  fi
+}
+
+function setup_qemu() {
+  cat > /etc/qemu-ifup << 'EOF'
+#!/bin/sh
+echo "Executing /etc/qemu-ifup"
+echo "Bringing up $1 for bridged mode..."
+sudo /usr/bin/ip link set $1 up promisc on
+echo "Adding $1 to br0..."
+sudo /usr/bin/brctl addif br0 $1
+sleep 2
+EOF
+  cat > /etc/qemu-ifdown << 'EOF'
+#!/bin/sh
+echo "Executing /etc/qemu-ifdown"
+sudo /usr/bin/ip link set $1 down
+sudo /usr/bin/brctl delif br0 $1
+sudo /usr/bin/ip link delete dev $1
+EOF
+  chown root:kvm /etc/qemu-ifup
+  chown root:kvm /etc/qemu-ifdown
+  chmod 750 /etc/qemu-ifup
+  chown 750 /etc/qemu-ifdown
+  echo "allow br0" >> /etc/qemu/bridge.conf
+  echo "net.ipv4.ip_forward=1" > /etc/sysctl.d/99-sysctl.conf
+  cat > /etc/sysctl.d/10-disable-firewall-on-bridge.conf << 'EOF'
+net.bridge.bridge-nf-call-ip6tables = 0
+net.bridge.bridge-nf-call-iptables = 0
+net.bridge.bridge-nf-call-arptables = 0
+EOF
+  echo "tun" > /etc/modules-load.d/tun.conf
+  cat >> /etc/sudoers << 'EOF'
+Cmnd_Alias      QEMU=/usr/bin/ip,/usr/bin/modprobe,/usr/bin/brctl
+%kvm     ALL=NOPASSWD: QEMU
+EOF
+}
+
+function setup_all() {
+  setup_time
+  setup_locale
+  setup_keyboard
+  setup_network
+  setup_boot
+
+  if [[ -z "$PW" ]]; then
+    read -s -p "Passport:" PW
+    echo
+    read -s -p "Repeat passport:" PW1
+    echo
+  fi
+  if [[ -n "$PW" ]]; then
+    setup_user
+  fi
+
+  if [[ $AIP2 == "yes" ]]; then
+    setup_arch_proxy
+  fi
+
+  # printing
+  systemctl enable --now cups
+
+  setup_dots
+  setup_clean_meta
+
+  if [[ -z $(grep -q "^flags.*\ hypervisor\ " /proc/cpuinfo) ]]; then
+    :
+    # on a vm
+    # systemctl enable --now vboxservice
+    # on client call
+    # VBoxClient-all
+  else
+    if type qemu-system-x86_64 &> /dev/null; then
+      setup_qemu
+    fi
+  fi
+}
+
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    rollarch_main "$@"
-    if [[ $? -gt 0 ]]; then
-      exit 1
+  if [[ "${0}" == "./rollarchroot" ]]; then
+    if [[ $1 == "--help" ]] || [[ $1 == "-h" ]]; then
+      rollarchrootusage
     fi
+    for req in DSK USR PW HST ZONE IP2 AIP2 BOOT SWAP ROOT KM
+    do
+      if [[ "${!req}" == "" ]]; then
+        echo "${req} missing!" >&2
+        exit 1
+      fi
+    done
+    setup_all
+    exit 0
+  fi
+  rollarch_main "$@"
+  if [[ $? -gt 0 ]]; then
+    exit 1
+  fi
+  exit 0
 fi
+
+
+
+
 

@@ -125,7 +125,7 @@ How `local proxy`_ and `custom packages`_ is used by `rollarch`_:
 
   .. code:: sh
 
-    . rollarchroot
+    . rollarch
     setup_arch_proxy
 
 - To make/update custom packages in the proxy, do
