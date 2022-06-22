@@ -541,19 +541,19 @@ function setup_arch_proxy() {
   cd /usr/lib/systemd/system/
   cat darkhttpd.service | sed -e "s/Webserver/ArchProxy/g" -e "s,/srv/http.*$,/var/cache/pacman/pkg --no-server-id --port 8237,g" > ArchProxy.service
   systemctl enable ArchProxy
-  # check that all .sig files are there
-  cd /var/cache/pacman/pkg/
-  mir=https://mirrors.kernel.org/archlinux
-  for pkg in $(ls *.zst); do
-    if ! ls $pkg.sig &> /dev/null ; then
-      pkgname="$(echo $pkg | sed -e 's,\(.*\)-[0-9]*.[0-9]*.[0-9]*-.*,\1,')"
-      repo="$(pacman -Si $pkgname | grep Repository | cut -d: -f2 | xargs)"
-      sig="$mir/$repo/os/x86_64/$pkg.sig"
-      if ! curl -OLs $sig ; then
-          echo "Failed: $sig"
-      fi
-    fi
-  done
+  ## check that all .sig files are there
+  #cd /var/cache/pacman/pkg/
+  #mir=https://mirrors.kernel.org/archlinux
+  #for pkg in $(ls *.zst); do
+  #  if ! ls $pkg.sig &> /dev/null ; then
+  #    pkgname="$(echo $pkg | sed -e 's,\(.*\)-[0-9]*.[0-9]*.[0-9]*-.*,\1,')"
+  #    repo="$(pacman -Si $pkgname | grep Repository | cut -d: -f2 | xargs)"
+  #    sig="$mir/$repo/os/x86_64/$pkg.sig"
+  #    if ! curl -OLs $sig ; then
+  #        echo "Failed: $sig"
+  #    fi
+  #  fi
+  #done
   cd /
 }
 
