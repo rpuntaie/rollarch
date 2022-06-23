@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
-# manual tests to perform on virtualbox: sed -n -e "s/^.*testX: //p" rollarch | bash
-# test1: DSK=/dev/sda USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna ./rollarch
-# test3: DSK=/dev/sda USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 KM=us CL=99 LA_NG="de_DE es_ES fr_FR it_IT ru_RU" ZONE=Vienna DOTS=fjVcp ./rollarch
-# test4: DSK=/dev/sda LVM=/dev/sdb USR=u PW=p HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna ./rollarch
+: '
+manual tests to perform on virtualbox:
+DSK=/dev/sda USR=roland PW=p HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna ./rollarch
+DSK=/dev/sda USR=roland HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna DOTS=fjVcp ./rollarch
+DSK=/dev/sda LVM=/dev/sdb USR=roland HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna ./rollarch
+'
 
 ROLLARCH_VERSION='0.0.5'
 ROLLARCH_BASE='arch-install-scripts systemd-resolvconf base base-devel linux linux-firmware mkinitcpio lvm2 devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim zsh netctl'
@@ -74,7 +76,7 @@ function _rollarch_example_params() {
   PW=p
   HST=u121
   ZONE=Vienna
-  AIP=1.106
+  AIP2=1.106
   DOTS=fjVcp
 }
 
@@ -225,12 +227,17 @@ function roll_mkfs() {
   fi
 }
 
-#DSK=/dev/sda
-#roll_find_partitions
-#roll_mount
-#arch-chroot /mnt
-#. ./rollarchrootparams
-#. ./rollarchroot
+function roll_chroot() {
+  DSK=/dev/sda
+  roll_find_partitions
+  roll_mount
+  arch-chroot /mnt
+  : '
+  . ./rollarchrootparams
+  . ./rollarchroot
+  '
+}
+
 function roll_mount() {
   mount $ROOT $MNT_PNT
   mkdir -p $MNT_PNT/boot
@@ -387,7 +394,7 @@ function rollarch_repos() {
       areposrv="Server = $arepo"
       if [[ -n $(curl -s "$arepo" | grep "custom\.db") ]]; then
         arepoconf="[custom]
-SigLevel = Optional TrustAll
+SigLevel = Never
 $areposrv"
       else
         arepoconf=""

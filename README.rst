@@ -163,7 +163,7 @@ How `local proxy`_ and `custom packages`_ is used by `rollarch`_:
       ###### new /etc/tmpfiles.d/ccm_dir.conf
       #d /scratch/.buildroot 0750 root users -
 
-  - builds all packages or THOSE PROVIDED (e.g. ``pkg/rpuntaie``)
+  - builds all packages or THOSE PROVIDED (e.g. ``pkg/yay``)
   - adds the packages to `custom packages`_
 
   ``build`` may need additional packages in its chroot environment for building certain AUR packages.
@@ -183,13 +183,12 @@ How `local proxy`_ and `custom packages`_ is used by `rollarch`_:
   the dependencies are made ``--asexplicit`` and the resulting orphaned ``your-meta`` package is removed.
   To make this work, meta packages must not depend on each other.
 
-  Currently the ``pkg`` folder contains these meta packages:
-
-  - ``rpuntaie-meta``: `dotfiles`_ are installed afterwards. See `include dotfiles`_.
+  ``-meta`` packages are not used any more,
+  as `include dotfiles`_ better lists the packages directly.
 
   To build only the one package do, e.g.::
 
-    sudo -E bash ./build pkg/rpuntaie
+    sudo -E bash ./build pkg/yay
 
 Include dotfiles
 ================
