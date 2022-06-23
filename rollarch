@@ -227,7 +227,7 @@ function roll_mkfs() {
   fi
 }
 
-function roll_chroot() {
+function _rollarch_chroot() {
   DSK=/dev/sda
   roll_find_partitions
   roll_mount
@@ -458,7 +458,6 @@ function rollarch_chroot() {
   cat > $MNT_PNT/rollarchrootparams <<EOF
 DSK=$DSK
 USR=$USR
-PW='$PW'
 HST=$HST
 ZONE=$ZONE
 IP2=$IP2
@@ -479,6 +478,7 @@ EOF
   ln -sf /run/systemd/resolve/stub-resolv.conf $MNT_PNT/etc/resolv.conf &>/dev/null
 
   arch-chroot $MNT_PNT bash -c "
+PW='$PW'
 . ./rollarchrootparams
 . ./rollarchroot
 setup_all
@@ -487,8 +487,7 @@ setup_all
 
 
 function rollarch_bye() {
-  echo "Arch Linux was installed with
-${USRPKGS:-rollarch defaults}."
+  echo "Arch Linux was installed successfully."
   echo "  boot: $BOOT"
   echo "  swap: $SWAP"
   echo "  root: $ROOT"
