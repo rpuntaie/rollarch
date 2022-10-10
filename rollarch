@@ -1017,7 +1017,7 @@ function setup_boot() {
     pacman -S --needed --noconfirm $UCODE
   fi
   if [[ "$EFI" == "on" ]]; then
-    HOOKS='base systemd autodetect modconf block sd-lvm2 filesystems keyboard sd-vconsole fsck'
+    HOOKS='base systemd autodetect modconf block lvm2 filesystems keyboard sd-vconsole fsck'
     pacman -S --needed --noconfirm efibootmgr efitools
     UUID="$(blkid -s UUID -o value $ROOT)"
     APPEND="options root=UUID=${UUID} rw quiet splash loglevel=0 console=tty2"

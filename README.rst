@@ -18,6 +18,14 @@ Look into `rollarch`_ to see what is done during installation.
 Usage
 =====
 
+Make a boot media. Here an USB memory stick:
+
+.. code:: sh
+
+  lsblk # verify that sdg is the usb memory stick
+  sudo dd bs=4M if=/home/roland/myd/sw/linux/archlinux-2022.10.01-x86_64.iso of=/dev/sdg conv=fsync oflag=direct status=progress
+  # the archlinux iso should be new, else problems with keys
+
 After booting the installation medium in the ``archiso`` prompt, do
 
 .. code:: sh
