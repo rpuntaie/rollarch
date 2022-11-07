@@ -493,7 +493,7 @@ function rollarch_bye() {
   echo "  root: $ROOT"
   roll_umount &>/dev/null
   echo -e "\033[0;32m
-'/rollarchroot' is still on $ROOT.
+MANUALLY remove /rollarchrootparams /rollarchroot /Linstallis.
 
 'poweroff', remove media, boot
 
