@@ -6,10 +6,6 @@
 	path = pkg/wordnet
 	url = https://aur.archlinux.org/wordnet
 	ignore = dirty
-[submodule "pkg/waf-git"]
-	path = pkg/waf-git
-	url = https://aur.archlinux.org/waf-git
-	ignore = dirty
 [submodule "pkg/mimeo"]
 	path = pkg/mimeo
 	url = https://aur.archlinux.org/mimeo
@@ -26,25 +22,9 @@
 	path = pkg/powerline-console-fonts
 	url = https://aur.archlinux.org/powerline-console-fonts.git
 	ignore = dirty
-[submodule "pkg/leiningen"]
-	path = pkg/leiningen
-	url = https://aur.archlinux.org/leiningen.git
-	ignore = dirty
-[submodule "pkg/python-astropy"]
-	path = pkg/python-astropy
-	url = https://aur.archlinux.org/python-astropy.git
-	ignore = dirty
-[submodule "pkg/erfa"]
-	path = pkg/erfa
-	url = https://aur.archlinux.org/erfa.git
-	ignore = dirty
 [submodule "pkg/mutt-wizard-git"]
 	path = pkg/mutt-wizard-git
 	url = https://aur.archlinux.org/mutt-wizard-git.git
-	ignore = dirty
-[submodule "pkg/python-astropy-helpers"]
-	path = pkg/python-astropy-helpers
-	url = https://aur.archlinux.org/python-astropy-helpers.git
 	ignore = dirty
 [submodule "pkg/vcal"]
 	path = pkg/vcal
@@ -54,10 +34,6 @@
 	path = pkg/abook
 	url = https://aur.archlinux.org/abook
 	ignore = dirty
-[submodule "pkg/eclint"]
-	path = pkg/eclint
-	url = https://aur.archlinux.org/eclint
-	ignore = dirty
 [submodule "pkg/clean-chroot-manager"]
 	path = pkg/clean-chroot-manager
 	url = https://aur.archlinux.org/clean-chroot-manager
@@ -65,10 +41,6 @@
 [submodule "pkg/git-quick-stats"]
 	path = pkg/git-quick-stats
 	url = https://aur.archlinux.org/git-quick-stats
-	ignore = dirty
-[submodule "pkg/dockerize-git"]
-	path = pkg/dockerize-git
-	url = https://aur.archlinux.org/dockerize-git
 	ignore = dirty
 [submodule "pkg/dive-git"]
 	path = pkg/dive-git
@@ -78,10 +50,6 @@
 	path = pkg/logiops-git
 	url = https://aur.archlinux.org/logiops-git
 	ignore = dirty
-[submodule "pkg/python-pyerfa"]
-	path = pkg/python-pyerfa
-	url = https://aur.archlinux.org/python-pyerfa
-	ignore = dirty
 [submodule "pkg/j9-git"]
 	path = pkg/j9-git
 	url = https://aur.archlinux.org/j9-git
@@ -90,17 +58,9 @@
 	path = pkg/evcxr_repl
 	url = https://aur.archlinux.org/evcxr_repl
 	ignore = dirty
-[submodule "pkg/archlinux-nix"]
-	path = pkg/archlinux-nix
-	url = https://aur.archlinux.org/archlinux-nix
-	ignore = dirty
 [submodule "pkg/include-what-you-use"]
 	path = pkg/include-what-you-use
 	url = https://aur.archlinux.org/include-what-you-use
-	ignore = dirty
-[submodule "pkg/python-extension-helpers"]
-	path = pkg/python-extension-helpers
-	url = https://aur.archlinux.org/python-extension-helpers
 	ignore = dirty
 [submodule "pkg/python-sphinx-automodapi"]
 	path = pkg/python-sphinx-automodapi
