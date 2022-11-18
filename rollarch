@@ -982,6 +982,7 @@ EOF
   chown root:sambashare $VARLIBSAMBAUSERSHARES
   chmod 1770 $VARLIBSAMBAUSERSHARES
   systemctl enable smb nmb
+  ssh-keygen -q -t rsa -N '' <<< $'\ny' >/dev/null 2>&1
   systemctl enable sshd
   systemctl enable nfs-server.service
 }
