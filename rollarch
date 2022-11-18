@@ -983,6 +983,7 @@ EOF
   chmod 1770 $VARLIBSAMBAUSERSHARES
   systemctl enable smb nmb
   ssh-keygen -q -t rsa -N '' <<< $'\ny' >/dev/null 2>&1
+  ssh-keygen -q -t ed25519 -N '' <<< $'\ny' >/dev/null 2>&1
   systemctl enable sshd
   systemctl enable nfs-server.service
 }
