@@ -310,7 +310,7 @@ function rollarch_partition() {
   roll_mkfs &>/dev/null
   roll_mount
 
-  mount | grep $ROOT || return 1
+  mount | grep $MNT_PNT || return 1
 }
 
 #"key-ID: No" from https://wiki.archlinux.org/index.php/Unofficial_user_repositories
