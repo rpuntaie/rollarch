@@ -478,6 +478,7 @@ EOF
   ln -sf /run/systemd/resolve/stub-resolv.conf $MNT_PNT/etc/resolv.conf &>/dev/null
 
   arch-chroot $MNT_PNT bash -c "
+ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 PW='$PW'
 . ./rollarchrootparams
 . ./rollarchroot

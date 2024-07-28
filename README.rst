@@ -26,7 +26,18 @@ Make a boot media. Here an USB memory stick:
   sudo dd bs=4M if=/home/roland/myd/sw/linux/archlinux-2022.10.01-x86_64.iso of=/dev/sdg conv=fsync oflag=direct status=progress
   # the archlinux iso should be new, else problems with keys
 
-After booting the installation medium in the ``archiso`` prompt, do
+After booting the installation medium in the ``archiso`` prompt, network should work, else do eg
+
+.. code:: sh
+
+    iwctl
+    > device list
+    > station wlan0 scan
+    > station wlan0 get-networks
+    > station wlan0 connect TP-LINK_C25554
+    > quit
+
+Then
 
 .. code:: sh
 
