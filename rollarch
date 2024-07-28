@@ -219,12 +219,12 @@ function roll_mkfs() {
     yes y | mkswap $SWAP
     swapon $SWAP
   fi
-  mkfs -t ext4 -F $ROOT
+  mkfs.ext4 -F $ROOT
   yes y | tune2fs -U $(cat /proc/sys/kernel/random/uuid) $ROOT
   if [[ "$EFI" == "off" ]]; then
-    mkfs -t ext2 -F $BOOT
+    mkfs.ext2 -F $BOOT
   else
-    mkfs -t vfat $BOOT
+    mkfs.fat -F 32 $BOOT
   fi
 }
 
@@ -270,9 +270,10 @@ function rollarch_partition() {
   else
     parted --script $DSK mklabel gpt
   fi
-  parted --script --align optimal $DSK mkpart primary fat16 $diskstart 192MiB
+  bootsize=1GiB
+  parted --script --align optimal $DSK mkpart primary fat16 $diskstart $bootsize
   parted $DSK set 1 boot on
-  diskstart=192MiB
+  diskstart=$bootsize
   if [[ "$SWAP" == "off" ]]; then
     parted --script --align optimal $DSK mkpart primary ext4 $diskstart 100%
     swapsize=0
@@ -425,9 +426,9 @@ function rollarch_packstrap() {
   pacman -Sy
   if [[ "$@" != "" ]]; then
     USRPKGS="$USRPKGS $@"
-    pacstrap $MNT_PNT $GRUB $USRPKGS
+    pacstrap -K $MNT_PNT $GRUB $USRPKGS
   else
-    pacstrap $MNT_PNT $GRUB $ROLLARCH_BASE $USRPKGS
+    pacstrap -K $MNT_PNT $GRUB $ROLLARCH_BASE $USRPKGS
   fi
 
   mkdir -p $MNT_PNT/etc
@@ -485,7 +486,6 @@ EOF
   ln -sf /run/systemd/resolve/stub-resolv.conf $MNT_PNT/etc/resolv.conf &>/dev/null
 
   arch-chroot $MNT_PNT bash -c "
-ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 PW='$PW'
 . ./rollarchrootparams
 . ./rollarchroot
