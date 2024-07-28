@@ -5,6 +5,7 @@ manual tests to perform on virtualbox:
 DSK=/dev/sda USR=roland PW=p HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna ./rollarch
 DSK=/dev/sda USR=roland HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna DOTS=fjVcp ./rollarch
 DSK=/dev/sda LVM=/dev/sdb USR=roland HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna ./rollarch
+DSK=/dev/nvme0n1 SWAP=off USR=u PW=p HST=u106 IP2=1.111 ZONE=Vienna DOTS=fjVcp bash installarch
 '
 
 ROLLARCH_VERSION='0.0.5'
@@ -182,7 +183,7 @@ function roll_find_partitions() {
   BOOT=
   ROOT=
   SWP=
-  for diskpart in $(ls ${DSK}*); do
+  for diskpart in ${DSK}*; do
     if [[ "$diskpart" =~ ^([a-z/]+([0-9]n)?[0-9]p|[a-z/]+)[0-9]$ ]]; then
       if [[ "$BOOT" == "" ]]; then
         BOOT=$diskpart
@@ -283,7 +284,7 @@ function rollarch_partition() {
     parted --script --align optimal $DSK mkpart primary ext4 $swapsize 100%
   fi
   roll_find_partitions
-  [[ $?==0 ]] || return 1
+  [[ $? == 0 ]] || return 1
 
   if [[ "$LVM" != "" ]]; then
     parted $DSK set ${ROOT#$DSK} lvm on &>/dev/null
@@ -301,7 +302,7 @@ function rollarch_partition() {
   fi
 
   roll_find_partitions
-  [[ $?==0 ]] || return 1
+  [[ $? == 0 ]] || return 1
   echo "  boot: $BOOT"
   echo "  swap: $SWAP"
   echo "  root: $ROOT"

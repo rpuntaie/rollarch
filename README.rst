@@ -98,10 +98,10 @@ Optional:
 :IP2: (192.168.)x.y, [e.g. 1.106], else dhcp
 
 :AIP2: [e.g. 1.199 | yes, to create Arch Proxy].
-       The x.y of another arch linux machin (the local proxy)
+       The x.y of another arch linux machine (the `local proxy`_)
 
 :DOTS: Full URL or ``https://git.io/SHORT`` to a bash installation script for dot files.
-       It can provide defines, packages and repos via ``#DFN: ``, ``#PKG: `` and ``#REPO: `` comments.
+       It can provide defines, packages and repos via ``#DFN:``, ``#PKG:`` and ``#REPO:`` comments.
 
 :LA_NG: Space separated list of xx_YY used in addition to en_US [e.g. "de_DE ru_RU"]
         Don't include ``en_US``.
@@ -217,11 +217,13 @@ A shell script can be wrapped over all of these methods.
 
 This install script can be communicated to rollarch with a ``DOTS`` define.
 
-- ``DOTS`` specifies the URL to your installation script.
-  - ``DOTS=https://...``
-  - ``DOTS=file:///...``
-  - ``DOTS=SHORT``, meaning ``https://git.io/SHORT``
-    For other `shorteners <https://bit.do/list-of-url-shorteners.php>`__ use ``http://...``.
+- ``DOTS`` specifies the URL to your installation script::
+
+    DOTS=https://...
+    DOTS=file:///...
+    DOTS=SHORT ... meaning https://git.io/SHORT
+
+  For other `shorteners <https://bit.do/list-of-url-shorteners.php>`__ use ``http://...``.
 
 The installation script is forwarded to bash within ``arch-chroot``, after ``cd /home/$USR``.
 It
@@ -262,14 +264,7 @@ The following installs my system with ``dotfiles`` and packages wanted by it.
     curl -OLs https://git.io/installarch
     DSK=/dev/sda USR=u PW=p HST=u106 IP2=1.106 AIP2=1.108 ZONE=Vienna DOTS=fjVcp bash installarch
 
-Thanks
-======
 
-Inspired by `mdaffin`_ and
-`how to create archlinux repository <https://fusion809.github.io/how-to-create-archlinux-repository/>`__.
-
-
-.. _`mdaffin`: https://github.com/mdaffin/arch-pkgs
 .. _`local proxy`: https://wiki.archlinux.org/index.php/Pacman/Tips_and_tricks#Network_shared_pacman_cache
 .. _`custom packages`: https://wiki.archlinux.org/index.php/Pacman/Tips_and_tricks#Custom_local_repository
 .. _`dotfiles`: https://wiki.archlinux.org/index.php/Dotfiles
