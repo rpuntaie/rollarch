@@ -309,6 +309,8 @@ function rollarch_partition() {
 
   roll_mkfs &>/dev/null
   roll_mount
+
+  mount | grep $ROOT || return 1
 }
 
 #"key-ID: No" from https://wiki.archlinux.org/index.php/Unofficial_user_repositories
@@ -377,7 +379,11 @@ function rollarch_repos() {
     AIP2="yes"
   fi
   ROLLARCH_MIRRORLIST=${ROLLARCH_MIRRORLIST:-/etc/pacman.d/mirrorlist}
+  if [ -e ${ROLLARCH_MIRRORLIST}.org ] ; then
+    mv ${ROLLARCH_MIRRORLIST}.org ${ROLLARCH_MIRRORLIST}
+  fi
   MIRRORLISTPREV="$ROLLARCH_MIRRORLIST$(date +%s)"
+  mv $ROLLARCH_MIRRORLIST ${ROLLARCH_MIRRORLIST}.org
   mv $ROLLARCH_MIRRORLIST $MIRRORLISTPREV
   touch $ROLLARCH_MIRRORLIST
   if [[ "$AIP2" != "no" ]] && [[ "$AIP2" != "yes" ]]; then
