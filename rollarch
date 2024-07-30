@@ -5,7 +5,7 @@ manual tests to perform on virtualbox:
 DSK=/dev/sda USR=roland PW=p HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna ./rollarch
 DSK=/dev/sda USR=roland HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna DOTS=fjVcp ./rollarch
 DSK=/dev/sda LVM=/dev/sdb USR=roland HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna ./rollarch
-DSK=/dev/nvme0n1 SWAP=off USR=u PW=p HST=u106 IP2=1.111 ZONE=Vienna DOTS=fjVcp bash installarch
+SSID=x WK=y WIP2=1.111 USR=u PW=p HST=u106 DSK=/dev/nvme0n1 SWAP=off ZONE=Vienna DOTS=fjVcp bash installarch
 '
 
 ROLLARCH_VERSION='0.0.5'
@@ -58,9 +58,9 @@ function rollarch_usage()
   echo "  KM: (us) one of 'localectl list-keymaps'."
   echo "      If in upper case: ESCAPE->CAPS_LOCK and CAPS_LOCK->WIN"
   echo "  CL: (99) New key for Caps_Lock making room for Escape in vconsole (for X use xmodmap)."
-  echo "  WLIP2: separate wl NIC IP in addition to static IP2, else bonding en+wl with IP2 (not for netctl)"
+  echo "  WIP2: separate wl NIC IP in addition to static IP2, else bonding en+wl with IP2 (not for netctl)"
   echo "  SSID: wlan access point, if any"
-  echo "  PSK: passphrase for wlan, if any"
+  echo "  WK: passphrase for wlan, if any"
   echo
   echo "Desription:"
   echo "  - check parameters and access to internet"
@@ -96,14 +96,14 @@ function rollarchrootusage() {
   echo "Required defines:"
   echo "DSK USR PW HST ZONE IP2 AIP2 BOOT SWAP ROOT"
   echo "Optional:"
-  echo "KM CL LA_NG USRPKGS DOTSINSTALL WLIP2 SSID PSK"
+  echo "KM CL LA_NG USRPKGS DOTSINSTALL WIP2 SSID WK"
   echo ""
   echo "Functions for after arch-chroot"
   echo ""
   echo "- setup_time: \$ZONE"
   echo "- setup_locale: \$LA_NG"
   echo "- setup_keyboard: \$KM (keymap) and new \$CL(Caps_Lock) to make room for Escape"
-  echo "- setup_network: with \$IP2 \$HST \$SSID \$PSK. Enables systemd-networkd, but netctl files are created, too"
+  echo "- setup_network: with \$IP2 \$HST \$SSID \$WK. Enables systemd-networkd, but netctl files are created, too"
   echo "- setup_boot: \$ROOT, EFI boot if /sys/firmware/efi, else BIOS using grub"
   echo "- setup_user: using \$USR and \$PW, the latter also for root"
   echo "- setup_arch_proxy: if \$AIP2=yes"
@@ -477,9 +477,9 @@ KM='$KM'
 CL='$CL'
 LA_NG='$LA_NG'
 USRPKGS='$USRPKGS'
-WLIP2=$WLIP2
+WIP2=$WLIP2
 SSID=$SSID
-PSK=$PSK
+WK=$WK
 DOTSINSTALL=$DOTSINSTALL
 EOF
 
@@ -714,14 +714,6 @@ RouteMetric=20
 EOF
 }
 
-##systemd-networkd needs wpa_supplicant to connect to access point
-#wpa_cli>scan>scan_results
-#>add_network 0
-#>set_network 0 ssid <SSID>
-#>set_network 0 psk <passphrase>
-#>enable_network 0
-#>save_config>quit
-## repeat the wpa_passphrase line manually for other access points
 function _nic_supplicant() {
   SUPPLICANT_CONF=${SUPPLICANT_CONF:-/etc/wpa_supplicant/wpa_supplicant-$NIC_WL.conf}
   cat > $SUPPLICANT_CONF <<EOF
@@ -730,13 +722,9 @@ update_config=1
 eapol_version=1
 fast_reauth=1
 ap_scan=1
-#network={
-#    ssid="$SSID"
-#    psk="$PSK"
-#    }
 EOF
-  if [[ "$SSID" != "" ]] && [[ "$PSK" != "" ]]; then
-    wpa_passphrase $SSID $PSK >> $SUPPLICANT_CONF
+  if [[ "$SSID" != "" ]] && [[ "$WK" != "" ]]; then
+    wpa_passphrase $SSID $WK >> $SUPPLICANT_CONF
   fi
   systemctl enable wpa_supplicant@$NIC_WL
 }
@@ -835,7 +823,7 @@ Interface=$NIC_WL
 Connection=wireless
 Security=wpa
 ESSID='$SSID'
-Key='$PSK'
+Key='$WK'
 IP=static
 Address=('$IP_CIDR_EN')
 Gateway='$IP_DNS'
@@ -849,7 +837,7 @@ Connection=wireless
 Security=wpa
 IP=dhcp
 ESSID='$SSID'
-Key='$PSK'
+Key='$WK'
 EOF
 }
 
@@ -875,22 +863,6 @@ IP=dhcp
 EOF
 }
 
-# for VirtualBox use bridged to have access to LAN
-# systemd-resolved instead of `echo "nameserver $IP_DNS" > /etc/resolv.conf`
-# netctl is configured but not started
-## FOR NETCTL
-## #systemctl disable systemd-networkd
-## #systemctl disable wpa_supplicant@$NIC_WL
-## #systemctl --type=service #to ensure no other network service is running
-## nectl start sbond/dbond #FOR EN AND WL
-## #cat /proc/net/bonding/sbond # to check status # OR
-## if [[ "$IP2" = "dhcp" ]]; then
-##   netctl start dw #<wifi-menu-gnerated> # OR
-##   netctl start de # ... FOR EN ONLY
-## else
-##   netctl start sw # see above # OR
-##   netctl start se # ... FOR EN
-## fi
 function setup_ip() {
   ETCSYSTEMDNETWORKWIRED=${ETCSYSTEMDNETWORKWIRED:-/etc/systemd/network/20-wired.network}
   ETCSYSTEMDNETWORKWIRELESS=${ETCSYSTEMDNETWORKWIRELESS:-/etc/systemd/network/25-wireless.network}
@@ -911,13 +883,17 @@ function setup_ip() {
   rm -rf /etc/systemd/network
   mkdir /etc/systemd/network
   _nic_en_wl
-  if [[ "$IP2" != "dhcp" ]]; then
-    local IP_2=${IP2##*.}
-    local IP_1=${IP2%$IP_2}
+  IPX=$IP2
+  if [ -z $IPX ]; then
+    IPX=$WIP2
+  fi
+  if [[ "$IPX" != "dhcp" ]]; then
+    local IP_2=${IPX##*.}
+    local IP_1=${IPX%$IP_2}
     IP_DNS=192.168.${IP_1}1
-    IP_CIDR_EN="192.168.$IP2/24"
-    if [[ -n $WLIP2 ]]; then
-      IP_CIDR_WL="192.168.$WLIP2/24"
+    IP_CIDR_EN="192.168.$IPX/24"
+    if [[ -n $WIP2 ]]; then
+      IP_CIDR_WL="192.168.$WIP2/24"
       _nic_en_ip
       _nic_wl_ip
     else
@@ -996,7 +972,7 @@ EOF
   systemctl enable nfs-server.service
 }
 
-#IP2=1.107 WLIP2=1.117 SSID="YOURSSID" PSK="YOURPASSPHRASE"
+#IP2=1.107 WIP2=1.117 SSID="YOURSSID" WK="YOURPASSPHRASE"
 function setup_network() {
   ETCHOSTS=${ETCHOSTS:-/etc/hosts}
   ETCHOSTNAME=${ETCHOSTNAME:-/etc/hostname}

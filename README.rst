@@ -26,7 +26,7 @@ Make a boot media. Here an USB memory stick:
   sudo dd bs=4M if=/home/roland/myd/sw/linux/archlinux-2022.10.01-x86_64.iso of=/dev/sdg conv=fsync oflag=direct status=progress
   # the archlinux iso should be new, else problems with keys
 
-After booting the installation medium in the ``archiso`` prompt, network should work, else do eg
+For wireless-only devices you will need to connect to an access point manually at the ``archiso`` prompt:
 
 .. code:: sh
 
@@ -66,6 +66,11 @@ Then at the ``archiso`` prompt:
 If ``mydots`` is a dots install script available locally,
 ``https://git.io/mydots`` is not tried.
 Here an `example <https://git.io/fjVcp>`__ for a ``mydots`` script.
+
+.. code:: sh
+
+   # notebook with just WLAN, no ethernet
+   SSID=x WK=y WIP2=1.111 USR=u PW=p HST=u111 DSK=/dev/nvme0n1 SWAP=off ZONE=Vienna DOTS=fjVcp bash installarch
 
 Without further arguments after ``rollarch`` (=``installarch``), the packages default to
 ``arch-install-scripts base base-devel devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim zsh``.
@@ -116,11 +121,11 @@ Optional:
         keycode 0x42 = Escape
         keysym Print = Caps_Lock
 
-:WLIP2: for static IP2 and separate wl NIC, else bonding en+wl with IP2
+:WIP2: for static IP2 and separate wl NIC, else bonding en+wl with IP2
 
-:ESSID: name of WLAN access point, if any
+:SSID: name of WLAN access point
 
-:PSK: passphrase of WLAN access point, if any
+:WK: password of WLAN access point
 
 The ``AIP2`` and ``DOTS`` defines are very useful and will be addressed below.
 
