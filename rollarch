@@ -649,6 +649,9 @@ function _nic_en_wl() {
 }
 
 function _nic_en_ip() {
+  if [ -z $NIC_EN ]; then
+    return 0
+  fi
   cat > $ETCSYSTEMDNETWORKWIRED <<EOF
 [Match]
 Name=$NIC_EN
@@ -667,6 +670,9 @@ EOF
 }
 
 function _nic_wl_ip() {
+  if [ -z $NIC_WL ]; then
+    return 0
+  fi
   cat > $ETCSYSTEMDNETWORKWIRELESS <<EOF
 [Match]
 Name=$NIC_WL
@@ -685,6 +691,9 @@ EOF
 }
 
 function _nic_en_dhcp() {
+  if [ -z $NIC_EN ]; then
+    return 0
+  fi
   cat > $ETCSYSTEMDNETWORKWIRED <<EOF
 [Match]
 Name=$NIC_EN
@@ -700,6 +709,9 @@ EOF
 }
 
 function _nic_wl_dhcp() {
+  if [ -z $NIC_WL ]; then
+    return 0
+  fi
   cat > $ETCSYSTEMDNETWORKWIRELESS <<EOF
 [Match]
 Name=$NIC_WL
