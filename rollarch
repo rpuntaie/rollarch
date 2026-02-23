@@ -5,7 +5,7 @@ manual tests to perform on virtualbox:
 DSK=/dev/sda USR=roland PW=p HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna ./rollarch
 DSK=/dev/sda USR=roland HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna DOTS=fjVcp ./rollarch
 DSK=/dev/sda LVM=/dev/sdb USR=roland HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna ./rollarch
-SSID=x WK=y WIP2=1.111 USR=u PW=p HST=u106 DSK=/dev/nvme0n1 SWAP=off ZONE=Vienna DOTS=fjVcp bash installarch
+SSID=x WK=y WIP2=1.111 USR=roland PW=p HST=u106 DSK=/dev/nvme0n1 SWAP=off ZONE=Vienna DOTS=fjVcp bash installarch
 '
 
 ROLLARCH_VERSION='0.0.5'
