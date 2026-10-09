@@ -5,26 +5,23 @@ Rollarch
 Purpose
 =======
 
-Automates ArchLinux installation using
-
-- dotfiles install script and offering
-- custom packages
-
-All parameters are provided at call time,
+The `rollarch` bash script in this folder in combination with a dotfiles `install` script
+automates the ArchLinux installation with parameters provided at call time,
 as an automation should not bombard you with questions.
 
-Look into `rollarch`_ to see what is done during installation.
+For details check out the script itself: `rollarch`_.
 
 Usage
 =====
 
-Make a boot media. Here an USB memory stick:
+Make a boot media,
+e.g. an USB memory stick:
 
 .. code:: sh
 
-  lsblk # verify that sdg is the usb memory stick
-  sudo dd bs=4M if=/home/roland/myd/sw/linux/archlinux-2022.10.01-x86_64.iso of=/dev/sdg conv=fsync oflag=direct status=progress
-  # the archlinux iso should be new, else problems with keys
+  lsblk # check that /dev/sdg is the usb memory stick
+  ISO=$HOME/Downloads/archlinux-2026.10.01-x86_64.iso
+  sudo dd bs=4M if=$ISO of=/dev/sdg conv=fsync oflag=direct status=progress
 
 For wireless-only devices you will need to connect to an access point manually at the ``archiso`` prompt:
 
@@ -37,7 +34,7 @@ For wireless-only devices you will need to connect to an access point manually a
     > station wlan0 connect TP-LINK_C25554
     > quit
 
-Then
+Then install with a command, like in this example:
 
 .. code:: sh
 
@@ -51,10 +48,12 @@ Alternatively you can clone `rollarch`_ to another LAN box (e.g. 1.108) and add 
 
 /etc/exports::
 
-   # Use `exportfs -arv` to reload.
+   # Use `exportfs -arv` to reload
    /path/to/rollarch	    192.168.1.0/24(rw,sync,subtree_check)
 
-Then at the ``archiso`` prompt:
+
+Note, that VirtualBox or KVM needs *Bridged Adapter* to enable access to LAN.
+Then, at the ``archiso`` prompt:
 
 .. code:: sh
 
@@ -71,9 +70,6 @@ Here an `example <https://git.io/fjVcp>`__ for a ``mydots`` script.
 
    # notebook with just WLAN, no ethernet
    SSID=x WK=y WIP2=1.111 USR=u PW=p HST=u111 DSK=/dev/nvme0n1 SWAP=off ZONE=Vienna DOTS=fjVcp bash installarch
-
-Without further arguments after ``rollarch`` (=``installarch``), the packages default to
-``arch-install-scripts base base-devel devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim zsh``.
 
 For systems supporting UEFI
 `systemd-boot <https://wiki.archlinux.org/index.php/Systemd-boot>`_ is used,
@@ -128,13 +124,6 @@ Optional:
 :WK: password of WLAN access point
 
 The ``AIP2`` and ``DOTS`` defines are very useful and will be addressed below.
-
-Status
-======
-
-Tested for VirtualBox (EFI and BIOS) and BIOS PC.
-
-VirtualBox needs *Bridged Adapter* to enable access to LAN.
 
 
 Custom Packages

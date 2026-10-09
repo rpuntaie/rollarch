@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 : '
+use bash not zsh
 manual tests to perform on virtualbox:
 DSK=/dev/sda USR=roland PW=p HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna ./rollarch
 DSK=/dev/sda USR=roland HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna DOTS=fjVcp ./rollarch
@@ -8,7 +9,10 @@ DSK=/dev/sda LVM=/dev/sdb USR=roland HST=u121 IP2=1.121 AIP2=1.108 ZONE=Vienna .
 SSID=x WK=y WIP2=1.111 USR=roland PW=p HST=u106 DSK=/dev/nvme0n1 SWAP=off ZONE=Vienna DOTS=fjVcp bash installarch
 '
 
-ROLLARCH_VERSION='0.0.5'
+# before chroot: rollarch_main, rollarch_chroot, setup_all
+# after chroot: setup_all
+
+ROLLARCH_VERSION='0.0.6'
 ROLLARCH_BASE='arch-install-scripts systemd-resolvconf base base-devel linux linux-firmware mkinitcpio lvm2 devtools dialog wpa_supplicant ntp nfs-utils samba sudo git python vim zsh netctl'
 # other packages used below:
 # pacman -Si darkhttpd
@@ -56,8 +60,8 @@ function rollarch_usage()
   echo "  DOTS: URL or https://git.io/SHORT to a bash installation script for dot files"
   echo "  LA_NG in addition to en_US [e.g. de_DE] (none)"
   echo "  KM: (us) one of 'localectl list-keymaps'."
-  echo "      If in upper case: ESCAPE->CAPS_LOCK and CAPS_LOCK->WIN"
-  echo "  CL: (99) New key for Caps_Lock making room for Escape in vconsole (for X use xmodmap)."
+  echo "      If in upper case: ESCAPE->CAPS_LOCK"
+  echo "  CL: (99) New key for Caps_Lock making room for Escape in vconsole (not for X11)."
   echo "  WIP2: separate wl NIC IP in addition to static IP2, else bonding en+wl with IP2 (not for netctl)"
   echo "  SSID: wlan access point, if any"
   echo "  WK: passphrase for wlan, if any"
@@ -131,6 +135,7 @@ function rollarch_check_internet() {
 MNT_PNT=${MNT_PNT:-/mnt}
 
 function rollarch_check_defines() {
+  cp installarch rollarch
   while [[ -z $PW ]]; do
     read -s -p "Password:" PW
     echo
@@ -142,7 +147,7 @@ function rollarch_check_defines() {
   done
   for req in DSK USR PW HST ZONE
   do
-    if [[ "${!req}" == "" ]]; then
+    if [[ "${!req}" == "" ]]; then # works only for bash
       echo "Fatal: ${req} missing!" >&2
       return 1
     fi
@@ -352,9 +357,14 @@ Server = https://xyne.archlinux.ca/repos/xyne
 #for nm,srv in srvrs.items():
 #  assert b"pkg.tar.zst" in urllib.request.urlopen(srv).read(), nm+' failed'
 
+function usr_pkgs(){
+  USRPKGS=$(sed -n -e "s/^#PKG: *//p" $1)
+}
 
 function rollarch_repos() {
-  #custom AIP2 and unofficial repo names from Unofficial_user_repositories to pacman.conf and mirrorlist
+  AIP2=${1:-$AIP2}
+  DOTS=${2:-$DOTS}
+  # custom AIP2 and unofficial repo names from Unofficial_user_repositories to pacman.conf and mirrorlist
   PACMANCONF=${PACMANCONF:-/etc/pacman.conf}
   if [[ "$DOTS" != "" ]]; then
     if [[ "$DOTS" =~ ^https:// ]] || [[ "$DOTS" =~ ^file:/// ]]; then
@@ -369,7 +379,7 @@ function rollarch_repos() {
     fi
     if [[ -f $DOTS_LOCAL ]]; then
       eval $(sed -n -e "s/^#DFN: *//p" $DOTS_LOCAL)
-      USRPKGS=$(sed -n -e "s/^#PKG: *//p" $DOTS_LOCAL)
+      usr_pkgs
       USRREPOS=$(sed -n -e "s/^#REPO: *//p" $DOTS_LOCAL)
     fi
   fi
@@ -447,7 +457,7 @@ function rollarch_chroot() {
   fi
 
   if [[ ! -f $MNT_PNT/rollarchroot ]]; then
-    cp ${0} $MNT_PNT/rollarchroot
+    cp rollarch $MNT_PNT/rollarchroot
     chmod a+x $MNT_PNT/rollarchroot
   fi
 
@@ -665,6 +675,7 @@ MulticastDNS=yes
 LinkLocalAddressing=no
 
 [Route]
+Gateway=$IP_DNS
 Metric=10
 EOF
 }
@@ -686,6 +697,7 @@ MulticastDNS=yes
 LinkLocalAddressing=no
 
 [Route]
+Gateway=$IP_DNS
 Metric=20
 EOF
 }
@@ -1185,7 +1197,7 @@ function setup_all() {
     systemctl enable cups
   fi
 
-  if [[ -z $(grep -q "^flags.*\ hypervisor\ " /proc/cpuinfo) ]]; then
+  if [[ -z $(grep -q "^flags.*\ hypervisor\ " /proc/cpuinfo &> /dev/null) ]]; then
     # we are in a VM
     :
     # for virtualbox:
