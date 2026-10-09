@@ -357,8 +357,9 @@ Server = https://xyne.archlinux.ca/repos/xyne
 #for nm,srv in srvrs.items():
 #  assert b"pkg.tar.zst" in urllib.request.urlopen(srv).read(), nm+' failed'
 
-function usr_pkgs(){
+function install_usr_pkgs(){
   USRPKGS=$(sed -n -e "s/^#PKG: *//p" $1)
+  while read -r p; do sudo pacman --needed --noconfirm -S $p; done <<< $(echo $USRPKGS | grep '^')
 }
 
 function rollarch_repos() {
@@ -379,7 +380,7 @@ function rollarch_repos() {
     fi
     if [[ -f $DOTS_LOCAL ]]; then
       eval $(sed -n -e "s/^#DFN: *//p" $DOTS_LOCAL)
-      usr_pkgs
+      USRPKGS=$(sed -n -e "s/^#PKG: *//p" $DOTS_LOCAL)
       USRREPOS=$(sed -n -e "s/^#REPO: *//p" $DOTS_LOCAL)
     fi
   fi
